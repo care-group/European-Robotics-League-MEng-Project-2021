@@ -26,3 +26,6 @@ sudo sh ./pull-new-software.sh
 # Development
 - The simulator's screen http://localhost:3000
 - IDE http://localhost:3001
+
+# Installation of Additional Software
+To use additional software, we must first add automated instructions to pull-new-software.sh so that everyone can easily update their image. I have created the `additional_software` folder so that we can have a singular installation folder for this.
