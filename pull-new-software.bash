@@ -20,6 +20,7 @@ then
 fi
 
 # jason-rosbridge
+sudo apt-get install openjdk-8-jre
 sudo apt-get install ros-melodic-rosbridge-suite
 source /opt/ros/melodic/setup.bash
 cd ..
