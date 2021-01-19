@@ -22,7 +22,16 @@ Install the additional project-specific software eg. Jason, by opening the [IDE]
 ```
 sudo bash install.bash
 ```
+### Installation Issues
+When running
+```
+sudo bash install.bash
+```
+If you are faced with errors complaining about `\r ` characters, on your local console (eg. Windows) you need to disable Git from converting line-breaks to Windows-style and reclone the repository, you do not need to pull the images again.
+```
+git config --global core.autocrlf false
 
+```
 # Development
 - The simulator's screen http://localhost:3000
 - IDE http://localhost:3001
