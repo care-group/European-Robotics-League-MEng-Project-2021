@@ -20,7 +20,7 @@ docker-compose up
 ```
 Install the additional project-specific software eg. Jason, by opening the [IDE](http://localhost:3000/) and accessing the terminal.
 ```
-sudo sh ./pull-new-software.sh
+sudo bash pull-new-software.bash
 ```
 
 # Development
