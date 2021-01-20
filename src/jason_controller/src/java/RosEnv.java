@@ -11,6 +11,9 @@ import ros.msgs.std_msgs.PrimitiveMsg;
 import ros.tools.MessageUnpacker;
 import com.fasterxml.jackson.databind.JsonNode;
 
+import java.util.*;  
+
+
 public class RosEnv extends Environment {
 
     private Logger logger = Logger.getLogger("hello_ros."+RosEnv.class.getName());
@@ -52,16 +55,12 @@ public class RosEnv extends Environment {
     }
     
 	public void hello_ros() {
-		Publisher pub = new Publisher("/java_to_ros", "std_msgs/String", bridge);
-		
-		for(int i = 0; i < 100; i++) {
-			pub.publish(new PrimitiveMsg<String>("hello from Jason " + i));
-			try {
-				Thread.sleep(500);
-			} catch (InterruptedException e) {
-				e.printStackTrace();
-			}
-		}
+		System.out.println("Publishing..");
+		Publisher pub = new Publisher("/jason/rotate", "std_msgs/Int16", bridge);
+		Map<String,Integer> map=new HashMap<String,Integer>();  
+  		map.put("data",5);  
+
+		pub.publish(map);
 	}
 
     /** Called before the end of MAS execution */

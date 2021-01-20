@@ -1,0 +1,5 @@
+<launch>
+    <!-- My Package launch file -->
+    <node pkg="ros_tests" type="rotate.py" name="Rotate"  output="screen">
+    </node>
+</launch>
