@@ -13,64 +13,152 @@ import ros.msgs.std_msgs.PrimitiveMsg;
 import ros.tools.MessageUnpacker;
 import com.fasterxml.jackson.databind.JsonNode;
 
-import java.util.*;  
-
+import java.util.*;
 
 public class env extends Environment {
 
-    private Logger logger = Logger.getLogger("jason_controller."+env.class.getName());
-    
-    RosBridge bridge = new RosBridge();
+	public class Room {
+		public String roomName;
+		LinkedList<String> doors;
 
-    /** Called before the MAS execution with the args informed in .mas2j */
-    @Override
-    public void init(String[] args) {
-        super.init(args);
-		bridge.connect("ws://localhost:9090", true);
-		logger.info("Environment started, connection with ROS established.");
-    }
-
-    @Override
-    public boolean executeAction(String agName, Structure action) {
-
-		switch(action.getFunctor()){
-			case "test_ros_communication":
-				test_ros_communication();
-				break;
-			case "at":
-				logger.info("Moving to " + action.getTerm(0));
-				break;
-			default:
-				logger.info("executing: "+action+", but not implemented!");
+		private Room(String n, LinkedList<String> d) {
+			this.roomName = n;
+			this.doors = (LinkedList<String>) d.clone();
 		}
-		
-		try {
-            Thread.sleep(200);
-        } catch (Exception e) {}
-		
+	}
+
+	private Logger logger = Logger.getLogger("jason_controller." + env.class.getName());
+	RosBridge bridge = new RosBridge();
+
+	public static LinkedList<Room> rooms = new LinkedList<Room>();
+	public static int roomCounter = 0, doorCounter = 0;
+	public static String current_location, current_door;
+
+	/** Called before the MAS execution with the args informed in .mas2j */
+	@Override
+	public void init(String[] args) {
+		super.init(args);
+		// bridge.connect("ws://localhost:9090", true);
+		logger.info("Environment started, connection with ROS established.");
+
+		Room r1 = new Room("living_room", new LinkedList<String>(Arrays.asList("door1.1", "door1.2", "door1.3")));
+		Room r2 = new Room("kitchen", new LinkedList<String>(Arrays.asList("door2.1", "door2.2")));
+		Room r3 = new Room("bedroom", new LinkedList<String>(Arrays.asList("door3.1")));
+
+		rooms.add(r1);
+		rooms.add(r2);
+		rooms.add(r3);
+		current_location = rooms.get(roomCounter).roomName;
+		current_door = rooms.get(roomCounter).doors.get(doorCounter);
+		print_map();
 		updatePercepts();
-        informAgsEnvironmentChanged();
-        return true; // the action was executed with success
-    }
-    
-	/** Tests Jason-ROS communication by publishing to the /jason/rotate topic, causing the 
-		robot to briefly spin. */
+	}
+
+	@Override
+	public boolean executeAction(String agName, Structure action) {
+		logger.info(agName + " doing: " + action);
+
+		try {
+			switch (action.getFunctor()) {
+				case "test_ros_communication":
+					test_ros_communication();
+					break;
+				case "at":
+					logger.info("Moving to " + action.getTerm(0));
+					break;
+				case "next":
+					iterate_through_doors(action.getTerm(0));
+					break;
+				default:
+					logger.info("executing: " + action + ", but not implemented!");
+			}
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+
+		updatePercepts();
+		try {
+			Thread.sleep(200);
+		} catch (Exception e) {
+		}
+		informAgsEnvironmentChanged();
+		return true; // the action was executed with success
+	}
+
+	void print_map() {
+		for (Room room : rooms) {
+			logger.info(room.roomName);
+			for (String door : room.doors) {
+				logger.info('\t' + door);
+			}
+		}
+	}
+
+	/**
+	 * Tests Jason-ROS communication by publishing to the /jason/rotate topic,
+	 * causing the robot to briefly spin.
+	 */
 	public void test_ros_communication() {
 		logger.info("Testing ROS communication");
 		Publisher pub = new Publisher("/jason/rotate", "std_msgs/Int16", bridge);
-		Map<String,Integer> map=new HashMap<String,Integer>();  
-  		map.put("data",5);  
+		Map<String, Integer> map = new HashMap<String, Integer>();
+		map.put("data", 5);
 		pub.publish(map);
 	}
 
-    /** creates the agents perception based on the MarsModel */
-	void updatePercepts() {
-        clearPercepts();
-    }
+	boolean checksComplete() {
+		return (roomCounter >= rooms.size() - 1);
+	}
 
-    /** Called before the end of MAS execution */
-    @Override
-    public void stop() {
-        super.stop();
-    }
+	boolean doorChecksComplete() {
+		return (doorCounter >= rooms.get(roomCounter).doors.size() - 1);
+	}
+
+	void iterate_through_doors(Term t) throws Exception {
+		if (checksComplete()) {
+			return;
+		}
+
+		switch (t.toString()) {
+			case "Room":
+				roomCounter++;
+				doorCounter = 0;
+				break;
+			case "Door":
+				doorCounter++;
+				break;
+			default:
+				logger.info("Unsure what to iterate through!");
+				return;
+		}
+
+		current_location = rooms.get(roomCounter).roomName;
+		current_door = rooms.get(roomCounter).doors.get(doorCounter);
+
+	}
+
+	/** creates the agents perception based on the MarsModel */
+	void updatePercepts() {
+		clearPercepts();
+
+		Literal curr_location = Literal.parseLiteral("at(" + current_location + ")");
+		Literal door_status = Literal.parseLiteral("door(" + current_location + "," + current_door + ")");
+
+		Literal room_complete = Literal.parseLiteral(checksComplete() ? "room_checks_finished(true)" : "room_checks_finished(false)");
+		Literal door_complete = Literal
+				.parseLiteral(doorChecksComplete() ? "door_checks_finished(true)" : "door_checks_finished(false)");
+
+		logger.info("Agent is considering the " + current_location + " " + current_door);
+		addPercept(curr_location);
+		addPercept(door_status);
+		addPercept(room_complete);
+		addPercept(door_complete);
+
+	}
+
+	/** Called before the end of MAS execution */
+	@Override
+	public void stop() {
+		super.stop();
+	}
 }
