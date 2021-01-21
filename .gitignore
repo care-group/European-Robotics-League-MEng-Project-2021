@@ -1,4 +1,5 @@
 .vscode
 build/
 devel/
-src/jason_controller/bin/
+src/jason_controller/bin/*
+.catkin_workspace
