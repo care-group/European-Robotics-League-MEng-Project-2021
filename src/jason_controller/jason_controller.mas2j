@@ -1,11 +1,11 @@
-MAS hello_ros {
+MAS jason_controller {
 
 	infrastructure: Centralised
 
-	environment: RosEnv
+	environment: env
 
 	agents:
-		agent1 sample_agent;
+		agent agent;
 
 	aslSourcePath:
 		"src/asl";
