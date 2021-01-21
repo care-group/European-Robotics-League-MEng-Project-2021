@@ -11,8 +11,13 @@ git clone https://github.com/chulme/european_robotic_league.git
 cd european_robotic_league
 ```
 Download all of the images necessary for running the simulator, [curtosy of hsr-project](https://github.com/hsr-project/tmc_wrs_docker).
+In Windows
 ```
 get-images.sh
+```
+In Mac
+```
+sh get-images.sh
 ```
 Start the simulator
 ```
