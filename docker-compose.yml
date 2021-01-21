@@ -51,7 +51,7 @@ services:
   workspace:
     # env_file:
     #   - .env
-    image: devrt/ros-devcontainer-vscode:melodic-desktop
+    image: devrt/ros-devcontainer-vscode:erl
     ipc: host
     security_opt:
       - seccomp:unconfined
@@ -61,6 +61,7 @@ services:
     volumes:
       - .:/workspace:cached
       - ~/.gitconfig:/home/developer/.gitconfig
+    build: .
     environment:
       - DISPLAY=:0
       - ROS_MASTER_URI=http://simulator:11311/
