@@ -14,5 +14,6 @@ RUN echo 'export JASON_HOME=/additional_software/jason/build' >> ~/.bashrc
 RUN echo 'export PATH=$JASON_HOME/scripts:$PATH' >> ~/.bashrc
 # jason-rosbridge
 RUN sudo apt-get install openjdk-8-jre -y
+RUN sudo apt-get install openjdk-11-jdk -y
 RUN sudo apt-get install ros-melodic-rosbridge-suite -y
 RUN source /opt/ros/melodic/setup.bash
