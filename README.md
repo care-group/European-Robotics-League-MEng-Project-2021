@@ -8,7 +8,7 @@ docker info
 Clone this repository
 ```
 git clone https://github.com/chulme/european_robotic_league.git
-cd european_robot_league
+cd european_robotic_league
 ```
 Download all of the images necessary for running the simulator, [curtosy of hsr-project](https://github.com/hsr-project/tmc_wrs_docker).
 ```
