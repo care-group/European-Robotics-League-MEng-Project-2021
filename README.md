@@ -18,6 +18,10 @@ Start the simulator
 ```
 docker-compose up
 ```
+Access the container through the [online IDE](http://localhost:3001) or locally-installed Visual Studio Code and run
+```
+catkin_make
+```
 ## Development
 - The simulator's screen http://localhost:3000
 - IDE http://localhost:3001
