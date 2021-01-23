@@ -32,7 +32,9 @@ public class env extends Environment {
 
 	public static LinkedList<Room> rooms = new LinkedList<Room>();
 	public static int roomCounter = 0, doorCounter = 0;
-	public static String current_location, current_door;
+	public static String current_location, current_door, target_location;
+
+	public static boolean isTargetRoom = true;
 
 	/** Called before the MAS execution with the args informed in .mas2j */
 	@Override
@@ -41,7 +43,7 @@ public class env extends Environment {
 		// bridge.connect("ws://localhost:9090", true);
 		logger.info("Environment started, connection with ROS established.");
 
-		Room r1 = new Room("living_room", new LinkedList<String>(Arrays.asList("door1.1", "door1.2", "door1.3")));
+		Room r1 = new Room("living_room", new LinkedList<String>(Arrays.asList("door1", "door1.2", "door1.3")));
 		Room r2 = new Room("kitchen", new LinkedList<String>(Arrays.asList("door2.1", "door2.2")));
 		Room r3 = new Room("bedroom", new LinkedList<String>(Arrays.asList("door3.1")));
 
@@ -49,6 +51,7 @@ public class env extends Environment {
 		rooms.add(r2);
 		rooms.add(r3);
 		current_location = rooms.get(roomCounter).roomName;
+
 		current_door = rooms.get(roomCounter).doors.get(doorCounter);
 		print_map();
 		updatePercepts();
@@ -56,18 +59,24 @@ public class env extends Environment {
 
 	@Override
 	public boolean executeAction(String agName, Structure action) {
-		logger.info(agName + " doing: " + action);
+		// logger.info(agName + " doing: " + action);
 
 		try {
 			switch (action.getFunctor()) {
 				case "test_ros_communication":
 					test_ros_communication();
 					break;
-				case "at":
+				case "move_to":
 					logger.info("Moving to " + action.getTerm(0));
+
+					move_to(action.getTerm(0).toString());
+					break;
+				case "inspect":
+					logger.info("Inspecting " + action.getTerm(0));
+					doorCounter++;
 					break;
 				case "next":
-					iterate_through_doors(action.getTerm(0));
+					iterate(action.getTerm(0));
 					break;
 				default:
 					logger.info("executing: " + action + ", but not implemented!");
@@ -107,33 +116,50 @@ public class env extends Environment {
 	}
 
 	boolean checksComplete() {
-		return (roomCounter >= rooms.size() - 1);
+		return (roomCounter >= rooms.size());
 	}
 
 	boolean doorChecksComplete() {
-		return (doorCounter >= rooms.get(roomCounter).doors.size() - 1);
+		// logger.info("Door Counter: " + doorCounter + "\ndoors.size(): " +
+		// rooms.get(roomCounter).doors.size());
+		if (!checksComplete()) { // prevents out of bounds error in last stage of deliberation.
+			return (doorCounter >= rooms.get(roomCounter).doors.size());
+		} else {
+			return true;
+		}
 	}
 
-	void iterate_through_doors(Term t) throws Exception {
+	void move_to(String location) throws Exception {
+		current_location = location;
+	}
+
+	void iterate(Term t) throws Exception {
 		if (checksComplete()) {
 			return;
 		}
+		try {
+			switch (t.toString()) {
+				case "room":
 
-		switch (t.toString()) {
-			case "Room":
-				roomCounter++;
-				doorCounter = 0;
-				break;
-			case "Door":
-				doorCounter++;
-				break;
-			default:
-				logger.info("Unsure what to iterate through!");
-				return;
+					roomCounter++;
+					target_location = rooms.get(roomCounter).roomName;
+					doorCounter = 0;
+					isTargetRoom = true;
+					break;
+				case "door":
+					// doorCounter++;
+					target_location = rooms.get(roomCounter).doors.get(doorCounter);
+					isTargetRoom = false;
+					break;
+				default:
+					logger.info("Unsure what to iterate through!");
+					isTargetRoom = false;
+					return;
+			}
+		} catch (
+
+		Exception e) {
 		}
-
-		current_location = rooms.get(roomCounter).roomName;
-		current_door = rooms.get(roomCounter).doors.get(doorCounter);
 
 	}
 
@@ -141,18 +167,22 @@ public class env extends Environment {
 	void updatePercepts() {
 		clearPercepts();
 
-		Literal curr_location = Literal.parseLiteral("at(" + current_location + ")");
-		Literal door_status = Literal.parseLiteral("door(" + current_location + "," + current_door + ")");
+		Literal target = Literal
+				.parseLiteral("target(" + target_location + "," + (isTargetRoom ? "room" : "door") + ")");
 
-		Literal room_complete = Literal.parseLiteral(checksComplete() ? "room_checks_finished(true)" : "room_checks_finished(false)");
-		Literal door_complete = Literal
-				.parseLiteral(doorChecksComplete() ? "door_checks_finished(true)" : "door_checks_finished(false)");
+		// logger.info("Agent is at " + current_location + ", the target location is " +
+		// target_location);
+		// current_door);
 
-		logger.info("Agent is considering the " + current_location + " " + current_door);
-		addPercept(curr_location);
-		addPercept(door_status);
-		addPercept(room_complete);
-		addPercept(door_complete);
+		if (checksComplete()) {
+			addPercept(Literal.parseLiteral("done(rooms)"));
+		}
+		if (doorChecksComplete()) {
+			addPercept(Literal.parseLiteral("done(doors)"));
+		}
+		if (target_location != null) {
+			addPercept(target);
+		}
 
 	}
 
