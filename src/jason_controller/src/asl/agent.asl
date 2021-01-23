@@ -1,44 +1,37 @@
 
 /* Initial beliefs and rules */
 
-//at(X).
-//
-///* Initial goals */
-//!check(rooms).
-//
-///* Plans */
-//+!visit(Location)
-//    <- at(Location).
-//
-//+!check(rooms) : door(Room,open)
-//    <- next(room);
-//        !check(rooms).
-//+!check(rooms).
-//+door(Door,closed) <-.print("Found closed door!").
-
-
-
-/* Initial beliefs and rules */
-at(X).
-
 /* Initial goals */
+
 !check(rooms).
 
 /* Plans */
-+!visit(Location)
-    <- at(Location).
-
-+!check(rooms) : room_checks_finished(false)
++!check(rooms) : not done(rooms)
     <- !check(doors);
-        next(Room);
+        next(room);
         !check(rooms).
 +!check(rooms).
 
-
-+!check(doors) : door_checks_finished(false)
-    <-  next(Door);
++!check(doors) : not done(doors)
+    <-  next(door);
         !check(doors).
 +!check(doors).
 
-+room_checks_finished(true) <-.print("All rooms checked!").
-+door_checks_finished(true) <-.print("All doors in room checked!").
++!check(furniture) : not done(furniture)
+    <- next(furniture);
+       !check(furniture).
++!check(furniture).
+                
++target(Location,room)
+    <-  move_to(Location).
+
++target(Location,door)
+    <-  move_to(Location);
+        inspect(Location).
+        
+
++!visit(Location)
+    <- move_to(Location).
+
++room_checks_finished <-.print("All rooms checked!").
++door_checks_finished <-.print("All doors in room checked!").
