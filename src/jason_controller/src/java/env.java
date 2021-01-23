@@ -31,9 +31,7 @@ public class env extends Environment {
 	RosBridge bridge = new RosBridge();
 
 	public static LinkedList<Room> rooms = new LinkedList<Room>();
-	public static int roomCounter = 0, doorCounter = 0;
-	public static String current_location, current_door, target_location;
-
+	public static String target_location;
 	public static boolean isTargetRoom = true;
 
 	/** Called before the MAS execution with the args informed in .mas2j */
@@ -43,6 +41,12 @@ public class env extends Environment {
 		// bridge.connect("ws://localhost:9090", true);
 		logger.info("Environment started, connection with ROS established.");
 
+		initRooms();
+		printRooms();
+		updatePercepts();
+	}
+
+	public void initRooms() {
 		Room r1 = new Room("living_room", new LinkedList<String>(Arrays.asList("door1", "door1.2", "door1.3")));
 		Room r2 = new Room("kitchen", new LinkedList<String>(Arrays.asList("door2.1", "door2.2")));
 		Room r3 = new Room("bedroom", new LinkedList<String>(Arrays.asList("door3.1")));
@@ -50,17 +54,11 @@ public class env extends Environment {
 		rooms.add(r1);
 		rooms.add(r2);
 		rooms.add(r3);
-		current_location = rooms.get(roomCounter).roomName;
 
-		current_door = rooms.get(roomCounter).doors.get(doorCounter);
-		print_map();
-		updatePercepts();
 	}
 
 	@Override
 	public boolean executeAction(String agName, Structure action) {
-		// logger.info(agName + " doing: " + action);
-
 		try {
 			switch (action.getFunctor()) {
 				case "test_ros_communication":
@@ -68,15 +66,14 @@ public class env extends Environment {
 					break;
 				case "move_to":
 					logger.info("Moving to " + action.getTerm(0));
-
 					move_to(action.getTerm(0).toString());
 					break;
 				case "inspect":
 					logger.info("Inspecting " + action.getTerm(0));
-					doorCounter++;
+					rooms.getFirst().doors.removeFirst(); // remove door as we no longer care about it after inspecting.
 					break;
 				case "next":
-					iterate(action.getTerm(0));
+					iterate(action.getTerm(0).toString());
 					break;
 				default:
 					logger.info("executing: " + action + ", but not implemented!");
@@ -94,7 +91,7 @@ public class env extends Environment {
 		return true; // the action was executed with success
 	}
 
-	void print_map() {
+	void printRooms() {
 		for (Room room : rooms) {
 			logger.info(room.roomName);
 			for (String door : room.doors) {
@@ -116,51 +113,39 @@ public class env extends Environment {
 	}
 
 	boolean checksComplete() {
-		return (roomCounter >= rooms.size());
+		return (rooms.isEmpty());
 	}
 
 	boolean doorChecksComplete() {
-		// logger.info("Door Counter: " + doorCounter + "\ndoors.size(): " +
-		// rooms.get(roomCounter).doors.size());
-		if (!checksComplete()) { // prevents out of bounds error in last stage of deliberation.
-			return (doorCounter >= rooms.get(roomCounter).doors.size());
-		} else {
+		if (rooms.isEmpty()) { // prevents out of bounds error when called if rooms is empty
 			return true;
+		} else {
+			return (rooms.getFirst().doors.isEmpty());
 		}
 	}
 
 	void move_to(String location) throws Exception {
-		current_location = location;
 	}
 
-	void iterate(Term t) throws Exception {
-		if (checksComplete()) {
-			return;
-		}
+	void iterate(String objCategory) throws Exception {
 		try {
-			switch (t.toString()) {
+			switch (objCategory) {
 				case "room":
-
-					roomCounter++;
-					target_location = rooms.get(roomCounter).roomName;
-					doorCounter = 0;
+					rooms.removeFirst();
 					isTargetRoom = true;
+					target_location = rooms.getFirst().roomName;
 					break;
 				case "door":
-					// doorCounter++;
-					target_location = rooms.get(roomCounter).doors.get(doorCounter);
 					isTargetRoom = false;
+					target_location = rooms.getFirst().doors.getFirst();
 					break;
 				default:
 					logger.info("Unsure what to iterate through!");
 					isTargetRoom = false;
 					return;
 			}
-		} catch (
-
-		Exception e) {
+		} catch (Exception e) {
 		}
-
 	}
 
 	/** creates the agents perception based on the MarsModel */
@@ -170,20 +155,14 @@ public class env extends Environment {
 		Literal target = Literal
 				.parseLiteral("target(" + target_location + "," + (isTargetRoom ? "room" : "door") + ")");
 
-		// logger.info("Agent is at " + current_location + ", the target location is " +
-		// target_location);
-		// current_door);
-
 		if (checksComplete()) {
 			addPercept(Literal.parseLiteral("done(rooms)"));
-		}
-		if (doorChecksComplete()) {
+		} else if (doorChecksComplete()) {
 			addPercept(Literal.parseLiteral("done(doors)"));
 		}
 		if (target_location != null) {
 			addPercept(target);
 		}
-
 	}
 
 	/** Called before the end of MAS execution */
