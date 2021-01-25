@@ -37,6 +37,10 @@
 +!visit(Location)
     <- move_to(Location).
 
++closed
+    <- open.
+
 +done(rooms) <-.print("All rooms checked!");
-                .drop_all_desires.
+                .drop_all_desires;
+                saveChanges.
 +done(doors) <-.print("All doors in room checked!").
