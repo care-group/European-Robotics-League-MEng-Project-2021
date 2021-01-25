@@ -31,8 +31,11 @@ public class env extends Environment {
 	RosBridge bridge = new RosBridge();
 
 	public static LinkedList<Room> rooms = new LinkedList<Room>();
+	public static LinkedList<String> changes = new LinkedList<String>();
+
 	public static String target_location;
 	public static boolean isTargetRoom = true;
+	public static boolean doorClosed = false;
 
 	/** Called before the MAS execution with the args informed in .mas2j */
 	@Override
@@ -70,10 +73,27 @@ public class env extends Environment {
 					break;
 				case "inspect":
 					logger.info("Inspecting " + action.getTerm(0));
+
+					// stub code that will be replaced by a topic subscriber that informs of the
+					// door's position
+					Random r = new Random();
+					doorClosed = r.nextBoolean();
+					logger.info(action.getTerm(0) + " is " + (doorClosed ? "closed" : "open"));
+
+					if (doorClosed) {
+						changes.push(action.getTerm(0).toString());
+					}
+
 					rooms.getFirst().doors.removeFirst(); // remove door as we no longer care about it after inspecting.
+					break;
+				case "open":
+					logger.info("Opening door.");
 					break;
 				case "next":
 					iterate(action.getTerm(0).toString());
+					break;
+				case "saveChanges":
+					fileIO.saveChanges(changes, "/workspace/output/changes.txt");
 					break;
 				default:
 					logger.info("executing: " + action + ", but not implemented!");
@@ -163,6 +183,11 @@ public class env extends Environment {
 		if (target_location != null) {
 			addPercept(target);
 		}
+
+		if (doorClosed) {
+			addPercept(Literal.parseLiteral("closed"));
+		}
+
 	}
 
 	/** Called before the end of MAS execution */
