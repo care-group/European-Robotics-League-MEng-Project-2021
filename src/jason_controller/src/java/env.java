@@ -19,11 +19,13 @@ public class env extends Environment {
 
 	public class Room {
 		public String roomName;
-		LinkedList<String> doors;
+		LinkedList<String> doors, furniture;
 
-		private Room(String n, LinkedList<String> d) {
+		private Room(String n, LinkedList<String> d, LinkedList<String> f) {
 			this.roomName = n;
 			this.doors = (LinkedList<String>) d.clone();
+			this.furniture = (LinkedList<String>) f.clone();
+
 		}
 	}
 
@@ -34,7 +36,13 @@ public class env extends Environment {
 	public static LinkedList<String> changes = new LinkedList<String>();
 
 	public static String target_location;
-	public static boolean isTargetRoom = true;
+
+	public static enum targetEnum {
+		ROOM, DOOR, FURNITURE, UNKNOWN
+	};
+
+	public static targetEnum targetClass = targetEnum.UNKNOWN;
+
 	public static boolean doorClosed = false;
 
 	/** Called before the MAS execution with the args informed in .mas2j */
@@ -50,9 +58,12 @@ public class env extends Environment {
 	}
 
 	public void initRooms() {
-		Room r1 = new Room("living_room", new LinkedList<String>(Arrays.asList("door1", "door1.2", "door1.3")));
-		Room r2 = new Room("kitchen", new LinkedList<String>(Arrays.asList("door2.1", "door2.2")));
-		Room r3 = new Room("bedroom", new LinkedList<String>(Arrays.asList("door3.1")));
+		Room r1 = new Room("living_room", new LinkedList<String>(Arrays.asList("door1", "door1.2", "door1.3")),
+				new LinkedList<String>(Arrays.asList("table", "sofa")));
+		Room r2 = new Room("kitchen", new LinkedList<String>(Arrays.asList("door2.1", "door2.2")),
+				new LinkedList<String>(Arrays.asList("fridge", "oven")));
+		Room r3 = new Room("bedroom", new LinkedList<String>(Arrays.asList("door3.1")),
+				new LinkedList<String>(Arrays.asList("bed", "bedsideTable", "bookshelf")));
 
 		rooms.add(r1);
 		rooms.add(r2);
@@ -62,6 +73,7 @@ public class env extends Environment {
 
 	@Override
 	public boolean executeAction(String agName, Structure action) {
+		// logger.info(agName + " doing: " + action);
 		try {
 			switch (action.getFunctor()) {
 				case "test_ros_communication":
@@ -74,25 +86,34 @@ public class env extends Environment {
 				case "inspect":
 					logger.info("Inspecting " + action.getTerm(0));
 
-					// stub code that will be replaced by a topic subscriber that informs of the
-					// door's position
-					Random r = new Random();
-					doorClosed = r.nextBoolean();
-					logger.info(action.getTerm(0) + " is " + (doorClosed ? "closed" : "open"));
+					if (targetClass == targetEnum.DOOR) {
+						// stub code that will be replaced by a topic subscriber that informs of the
+						// door's position
+						Random r = new Random();
+						doorClosed = r.nextBoolean();
+						logger.info(action.getTerm(0) + " is " + (doorClosed ? "closed" : "open"));
 
-					if (doorClosed) {
-						changes.push(action.getTerm(0).toString());
+						if (doorClosed) {
+							changes.push(action.getTerm(0).toString());
+						} else {
+							rooms.getFirst().doors.removeFirst(); // remove door as we no longer care about it once
+																	// confirmed it's open
+						}
+
+					} else if (targetClass == targetEnum.FURNITURE) {
+						rooms.getFirst().furniture.removeFirst();
 					}
 
-					rooms.getFirst().doors.removeFirst(); // remove door as we no longer care about it after inspecting.
+					target_location = null; // reset target to avoid target being repeated
 					break;
 				case "open":
 					logger.info("Opening door.");
 					doorClosed = false;
+					rooms.getFirst().doors.removeFirst(); // remove door as we no longer care about it after opening it.
 
 					break;
 				case "next":
-					iterate(action.getTerm(0).toString());
+					next(action.getTerm(0).toString());
 					break;
 				case "saveChanges":
 					fileIO.saveChanges(changes, "/workspace/output/changes.txt");
@@ -116,8 +137,14 @@ public class env extends Environment {
 	void printRooms() {
 		for (Room room : rooms) {
 			logger.info(room.roomName);
+			logger.info("\tDoors");
 			for (String door : room.doors) {
-				logger.info('\t' + door);
+				logger.info("\t\t" + door);
+			}
+			logger.info("\tFurniture");
+
+			for (String f : room.furniture) {
+				logger.info("\t\t" + f);
 			}
 		}
 	}
@@ -146,24 +173,36 @@ public class env extends Environment {
 		}
 	}
 
+	boolean furnitureChecksComplete() {
+		if (rooms.isEmpty()) { // prevents out of bounds error when called if rooms is empty
+			return true;
+		} else {
+			return (rooms.getFirst().furniture.isEmpty());
+		}
+	}
+
 	void move_to(String location) throws Exception {
 	}
 
-	void iterate(String objCategory) throws Exception {
+	void next(String objCategory) throws Exception {
 		try {
 			switch (objCategory) {
 				case "room":
 					rooms.removeFirst();
-					isTargetRoom = true;
+					targetClass = targetEnum.ROOM;
 					target_location = rooms.getFirst().roomName;
 					break;
 				case "door":
-					isTargetRoom = false;
+					targetClass = targetEnum.DOOR;
 					target_location = rooms.getFirst().doors.getFirst();
+					break;
+				case "furniture":
+					targetClass = targetEnum.FURNITURE;
+					target_location = rooms.getFirst().furniture.getFirst();
 					break;
 				default:
 					logger.info("Unsure what to iterate through!");
-					isTargetRoom = false;
+					targetClass = targetEnum.UNKNOWN;
 					return;
 			}
 		} catch (Exception e) {
@@ -173,23 +212,37 @@ public class env extends Environment {
 	/** creates the agents perception based on the MarsModel */
 	void updatePercepts() {
 		clearPercepts();
-
-		Literal target = Literal
-				.parseLiteral("target(" + target_location + "," + (isTargetRoom ? "room" : "door") + ")");
+		Literal target;
+		switch (targetClass) {
+			case DOOR:
+				target = Literal.parseLiteral("target(" + target_location + ",door)");
+				break;
+			case ROOM:
+				target = Literal.parseLiteral("target(" + target_location + ",room)");
+				break;
+			case FURNITURE:
+				target = Literal.parseLiteral("target(" + target_location + ",furniture)");
+				break;
+			default:
+				target = Literal.parseLiteral("target(" + target_location + ",unknown)");
+				break;
+		}
 
 		if (checksComplete()) {
 			addPercept(Literal.parseLiteral("done(rooms)"));
-		} else if (doorChecksComplete()) {
-			addPercept(Literal.parseLiteral("done(doors)"));
+		} else {
+			if (doorChecksComplete()) {
+				addPercept(Literal.parseLiteral("done(doors)"));
+			}
+
+			if (furnitureChecksComplete()) {
+				addPercept(Literal.parseLiteral("done(furniture)"));
+			}
 		}
 		if (target_location != null) {
 			addPercept(target);
-		}
 
-		if (doorClosed) {
-			logger.info("doorClosed boolean is true");
-			addPercept(Literal.parseLiteral("closed"));
-		}
+			}
 
 	}
 
