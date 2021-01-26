@@ -256,6 +256,11 @@ public class env extends Environment {
 		if (target.name != null) {
 			addPercept(target_belief);
 		}
+
+		if (doorClosed) {
+			addPercept(Literal.parseLiteral("closed"));
+		}
+
 	}
 
 	/** Called before the end of MAS execution */
