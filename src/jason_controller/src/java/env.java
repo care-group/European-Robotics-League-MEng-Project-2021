@@ -25,25 +25,32 @@ public class env extends Environment {
 			this.roomName = n;
 			this.doors = (LinkedList<String>) d.clone();
 			this.furniture = (LinkedList<String>) f.clone();
+		}
+	}
 
+	public enum targetEnum {
+		ROOM, DOOR, FURNITURE, UNKNOWN
+	};
+
+	private class Target {
+		public targetEnum type;
+		public String name;
+
+		private Target() {
+			type = targetEnum.UNKNOWN;
+			name = null;
 		}
 	}
 
 	private Logger logger = Logger.getLogger("jason_controller." + env.class.getName());
 	RosBridge bridge = new RosBridge();
 
+	// Objects to define world environment
 	public static LinkedList<Room> rooms = new LinkedList<Room>();
 	public static LinkedList<String> changes = new LinkedList<String>();
-
-	public static String target_location;
-
-	public static enum targetEnum {
-		ROOM, DOOR, FURNITURE, UNKNOWN
-	};
-
-	public static targetEnum targetClass = targetEnum.UNKNOWN;
-
 	public static boolean doorClosed = false;
+
+	public static Target target;
 
 	/** Called before the MAS execution with the args informed in .mas2j */
 	@Override
@@ -51,7 +58,7 @@ public class env extends Environment {
 		super.init(args);
 		// bridge.connect("ws://localhost:9090", true);
 		logger.info("Environment started, connection with ROS established.");
-
+		target = new Target();
 		initRooms();
 		printRooms();
 		updatePercepts();
@@ -116,7 +123,7 @@ public class env extends Environment {
 
 	public void inspect(String item) {
 		logger.info("Inspecting " + item);
-		switch (targetClass) {
+		switch (target.type) {
 			case DOOR:
 
 				// stub code that will be replaced by a topic subscriber that informs of the
@@ -138,7 +145,7 @@ public class env extends Environment {
 			default:
 				break;
 		}
-		target_location = null; // reset target to avoid target being repeated
+		target.name = null; // reset target to avoid target being repeated
 	}
 
 	void printRooms() {
@@ -196,20 +203,20 @@ public class env extends Environment {
 			switch (objCategory) {
 				case "room":
 					rooms.removeFirst();
-					targetClass = targetEnum.ROOM;
-					target_location = rooms.getFirst().roomName;
+					target.type = targetEnum.ROOM;
+					target.name = rooms.getFirst().roomName;
 					break;
 				case "door":
-					targetClass = targetEnum.DOOR;
-					target_location = rooms.getFirst().doors.getFirst();
+					target.type = targetEnum.DOOR;
+					target.name = rooms.getFirst().doors.getFirst();
 					break;
 				case "furniture":
-					targetClass = targetEnum.FURNITURE;
-					target_location = rooms.getFirst().furniture.getFirst();
+					target.type = targetEnum.FURNITURE;
+					target.name = rooms.getFirst().furniture.getFirst();
 					break;
 				default:
 					logger.info("Unsure what to iterate through!");
-					targetClass = targetEnum.UNKNOWN;
+					target.type = targetEnum.UNKNOWN;
 					return;
 			}
 		} catch (Exception e) {
@@ -219,19 +226,19 @@ public class env extends Environment {
 	/** creates the agents perception based on the MarsModel */
 	void updatePercepts() {
 		clearPercepts();
-		Literal target;
-		switch (targetClass) {
+		Literal target_belief;
+		switch (target.type) {
 			case DOOR:
-				target = Literal.parseLiteral("target(" + target_location + ",door)");
+				target_belief = Literal.parseLiteral("target(" + target.name + ",door)");
 				break;
 			case ROOM:
-				target = Literal.parseLiteral("target(" + target_location + ",room)");
+				target_belief = Literal.parseLiteral("target(" + target.name + ",room)");
 				break;
 			case FURNITURE:
-				target = Literal.parseLiteral("target(" + target_location + ",furniture)");
+				target_belief = Literal.parseLiteral("target(" + target.name + ",furniture)");
 				break;
 			default:
-				target = Literal.parseLiteral("target(" + target_location + ",unknown)");
+				target_belief = Literal.parseLiteral("target(" + target.name + ",unknown)");
 				break;
 		}
 
@@ -246,11 +253,9 @@ public class env extends Environment {
 				addPercept(Literal.parseLiteral("done(furniture)"));
 			}
 		}
-		if (target_location != null) {
-			addPercept(target);
-
-			}
-
+		if (target.name != null) {
+			addPercept(target_belief);
+		}
 	}
 
 	/** Called before the end of MAS execution */
@@ -258,4 +263,5 @@ public class env extends Environment {
 	public void stop() {
 		super.stop();
 	}
+
 }
