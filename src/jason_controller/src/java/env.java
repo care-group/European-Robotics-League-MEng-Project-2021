@@ -28,16 +28,16 @@ public class env extends Environment {
 		}
 	}
 
-	public enum targetEnum {
+	public enum itemCategory {
 		ROOM, DOOR, FURNITURE, UNKNOWN
 	};
 
 	private class Target {
-		public targetEnum type;
+		public itemCategory type;
 		public String name;
 
 		private Target() {
-			type = targetEnum.UNKNOWN;
+			type = itemCategory.UNKNOWN;
 			name = null;
 		}
 	}
@@ -47,7 +47,7 @@ public class env extends Environment {
 
 	// Objects to define world environment
 	public static LinkedList<Room> rooms = new LinkedList<Room>();
-	public static LinkedList<String> changes = new LinkedList<String>();
+	public static LinkedList<Logging.Change> changes = new LinkedList<Logging.Change>();
 	public static boolean changeDetected = false;
 
 	public static Target target;
@@ -106,7 +106,7 @@ public class env extends Environment {
 					next(action.getTerm(0).toString());
 					break;
 				case "saveChanges":
-					fileIO.saveChanges(changes, "/workspace/output/changes.txt");
+					Logging.saveChanges(changes, "/workspace/output/changes.txt");
 					break;
 				default:
 					logger.info("executing: " + action + ", but not implemented!");
@@ -150,7 +150,7 @@ public class env extends Environment {
 			rooms.getFirst().doors.removeFirst(); // remove door as we no longer care about it once
 													// confirmed it's open
 		} else {
-			changes.push(door);
+			changes.push(new Logging.Change(door, itemCategory.DOOR));
 		}
 		target.name = null; // reset target to avoid target being repeated
 	}
@@ -166,7 +166,7 @@ public class env extends Environment {
 			rooms.getFirst().furniture.removeFirst(); // remove furniture as we no longer care about it once
 														// confirmed it's found
 		} else {
-			changes.push(furniture);
+			changes.push(new Logging.Change(furniture, itemCategory.FURNITURE));
 		}
 		target.name = null;
 	}
@@ -226,20 +226,20 @@ public class env extends Environment {
 			switch (objCategory) {
 				case "room":
 					rooms.removeFirst();
-					target.type = targetEnum.ROOM;
+					target.type = itemCategory.ROOM;
 					target.name = rooms.getFirst().roomName;
 					break;
 				case "door":
-					target.type = targetEnum.DOOR;
+					target.type = itemCategory.DOOR;
 					target.name = rooms.getFirst().doors.getFirst();
 					break;
 				case "furniture":
-					target.type = targetEnum.FURNITURE;
+					target.type = itemCategory.FURNITURE;
 					target.name = rooms.getFirst().furniture.getFirst();
 					break;
 				default:
 					logger.info("Unsure what to iterate through!");
-					target.type = targetEnum.UNKNOWN;
+					target.type = itemCategory.UNKNOWN;
 					return;
 			}
 		} catch (Exception e) {
@@ -279,9 +279,9 @@ public class env extends Environment {
 			addPercept(target_belief);
 		}
 
-		if (changeDetected && target.type == targetEnum.DOOR) {
+		if (changeDetected && target.type == itemCategory.DOOR) {
 			addPercept(Literal.parseLiteral("closed"));
-		} else if (changeDetected && target.type == targetEnum.FURNITURE) {
+		} else if (changeDetected && target.type == itemCategory.FURNITURE) {
 			addPercept(Literal.parseLiteral("moved(" + target.name + ")"));
 		}
 	}
