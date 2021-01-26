@@ -84,27 +84,7 @@ public class env extends Environment {
 					move_to(action.getTerm(0).toString());
 					break;
 				case "inspect":
-					logger.info("Inspecting " + action.getTerm(0));
-
-					if (targetClass == targetEnum.DOOR) {
-						// stub code that will be replaced by a topic subscriber that informs of the
-						// door's position
-						Random r = new Random();
-						doorClosed = r.nextBoolean();
-						logger.info(action.getTerm(0) + " is " + (doorClosed ? "closed" : "open"));
-
-						if (doorClosed) {
-							changes.push(action.getTerm(0).toString());
-						} else {
-							rooms.getFirst().doors.removeFirst(); // remove door as we no longer care about it once
-																	// confirmed it's open
-						}
-
-					} else if (targetClass == targetEnum.FURNITURE) {
-						rooms.getFirst().furniture.removeFirst();
-					}
-
-					target_location = null; // reset target to avoid target being repeated
+					inspect(action.getTerm(0).toString());
 					break;
 				case "open":
 					logger.info("Opening door.");
@@ -132,6 +112,33 @@ public class env extends Environment {
 		}
 		informAgsEnvironmentChanged();
 		return true; // the action was executed with success
+	}
+
+	public void inspect(String item) {
+		logger.info("Inspecting " + item);
+		switch (targetClass) {
+			case DOOR:
+
+				// stub code that will be replaced by a topic subscriber that informs of the
+				// door's position
+				Random r = new Random();
+				doorClosed = r.nextBoolean();
+				logger.info(item + " is " + (doorClosed ? "closed" : "open"));
+
+				if (doorClosed) {
+					changes.push(item);
+				} else {
+					rooms.getFirst().doors.removeFirst(); // remove door as we no longer care about it once
+															// confirmed it's open
+				}
+				break;
+			case FURNITURE:
+				rooms.getFirst().furniture.removeFirst();
+				break;
+			default:
+				break;
+		}
+		target_location = null; // reset target to avoid target being repeated
 	}
 
 	void printRooms() {
