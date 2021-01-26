@@ -116,6 +116,11 @@ public class env extends Environment {
 		}
 
 		updatePercepts();
+		try {
+			Thread.sleep(200);
+		} catch (Exception e) {
+		}
+
 		informAgsEnvironmentChanged();
 		return true; // the action was executed with success
 	}
