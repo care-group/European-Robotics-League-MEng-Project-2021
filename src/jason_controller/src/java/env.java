@@ -88,6 +88,8 @@ public class env extends Environment {
 					break;
 				case "open":
 					logger.info("Opening door.");
+					doorClosed = false;
+
 					break;
 				case "next":
 					iterate(action.getTerm(0).toString());
@@ -185,6 +187,7 @@ public class env extends Environment {
 		}
 
 		if (doorClosed) {
+			logger.info("doorClosed boolean is true");
 			addPercept(Literal.parseLiteral("closed"));
 		}
 
