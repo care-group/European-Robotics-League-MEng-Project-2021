@@ -48,7 +48,7 @@ public class env extends Environment {
 	// Objects to define world environment
 	public static LinkedList<Room> rooms = new LinkedList<Room>();
 	public static LinkedList<String> changes = new LinkedList<String>();
-	public static boolean doorClosed = false;
+	public static boolean changeDetected = false;
 
 	public static Target target;
 
@@ -95,9 +95,12 @@ public class env extends Environment {
 					break;
 				case "open":
 					logger.info("Opening door.");
-					doorClosed = false;
+					changeDetected = false;
 					rooms.getFirst().doors.removeFirst(); // remove door as we no longer care about it after opening it.
-
+					break;
+				case "find":
+					changeDetected = false;
+					rooms.getFirst().furniture.removeFirst();
 					break;
 				case "next":
 					next(action.getTerm(0).toString());
@@ -123,27 +126,37 @@ public class env extends Environment {
 
 	public void inspect(String item) {
 		logger.info("Inspecting " + item);
+
+		// stub code that will be replaced by a topic subscriber that informs of the
+		// door's position
+		Random r = new Random();
+		changeDetected = r.nextBoolean();
+
 		switch (target.type) {
 			case DOOR:
 
-				// stub code that will be replaced by a topic subscriber that informs of the
-				// door's position
-				Random r = new Random();
-				doorClosed = r.nextBoolean();
-				logger.info(item + " is " + (doorClosed ? "closed" : "open"));
+				logger.info(item + " is " + (changeDetected ? "closed" : "open"));
 
-				if (doorClosed) {
-					changes.push(item);
-				} else {
+				if (!changeDetected) {
 					rooms.getFirst().doors.removeFirst(); // remove door as we no longer care about it once
 															// confirmed it's open
 				}
 				break;
 			case FURNITURE:
-				rooms.getFirst().furniture.removeFirst();
+				logger.info(item + (changeDetected ? " has moved" : " remains untouched"));
+
+				if (!changeDetected) {
+					rooms.getFirst().furniture.removeFirst(); // remove furniture as we no longer care about it once
+																// confirmed it's found
+				}
+
 				break;
 			default:
 				break;
+		}
+
+		if (changeDetected) {
+			changes.push(item);
 		}
 		target.name = null; // reset target to avoid target being repeated
 	}
@@ -244,23 +257,24 @@ public class env extends Environment {
 
 		if (checksComplete()) {
 			addPercept(Literal.parseLiteral("done(rooms)"));
-		} else {
-			if (doorChecksComplete()) {
-				addPercept(Literal.parseLiteral("done(doors)"));
-			}
-
-			if (furnitureChecksComplete()) {
-				addPercept(Literal.parseLiteral("done(furniture)"));
-			}
 		}
-		if (target.name != null) {
+		if (doorChecksComplete()) {
+			addPercept(Literal.parseLiteral("done(doors)"));
+		}
+		if (furnitureChecksComplete()) {
+			addPercept(Literal.parseLiteral("done(furniture)"));
+		}
+		
+		if (target.name != null)
+		{
 			addPercept(target_belief);
 		}
 
-		if (doorClosed) {
+		if (changeDetected && target.type == targetEnum.DOOR) {
 			addPercept(Literal.parseLiteral("closed"));
+		} else if (changeDetected && target.type == targetEnum.FURNITURE) {
+			addPercept(Literal.parseLiteral("moved(" + target.name + ")"));
 		}
-
 	}
 
 	/** Called before the end of MAS execution */

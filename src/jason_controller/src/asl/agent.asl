@@ -42,6 +42,9 @@
         
 +!visit(Location)
     <- move_to(Location).
+    
++moved(Item)
+    <- find(Item).
 
 +closed
     <- open.
