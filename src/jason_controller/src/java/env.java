@@ -75,7 +75,6 @@ public class env extends Environment {
 		rooms.add(r1);
 		rooms.add(r2);
 		rooms.add(r3);
-
 	}
 
 	@Override
@@ -100,7 +99,8 @@ public class env extends Environment {
 					break;
 				case "find":
 					changeDetected = false;
-					rooms.getFirst().furniture.removeFirst();
+					rooms.getFirst().furniture.removeFirst(); // remove furniture as we no longer care about it after
+																// finding it
 					break;
 				case "next":
 					next(action.getTerm(0).toString());
@@ -116,49 +116,54 @@ public class env extends Environment {
 		}
 
 		updatePercepts();
-		try {
-			Thread.sleep(200);
-		} catch (Exception e) {
-		}
 		informAgsEnvironmentChanged();
 		return true; // the action was executed with success
 	}
 
 	public void inspect(String item) {
 		logger.info("Inspecting " + item);
+		switch (target.type) {
+			case DOOR:
+				inspectDoor(item);
+				break;
+			case FURNITURE:
+				inspectFurniture(item);
+				break;
+			default:
+				break;
+		}
+	}
 
+	void inspectDoor(String door) {
 		// stub code that will be replaced by a topic subscriber that informs of the
 		// door's position
 		Random r = new Random();
 		changeDetected = r.nextBoolean();
 
-		switch (target.type) {
-			case DOOR:
-
-				logger.info(item + " is " + (changeDetected ? "closed" : "open"));
-
-				if (!changeDetected) {
-					rooms.getFirst().doors.removeFirst(); // remove door as we no longer care about it once
-															// confirmed it's open
-				}
-				break;
-			case FURNITURE:
-				logger.info(item + (changeDetected ? " has moved" : " remains untouched"));
-
-				if (!changeDetected) {
-					rooms.getFirst().furniture.removeFirst(); // remove furniture as we no longer care about it once
-																// confirmed it's found
-				}
-
-				break;
-			default:
-				break;
-		}
-
-		if (changeDetected) {
-			changes.push(item);
+		logger.info(door + " is " + (changeDetected ? "closed" : "open"));
+		if (!changeDetected) {
+			rooms.getFirst().doors.removeFirst(); // remove door as we no longer care about it once
+													// confirmed it's open
+		} else {
+			changes.push(door);
 		}
 		target.name = null; // reset target to avoid target being repeated
+	}
+
+	void inspectFurniture(String furniture) {
+		// stub code that will be replaced by a topic subscriber that informs of the
+		// door's position
+		Random r = new Random();
+		changeDetected = r.nextBoolean();
+
+		logger.info(furniture + (changeDetected ? " has moved" : " remains untouched"));
+		if (!changeDetected) {
+			rooms.getFirst().furniture.removeFirst(); // remove furniture as we no longer care about it once
+														// confirmed it's found
+		} else {
+			changes.push(furniture);
+		}
+		target.name = null;
 	}
 
 	void printRooms() {
@@ -264,9 +269,8 @@ public class env extends Environment {
 		if (furnitureChecksComplete()) {
 			addPercept(Literal.parseLiteral("done(furniture)"));
 		}
-		
-		if (target.name != null)
-		{
+
+		if (target.name != null) {
 			addPercept(target_belief);
 		}
 
