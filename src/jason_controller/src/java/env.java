@@ -14,6 +14,9 @@ import ros.tools.MessageUnpacker;
 import com.fasterxml.jackson.databind.JsonNode;
 
 import java.util.*;
+import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicReference;
 
 public class env extends Environment {
 
@@ -49,14 +52,13 @@ public class env extends Environment {
 	public static LinkedList<Room> rooms = new LinkedList<Room>();
 	public static LinkedList<Logging.Change> changes = new LinkedList<Logging.Change>();
 	public static boolean changeDetected = false;
-
 	public static Target target;
 
 	/** Called before the MAS execution with the args informed in .mas2j */
 	@Override
 	public void init(String[] args) {
 		super.init(args);
-		// bridge.connect("ws://localhost:9090", true);
+		bridge.connect("ws://localhost:9090", true);
 		logger.info("Environment started, connection with ROS established.");
 		target = new Target();
 		initRooms();
@@ -104,6 +106,12 @@ public class env extends Environment {
 					break;
 				case "next":
 					next(action.getTerm(0).toString());
+					break;
+				// Temporary action to demonstrate subscriber method that waits for topic to be
+				// published to.
+				case "isBellRinging":
+					Boolean bell = isDoorbellRingingSync();
+					logger.info(bell.toString());
 					break;
 				case "saveChanges":
 					Logging.saveChanges(changes, "/workspace/output/changes.txt");
@@ -246,9 +254,58 @@ public class env extends Environment {
 		}
 	}
 
+	// Example of synchronous subscriber that will pause until topic has been
+	// published to, and returns the topic result
+	Boolean isDoorbellRingingSync() {
+		final CountDownLatch loginLatcch = new CountDownLatch(1);
+		AtomicReference<Boolean> status = new AtomicReference<>(false);
+
+		bridge.subscribe(SubscriptionRequestMsg.generate("/doorbell").setType("std_msgs/Bool").setThrottleRate(1)
+				.setQueueLength(1), new RosListenDelegate() {
+
+					public void receive(JsonNode data, String stringRep) {
+						MessageUnpacker<PrimitiveMsg<String>> unpacker = new MessageUnpacker<PrimitiveMsg<String>>(
+								PrimitiveMsg.class);
+						PrimitiveMsg<String> msg = unpacker.unpackRosMessage(data);
+						status.set(((data.get("msg").get("data").asInt() > 0) ? true : false));
+						loginLatcch.countDown();
+					}
+				});
+
+		try {
+			loginLatcch.await();
+		} catch (InterruptedException e) {
+			e.printStackTrace();
+		}
+		return status.get();
+	}
+
+	// Asynchronous subscriber that will allow code to continue. The belief is
+	// directly updated in the callback function to deal with the asynchronous
+	// nature.
+	void isDoorbellRingingASync() {
+		AtomicReference<Boolean> status = new AtomicReference<>(false);
+		bridge.subscribe(SubscriptionRequestMsg.generate("/doorbell").setType("std_msgs/Bool").setThrottleRate(1)
+				.setQueueLength(1), new RosListenDelegate() {
+
+					public void receive(JsonNode data, String stringRep) {
+						MessageUnpacker<PrimitiveMsg<String>> unpacker = new MessageUnpacker<PrimitiveMsg<String>>(
+								PrimitiveMsg.class);
+						PrimitiveMsg<String> msg = unpacker.unpackRosMessage(data);
+
+						if ((data.get("msg").get("data").asInt() > 0) ? true : false) {
+							addPercept(Literal.parseLiteral("doorbellSounded"));
+						}
+					}
+				});
+	}
+
 	/** creates the agents perception based on the MarsModel */
 	void updatePercepts() {
 		clearPercepts();
+
+		isDoorbellRingingASync();
+
 		Literal target_belief;
 		switch (target.type) {
 			case DOOR:
