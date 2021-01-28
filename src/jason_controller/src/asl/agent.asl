@@ -3,7 +3,7 @@
 
 /* Initial goals */
 
-!check(rooms).
+//!check(rooms).
 
 /* Plans */
 
@@ -56,3 +56,7 @@
         
 +done(doors) <-.print("All doors in room checked!").
 +done(furniture) <-.print("All furniture in room checked!").
+
++doorbellSounded
+    <-  !visit(entrance);
+        open.
