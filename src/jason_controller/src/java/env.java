@@ -32,7 +32,7 @@ public class env extends Environment {
 	}
 
 	public enum itemCategory {
-		ROOM, DOOR, FURNITURE, UNKNOWN
+		ROOM, DOOR, FURNITURE, OBJECT, UNKNOWN
 	};
 
 	private class Target {
@@ -50,6 +50,8 @@ public class env extends Environment {
 
 	// Objects to define world environment
 	public static LinkedList<Room> rooms = new LinkedList<Room>();
+	public static Map<String, String> objects = new LinkedHashMap<String, String>();
+	public static int movedObjectFoundCounter = 0;
 	public static LinkedList<Logging.Change> changes = new LinkedList<Logging.Change>();
 	public static boolean changeDetected = false;
 	public static Target target;
@@ -62,6 +64,7 @@ public class env extends Environment {
 		logger.info("Environment started, connection with ROS established.");
 		target = new Target();
 		initRooms();
+		initObjects();
 		printRooms();
 		updatePercepts();
 	}
@@ -77,6 +80,14 @@ public class env extends Environment {
 		rooms.add(r1);
 		rooms.add(r2);
 		rooms.add(r3);
+	}
+
+	public void initObjects() {
+		objects.put("table", "coke");
+		objects.put("desk", "bag");
+		objects.put("countertop", "bottle");
+		objects.put("fridge", "beer");
+		objects.put("bookshelf", "book");
 	}
 
 	@Override
@@ -100,9 +111,18 @@ public class env extends Environment {
 					rooms.getFirst().doors.removeFirst(); // remove door as we no longer care about it after opening it.
 					break;
 				case "find":
-					changeDetected = false;
-					rooms.getFirst().furniture.removeFirst(); // remove furniture as we no longer care about it after
-																// finding it
+					if (target.type == itemCategory.FURNITURE) {
+						logger.info("finding " + action.getTerm(0).toString());
+						changeDetected = false;
+						rooms.getFirst().furniture.removeFirst(); // remove furniture as we no longer care about it
+																	// after finding it
+					} else {
+						logger.info("finding " + objects.get(action.getTerm(0).toString()) + " at other furniture");
+						changeDetected = false;
+						movedObjectFoundCounter++;
+						Map.Entry<String, String> firstEntry = objects.entrySet().iterator().next();
+						objects.remove(firstEntry.getKey());
+					}
 					break;
 				case "next":
 					next(action.getTerm(0).toString());
@@ -120,7 +140,6 @@ public class env extends Environment {
 					logger.info("executing: " + action + ", but not implemented!");
 			}
 		} catch (Exception e) {
-			e.printStackTrace();
 		}
 
 		updatePercepts();
@@ -142,6 +161,8 @@ public class env extends Environment {
 			case FURNITURE:
 				inspectFurniture(item);
 				break;
+			case OBJECT:
+				lookForObjectOnFurniture(item);
 			default:
 				break;
 		}
@@ -160,7 +181,6 @@ public class env extends Environment {
 		} else {
 			changes.push(new Logging.Change(door, itemCategory.DOOR));
 		}
-		target.name = null; // reset target to avoid target being repeated
 	}
 
 	void inspectFurniture(String furniture) {
@@ -176,7 +196,24 @@ public class env extends Environment {
 		} else {
 			changes.push(new Logging.Change(furniture, itemCategory.FURNITURE));
 		}
-		target.name = null;
+	}
+
+	void lookForObjectOnFurniture(String furniture) {
+		String object = objects.get(furniture);
+		logger.info("Scanning " + furniture + " for " + object);
+
+		// stub code that will be replaced by a topic subscriber that informs if the
+		// object is detected
+		Random r = new Random();
+		// changeDetected = r.nextBoolean();
+		changeDetected = true;
+		logger.info(object + (changeDetected ? " has moved" : " has been found at " + furniture));
+		if (!changeDetected) {
+			objects.remove(furniture); // remove object as we no longer care about it once
+										// confirmed it's found
+		} else {
+			changes.push(new Logging.Change(object, itemCategory.OBJECT));
+		}
 	}
 
 	void printRooms() {
@@ -226,6 +263,12 @@ public class env extends Environment {
 		}
 	}
 
+	// Only to be 2 moved objects, once we have found 2 moved objects, can assume
+	// this is complete, letting us end object checks early.
+	boolean objectChecksComplete() {
+		return (movedObjectFoundCounter >= 2);
+	}
+
 	void move_to(String location) throws Exception {
 	}
 
@@ -244,6 +287,12 @@ public class env extends Environment {
 				case "furniture":
 					target.type = itemCategory.FURNITURE;
 					target.name = rooms.getFirst().furniture.getFirst();
+					break;
+				case "object":
+					Map.Entry<String, String> firstEntry = objects.entrySet().iterator().next();
+					String location = firstEntry.getKey();
+					target.type = itemCategory.OBJECT;
+					target.name = location;
 					break;
 				default:
 					logger.info("Unsure what to iterate through!");
@@ -306,6 +355,27 @@ public class env extends Environment {
 
 		isDoorbellRingingASync();
 
+		if (checksComplete()) {
+			addPercept(Literal.parseLiteral("done(rooms)"));
+		}
+		if (doorChecksComplete()) {
+			addPercept(Literal.parseLiteral("done(doors)"));
+		}
+		if (furnitureChecksComplete()) {
+			addPercept(Literal.parseLiteral("done(furniture)"));
+		}
+		if (objectChecksComplete()) {
+			addPercept(Literal.parseLiteral("done(objects)"));
+		}
+
+		if (changeDetected && target.type == itemCategory.DOOR) {
+			addPercept(Literal.parseLiteral("closed"));
+			changeDetected = false;
+		} else if (changeDetected && (target.type == itemCategory.FURNITURE || target.type == itemCategory.OBJECT)) {
+			addPercept(Literal.parseLiteral("moved(" + target.name + ")"));
+			changeDetected = false;
+		}
+
 		Literal target_belief;
 		switch (target.type) {
 			case DOOR:
@@ -317,30 +387,18 @@ public class env extends Environment {
 			case FURNITURE:
 				target_belief = Literal.parseLiteral("target(" + target.name + ",furniture)");
 				break;
+			case OBJECT:
+				target_belief = Literal.parseLiteral("target(" + target.name + ",object)");
+				break;
 			default:
 				target_belief = Literal.parseLiteral("target(" + target.name + ",unknown)");
 				break;
-		}
-
-		if (checksComplete()) {
-			addPercept(Literal.parseLiteral("done(rooms)"));
-		}
-		if (doorChecksComplete()) {
-			addPercept(Literal.parseLiteral("done(doors)"));
-		}
-		if (furnitureChecksComplete()) {
-			addPercept(Literal.parseLiteral("done(furniture)"));
 		}
 
 		if (target.name != null) {
 			addPercept(target_belief);
 		}
 
-		if (changeDetected && target.type == itemCategory.DOOR) {
-			addPercept(Literal.parseLiteral("closed"));
-		} else if (changeDetected && target.type == itemCategory.FURNITURE) {
-			addPercept(Literal.parseLiteral("moved(" + target.name + ")"));
-		}
 	}
 
 	/** Called before the end of MAS execution */
