@@ -3,7 +3,7 @@
 
 /* Initial goals */
 
-//!check(rooms).
+!check(rooms).
 
 /* Plans */
 
@@ -27,6 +27,11 @@
        !check(furniture).
 +!check(furniture).
 
+//recursively finds every object
++!check(objects) : not done(objects)
+    <- next(object);
+       !check(objects).
++!check(objects).
 
 +target(Location,room)
     <-  move_to(Location).
@@ -39,7 +44,10 @@
     <-  move_to(Location);
         inspect(Location).
 
-        
+ +target(Location,object)
+    <-  move_to(Location);
+        inspect(Location).
+       
 +!visit(Location)
     <- move_to(Location).
     
@@ -52,10 +60,13 @@
 +done(rooms)
     <-  .drop_all_desires;
         .print("All rooms checked!");
+        !check(objects);
+        .print("Completed 'Getting to know my home'!");
         saveChanges.
         
 +done(doors) <-.print("All doors in room checked!").
 +done(furniture) <-.print("All furniture in room checked!").
++done(objects) <-.print("All moved objects have been found!").
 
 +doorbellSounded
     <-  !visit(entrance);
