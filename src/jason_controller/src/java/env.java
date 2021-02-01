@@ -96,7 +96,7 @@ public class env extends Environment {
 		try {
 			switch (action.getFunctor()) {
 				case "test_ros_communication":
-					test_ros_communication();
+					publish("/jason/genericBool", "std_msgs/Bool", true);
 					break;
 				case "move_to":
 					logger.info("Moving to " + action.getTerm(0));
@@ -240,6 +240,15 @@ public class env extends Environment {
 		Publisher pub = new Publisher("/jason/rotate", "std_msgs/Int16", bridge);
 		Map<String, Integer> map = new HashMap<String, Integer>();
 		map.put("data", 5);
+		pub.publish(map);
+	}
+
+	// Generic function to publish any type of data to a specified topic. Limited to single-member data types (eg. String)
+	public <T> void publish(String topic, String type, T data) {
+		logger.info("Publishing to " + topic + ", with " + type + " data.");
+		Publisher pub = new Publisher(topic, type, bridge);
+		Map<String, T> map = new HashMap<String, T>();
+		map.put("data", data);
 		pub.publish(map);
 	}
 
