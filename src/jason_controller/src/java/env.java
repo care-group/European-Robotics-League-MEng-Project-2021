@@ -130,8 +130,9 @@ public class env extends Environment {
 				// Temporary action to demonstrate subscriber method that waits for topic to be
 				// published to.
 				case "isBellRinging":
-					Boolean bell = isDoorbellRingingSync();
-					logger.info(bell.toString());
+					String data = subscribeSync("/doorbell","std_msgs/Bool");
+					Boolean isBellRinging = (Integer.parseInt(data) > 0) ? true : false;
+					logger.info(isBellRinging.toString());
 					break;
 				case "saveChanges":
 					Logging.saveChanges(changes, "/workspace/output/changes.txt");
@@ -326,6 +327,31 @@ public class env extends Environment {
 								PrimitiveMsg.class);
 						PrimitiveMsg<String> msg = unpacker.unpackRosMessage(data);
 						status.set(((data.get("msg").get("data").asInt() > 0) ? true : false));
+						loginLatcch.countDown();
+					}
+				});
+
+		try {
+			loginLatcch.await();
+		} catch (InterruptedException e) {
+			e.printStackTrace();
+		}
+		return status.get();
+	}
+
+	// Synchronous subscriber to a given topic, returns the output as a string
+	String subscribeSync(String topic, String type){
+		final CountDownLatch loginLatcch = new CountDownLatch(1);
+		AtomicReference<String> status = new AtomicReference<>();
+
+		bridge.subscribe(SubscriptionRequestMsg.generate(topic).setType(type).setThrottleRate(1)
+				.setQueueLength(1), new RosListenDelegate() {
+
+					public void receive(JsonNode data, String stringRep) {
+						MessageUnpacker<PrimitiveMsg<String>> unpacker = new MessageUnpacker<PrimitiveMsg<String>>(
+								PrimitiveMsg.class);
+						PrimitiveMsg<String> msg = unpacker.unpackRosMessage(data);
+						status.set(data.get("msg").get("data").asText());
 						loginLatcch.countDown();
 					}
 				});
