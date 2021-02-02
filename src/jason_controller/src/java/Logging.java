@@ -13,22 +13,15 @@ public class Logging {
 
     public static class Change {
         private String name;
-        private env.itemCategory category;
+        private know_home.itemCategory category;
 
-        public Change(String n, env.itemCategory c) {
+        public Change(String n, know_home.itemCategory c) {
             name = n;
             category = c;
         }
     }
 
-    public static void saveChanges(LinkedList<Change> changes, String path) {
-        createOutputDir(path);
-        createFile(path);
-        writeToFile(changes, path);
-
-    }
-
-    private static void createOutputDir(String file) {
+    public static void createOutputDir(String file) {
         try {
             Path path = Paths.get(file).getParent();
             Files.createDirectories(path);
@@ -38,7 +31,7 @@ public class Logging {
 
     }
 
-    private static void createFile(String filename) {
+    public static void createFile(String filename) {
         try {
             File myObj = new File(filename);
             myObj.createNewFile();
@@ -47,8 +40,8 @@ public class Logging {
         }
     }
 
-    private static Map<env.itemCategory, LinkedList<String>> seperateCategories(LinkedList<Change> changes) {
-        Map<env.itemCategory, LinkedList<String>> seperatedCategories = new HashMap<env.itemCategory, LinkedList<String>>();
+    private static Map<know_home.itemCategory, LinkedList<String>> seperateCategories(LinkedList<Change> changes) {
+        Map<know_home.itemCategory, LinkedList<String>> seperatedCategories = new HashMap<know_home.itemCategory, LinkedList<String>>();
         LinkedList<String> doors = new LinkedList<String>();
         LinkedList<String> furniture = new LinkedList<String>();
 
@@ -63,23 +56,23 @@ public class Logging {
                     break;
             }
         }
-        seperatedCategories.put(env.itemCategory.DOOR, doors);
-        seperatedCategories.put(env.itemCategory.FURNITURE, furniture);
+        seperatedCategories.put(know_home.itemCategory.DOOR, doors);
+        seperatedCategories.put(know_home.itemCategory.FURNITURE, furniture);
         return seperatedCategories;
     }
 
-    private static void writeToFile(LinkedList<Change> changes, String filename) {
+    public static void writeToFile(LinkedList<Change> changes, String filename) {
 
-        Map<env.itemCategory, LinkedList<String>> seperatedChanges = seperateCategories(changes);
+        Map<know_home.itemCategory, LinkedList<String>> seperatedChanges = seperateCategories(changes);
         try {
             FileWriter myWriter = new FileWriter(filename);
             myWriter.write("Door's closed:\n");
-            for (String door : seperatedChanges.get(env.itemCategory.DOOR)) {
+            for (String door : seperatedChanges.get(know_home.itemCategory.DOOR)) {
                 myWriter.write("\t" + door + "\n");
             }
 
             myWriter.write("Furniture moved:\n");
-            for (String furniture : seperatedChanges.get(env.itemCategory.FURNITURE)) {
+            for (String furniture : seperatedChanges.get(know_home.itemCategory.FURNITURE)) {
                 myWriter.write("\t" + furniture + "\n");
             }
 
