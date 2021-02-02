@@ -200,6 +200,59 @@ public class knowHome extends Environment {
         }
     }
 
+    public static LinkedList<Literal> getKnowMyHomePercepts() {
+        LinkedList<Literal> percepts = new LinkedList<Literal>();
+
+        if (checksComplete()) {
+            percepts.add(Literal.parseLiteral("done(rooms)"));
+        }
+        if (doorChecksComplete()) {
+            percepts.add(Literal.parseLiteral("done(doors)"));
+        }
+        if (furnitureChecksComplete()) {
+            percepts.add(Literal.parseLiteral("done(furniture)"));
+        }
+        if (objectChecksComplete()) {
+            percepts.add(Literal.parseLiteral("done(objects)"));
+        }
+
+        if (getChangeDetected() && getTarget().targetIs(itemCategory.DOOR)) {
+            percepts.add(Literal.parseLiteral("closed"));
+            setChangeDetected(false);
+
+        } else if (getChangeDetected()
+                && (getTarget().targetIs(itemCategory.FURNITURE) || getTarget().targetIs(itemCategory.OBJECT))) {
+            percepts.add(Literal.parseLiteral("moved(" + getTarget().name + ")"));
+            setChangeDetected(false);
+        }
+
+        Literal targetLiteral;
+        switch (getTarget().type) {
+            case DOOR:
+                targetLiteral = Literal.parseLiteral("target(" + getTarget().name + ",door)");
+                break;
+            case ROOM:
+                targetLiteral = Literal.parseLiteral("target(" + getTarget().name + ",room)");
+                break;
+            case FURNITURE:
+                targetLiteral = Literal.parseLiteral("target(" + getTarget().name + ",furniture)");
+                break;
+            case OBJECT:
+                targetLiteral = Literal.parseLiteral("target(" + getTarget().name + ",object)");
+                break;
+            default:
+                targetLiteral = Literal.parseLiteral("target(" + getTarget().name + ",unknown)");
+                break;
+        }
+
+        if (!getTarget().isEmpty()) {
+            percepts.add(targetLiteral);
+        }
+
+        return percepts;
+
+    }
+
     private static void inspectDoor(String door) {
         // stub code that will be replaced by a topic subscriber that informs of the
         // door's position
@@ -239,7 +292,7 @@ public class knowHome extends Environment {
     }
 
     public static void find(String item) {
-        if (target.type == knowHome.itemCategory.FURNITURE) {
+        if (target.type == itemCategory.FURNITURE) {
             logger.info("finding " + item);
             changeDetected = false;
             rooms.getFirst().furniture.removeFirst(); // remove furniture as we no longer care about it

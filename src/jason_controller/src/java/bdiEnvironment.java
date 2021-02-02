@@ -63,6 +63,9 @@ public class bdiEnvironment extends Environment {
 				case "saveChanges":
 					knowHome.saveChanges();
 					break;
+				case "scanFace":
+					welcome.scanFace();
+					break;
 				default:
 					logger.info("executing: " + action + ", but not implemented!");
 			}
@@ -119,60 +122,17 @@ public class bdiEnvironment extends Environment {
 		return status.get();
 	}
 
-	private void updateGettingToKnowMyHomePercepts() {
-		if (knowHome.checksComplete()) {
-			addPercept(Literal.parseLiteral("done(rooms)"));
-		}
-		if (knowHome.doorChecksComplete()) {
-			addPercept(Literal.parseLiteral("done(doors)"));
-		}
-		if (knowHome.furnitureChecksComplete()) {
-			addPercept(Literal.parseLiteral("done(furniture)"));
-		}
-		if (knowHome.objectChecksComplete()) {
-			addPercept(Literal.parseLiteral("done(objects)"));
-		}
-
-		if (knowHome.getChangeDetected() && knowHome.getTarget().targetIs(knowHome.itemCategory.DOOR)) {
-			addPercept(Literal.parseLiteral("closed"));
-			knowHome.setChangeDetected(false);
-
-		} else if (knowHome.getChangeDetected() && (knowHome.getTarget().targetIs(knowHome.itemCategory.FURNITURE)
-				|| knowHome.getTarget().targetIs(knowHome.itemCategory.OBJECT))) {
-			addPercept(Literal.parseLiteral("moved(" + knowHome.getTarget().name + ")"));
-			knowHome.setChangeDetected(false);
-		}
-
-		Literal targetLiteral;
-		switch (knowHome.getTarget().type) {
-			case DOOR:
-				targetLiteral = Literal.parseLiteral("target(" + knowHome.getTarget().name + ",door)");
-				break;
-			case ROOM:
-				targetLiteral = Literal.parseLiteral("target(" + knowHome.getTarget().name + ",room)");
-				break;
-			case FURNITURE:
-				targetLiteral = Literal.parseLiteral("target(" + knowHome.getTarget().name + ",furniture)");
-				break;
-			case OBJECT:
-				targetLiteral = Literal.parseLiteral("target(" + knowHome.getTarget().name + ",object)");
-				break;
-			default:
-				targetLiteral = Literal.parseLiteral("target(" + knowHome.getTarget().name + ",unknown)");
-				break;
-		}
-
-		if (!knowHome.getTarget().isEmpty()) {
-			addPercept(targetLiteral);
-		}
-
-	}
-
 	/** creates the agents perception based on the MarsModel */
 	void updatePercepts() {
 		clearPercepts();
-		updateGettingToKnowMyHomePercepts();
+		LinkedList<Literal> knowMyHomePercepts = knowHome.getKnowMyHomePercepts();
+		addPercepts(knowMyHomePercepts);
+	}
 
+	private void addPercepts(LinkedList<Literal> literals) {
+		for (Literal l : literals) {
+			addPercept(l);
+		}
 	}
 
 	/** Called before the end of MAS execution */
