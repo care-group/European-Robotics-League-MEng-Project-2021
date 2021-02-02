@@ -4,3 +4,4 @@ devel/
 src/jason_controller/bin/*
 .catkin_workspace
 output/
+*.pyc
