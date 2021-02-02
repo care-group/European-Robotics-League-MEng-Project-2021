@@ -34,22 +34,22 @@
 +!check(objects).
 
 +target(Location,room)
-    <-  move_to(Location).
+    <-  moveTo(Location).
 
 +target(Location,door)
-    <-  move_to(Location);
+    <-  moveTo(Location);
         inspect(Location).
 
 +target(Location,furniture)
-    <-  move_to(Location);
+    <-  moveTo(Location);
         inspect(Location).
 
  +target(Location,object)
-    <-  move_to(Location);
+    <-  moveTo(Location);
         inspect(Location).
        
 +!visit(Location)
-    <- move_to(Location).
+    <- moveTo(Location).
     
 +moved(Item)
     <- find(Item).

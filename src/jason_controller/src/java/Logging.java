@@ -13,9 +13,9 @@ public class Logging {
 
     public static class Change {
         private String name;
-        private know_home.itemCategory category;
+        private knowHome.itemCategory category;
 
-        public Change(String n, know_home.itemCategory c) {
+        public Change(String n, knowHome.itemCategory c) {
             name = n;
             category = c;
         }
@@ -40,8 +40,8 @@ public class Logging {
         }
     }
 
-    private static Map<know_home.itemCategory, LinkedList<String>> seperateCategories(LinkedList<Change> changes) {
-        Map<know_home.itemCategory, LinkedList<String>> seperatedCategories = new HashMap<know_home.itemCategory, LinkedList<String>>();
+    private static Map<knowHome.itemCategory, LinkedList<String>> seperateCategories(LinkedList<Change> changes) {
+        Map<knowHome.itemCategory, LinkedList<String>> seperatedCategories = new HashMap<knowHome.itemCategory, LinkedList<String>>();
         LinkedList<String> doors = new LinkedList<String>();
         LinkedList<String> furniture = new LinkedList<String>();
 
@@ -56,23 +56,23 @@ public class Logging {
                     break;
             }
         }
-        seperatedCategories.put(know_home.itemCategory.DOOR, doors);
-        seperatedCategories.put(know_home.itemCategory.FURNITURE, furniture);
+        seperatedCategories.put(knowHome.itemCategory.DOOR, doors);
+        seperatedCategories.put(knowHome.itemCategory.FURNITURE, furniture);
         return seperatedCategories;
     }
 
     public static void writeToFile(LinkedList<Change> changes, String filename) {
 
-        Map<know_home.itemCategory, LinkedList<String>> seperatedChanges = seperateCategories(changes);
+        Map<knowHome.itemCategory, LinkedList<String>> seperatedChanges = seperateCategories(changes);
         try {
             FileWriter myWriter = new FileWriter(filename);
             myWriter.write("Door's closed:\n");
-            for (String door : seperatedChanges.get(know_home.itemCategory.DOOR)) {
+            for (String door : seperatedChanges.get(knowHome.itemCategory.DOOR)) {
                 myWriter.write("\t" + door + "\n");
             }
 
             myWriter.write("Furniture moved:\n");
-            for (String furniture : seperatedChanges.get(know_home.itemCategory.FURNITURE)) {
+            for (String furniture : seperatedChanges.get(knowHome.itemCategory.FURNITURE)) {
                 myWriter.write("\t" + furniture + "\n");
             }
 

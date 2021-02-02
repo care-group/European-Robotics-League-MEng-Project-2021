@@ -18,7 +18,7 @@ import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicReference;
 
-public class know_home extends Environment {
+public class knowHome extends Environment {
 
     public static class Room {
         public String roomName;
@@ -148,6 +148,7 @@ public class know_home extends Environment {
         }
     }
 
+    public static void printRooms() {
         for (Room room : rooms) {
             logger.info(room.roomName);
             logger.info("\tDoors");
@@ -238,7 +239,7 @@ public class know_home extends Environment {
     }
 
     public static void find(String item) {
-        if (target.type == know_home.itemCategory.FURNITURE) {
+        if (target.type == knowHome.itemCategory.FURNITURE) {
             logger.info("finding " + item);
             changeDetected = false;
             rooms.getFirst().furniture.removeFirst(); // remove furniture as we no longer care about it
