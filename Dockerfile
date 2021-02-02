@@ -22,3 +22,12 @@ RUN source /opt/ros/melodic/setup.bash
 RUN pip install -U pip setuptools wheel
 RUN pip install -U spacy
 RUN python -m spacy download en_core_web_sm
+
+# Update Python
+RUN sudo update-alternatives --install /usr/bin/python python /usr/bin/python3 1
+RUN sudo apt install python3-pip
+
+# OpenCV
+RUN pip3 install scikit-build
+RUN pip3 install opencv-python==4.2.0.34
+RUN echo 'export QT_X11_NO_MITSHM=1' >> ~/.bashrc
