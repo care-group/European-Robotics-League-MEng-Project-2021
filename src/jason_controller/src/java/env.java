@@ -29,7 +29,7 @@ public class env extends Environment {
 		super.init(args);
 		bridge.connect("ws://localhost:9090", true);
 		logger.info("Environment started, connection with ROS established.");
-		know_home.init();
+		knowHome.init();
 		updatePercepts();
 	}
 
@@ -38,24 +38,20 @@ public class env extends Environment {
 		// logger.info(agName + " doing: " + action);
 		try {
 			switch (action.getFunctor()) {
-				case "test_ros_communication":
-					publish("/jason/genericBool", "std_msgs/Bool", true);
-					break;
-				case "move_to":
-					logger.info("Moving to " + action.getTerm(0));
-					move_to(action.getTerm(0).toString());
+				case "moveTo":
+					moveTo(action.getTerm(0).toString());
 					break;
 				case "inspect":
-					know_home.inspect(action.getTerm(0).toString());
+					knowHome.inspect(action.getTerm(0).toString());
 					break;
 				case "open":
-					know_home.open();
+					knowHome.open();
 					break;
 				case "find":
-					know_home.find(action.getTerm(0).toString());
+					knowHome.find(action.getTerm(0).toString());
 					break;
 				case "next":
-					know_home.next(action.getTerm(0).toString());
+					knowHome.next(action.getTerm(0).toString());
 					break;
 				// Temporary action to demonstrate subscriber method that waits for topic to be
 				// published to.
@@ -65,7 +61,7 @@ public class env extends Environment {
 					logger.info(isBellRinging.toString());
 					break;
 				case "saveChanges":
-					know_home.saveChanges();
+					knowHome.saveChanges();
 					break;
 				default:
 					logger.info("executing: " + action + ", but not implemented!");
@@ -83,7 +79,9 @@ public class env extends Environment {
 		return true; // the action was executed with success
 	}
 
-	void move_to(String location) throws Exception {
+	void moveTo(String location) throws Exception {
+		logger.info("Moving to " + location);
+
 	}
 
 	// Generic function to publish any type of data to a specified topic. Limited to
@@ -98,7 +96,7 @@ public class env extends Environment {
 
 	// Synchronous subscriber to a given topic, returns the output as a string
 	String subscribeSync(String topic, String type) {
-		final CountDownLatch loginLatcch = new CountDownLatch(1);
+		final CountDownLatch latch = new CountDownLatch(1);
 		AtomicReference<String> status = new AtomicReference<>();
 
 		bridge.subscribe(SubscriptionRequestMsg.generate(topic).setType(type).setThrottleRate(1).setQueueLength(1),
@@ -109,12 +107,12 @@ public class env extends Environment {
 								PrimitiveMsg.class);
 						PrimitiveMsg<String> msg = unpacker.unpackRosMessage(data);
 						status.set(data.get("msg").get("data").asText());
-						loginLatcch.countDown();
+						latch.countDown();
 					}
 				});
 
 		try {
-			loginLatcch.await();
+			latch.await();
 		} catch (InterruptedException e) {
 			e.printStackTrace();
 		}
@@ -122,50 +120,50 @@ public class env extends Environment {
 	}
 
 	private void updateGettingToKnowMyHomePercepts() {
-		if (know_home.checksComplete()) {
+		if (knowHome.checksComplete()) {
 			addPercept(Literal.parseLiteral("done(rooms)"));
 		}
-		if (know_home.doorChecksComplete()) {
+		if (knowHome.doorChecksComplete()) {
 			addPercept(Literal.parseLiteral("done(doors)"));
 		}
-		if (know_home.furnitureChecksComplete()) {
+		if (knowHome.furnitureChecksComplete()) {
 			addPercept(Literal.parseLiteral("done(furniture)"));
 		}
-		if (know_home.objectChecksComplete()) {
+		if (knowHome.objectChecksComplete()) {
 			addPercept(Literal.parseLiteral("done(objects)"));
 		}
 
-		if (know_home.getChangeDetected() && know_home.getTarget().targetIs(know_home.itemCategory.DOOR)) {
+		if (knowHome.getChangeDetected() && knowHome.getTarget().targetIs(knowHome.itemCategory.DOOR)) {
 			addPercept(Literal.parseLiteral("closed"));
-			know_home.setChangeDetected(false);
+			knowHome.setChangeDetected(false);
 
-		} else if (know_home.getChangeDetected() && (know_home.getTarget().targetIs(know_home.itemCategory.FURNITURE)
-				|| know_home.getTarget().targetIs(know_home.itemCategory.OBJECT))) {
-			addPercept(Literal.parseLiteral("moved(" + know_home.getTarget().name + ")"));
-			know_home.setChangeDetected(false);
+		} else if (knowHome.getChangeDetected() && (knowHome.getTarget().targetIs(knowHome.itemCategory.FURNITURE)
+				|| knowHome.getTarget().targetIs(knowHome.itemCategory.OBJECT))) {
+			addPercept(Literal.parseLiteral("moved(" + knowHome.getTarget().name + ")"));
+			knowHome.setChangeDetected(false);
 		}
 
-		Literal target_belief;
-		switch (know_home.getTarget().type) {
+		Literal targetLiteral;
+		switch (knowHome.getTarget().type) {
 			case DOOR:
-				target_belief = Literal.parseLiteral("target(" + know_home.getTarget().name + ",door)");
+				targetLiteral = Literal.parseLiteral("target(" + knowHome.getTarget().name + ",door)");
 				break;
 			case ROOM:
-				target_belief = Literal.parseLiteral("target(" + know_home.getTarget().name + ",room)");
+				targetLiteral = Literal.parseLiteral("target(" + knowHome.getTarget().name + ",room)");
 				break;
 			case FURNITURE:
-				target_belief = Literal.parseLiteral("target(" + know_home.getTarget().name + ",furniture)");
+				targetLiteral = Literal.parseLiteral("target(" + knowHome.getTarget().name + ",furniture)");
 				break;
 			case OBJECT:
-				target_belief = Literal.parseLiteral("target(" + know_home.getTarget().name + ",object)");
+				targetLiteral = Literal.parseLiteral("target(" + knowHome.getTarget().name + ",object)");
 				break;
 			default:
-				target_belief = Literal.parseLiteral("target(" + know_home.getTarget().name + ",unknown)");
+				targetLiteral = Literal.parseLiteral("target(" + knowHome.getTarget().name + ",unknown)");
 				break;
 		}
 
-		if (!know_home.getTarget().isEmpty()) {
-			addPercept(target_belief);
+		if (!knowHome.getTarget().isEmpty()) {
+			addPercept(targetLiteral);
 		}
 
 	}
