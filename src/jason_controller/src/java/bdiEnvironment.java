@@ -18,7 +18,7 @@ import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicReference;
 
-public class env extends Environment {
+public class bdiEnvironment extends Environment {
 
 	private Logger logger = Logger.getLogger("jason_controller." + env.class.getName());
 	RosBridge bridge = new RosBridge();
