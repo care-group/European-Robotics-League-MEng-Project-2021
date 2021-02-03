@@ -20,8 +20,8 @@ import java.util.concurrent.atomic.AtomicReference;
 
 public class bdiEnvironment extends Environment {
 
-	private Logger logger = Logger.getLogger("jason_controller." + env.class.getName());
-	RosBridge bridge = new RosBridge();
+	public static Logger logger = Logger.getLogger("jason_controller." + env.class.getName());
+	public static RosBridge bridge = new RosBridge();
 
 	/** Called before the MAS execution with the args informed in .mas2j */
 	@Override
@@ -55,16 +55,17 @@ public class bdiEnvironment extends Environment {
 					break;
 				// Temporary action to demonstrate subscriber method that waits for topic to be
 				// published to.
-				case "isBellRinging":
-					String data = subscribeSync("/doorbell", "std_msgs/Bool");
-					Boolean isBellRinging = (Integer.parseInt(data) > 0) ? true : false;
-					logger.info(isBellRinging.toString());
+				case "waitForBell":
+					welcome.waitForBell();
 					break;
 				case "saveChanges":
 					knowHome.saveChanges();
 					break;
 				case "scanFace":
 					welcome.scanFace();
+					break;
+				case "interrogate":
+					welcome.interrogate();
 					break;
 				default:
 					logger.info("executing: " + action + ", but not implemented!");
@@ -124,14 +125,20 @@ public class bdiEnvironment extends Environment {
 
 	/** creates the agents perception based on the MarsModel */
 	void updatePercepts() {
+
 		clearPercepts();
 		LinkedList<Literal> knowMyHomePercepts = knowHome.getKnowMyHomePercepts();
+		LinkedList<Literal> welcomePercepts = welcome.getWelcomeHomePercepts();
+
 		addPercepts(knowMyHomePercepts);
+		addPercepts(welcomePercepts);
 	}
 
 	private void addPercepts(LinkedList<Literal> literals) {
-		for (Literal l : literals) {
-			addPercept(l);
+		if (!literals.isEmpty()) {
+			for (Literal l : literals) {
+				addPercept(l);
+			}
 		}
 	}
 

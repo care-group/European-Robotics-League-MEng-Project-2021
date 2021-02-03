@@ -3,10 +3,13 @@
 
 /* Initial goals */
 
-!check(rooms).
+//!check(rooms).
 
 /* Plans */
+!waitForBell.
 
++!waitForBell
+    <- waitForBell.
 //Recursively checks each room
 +!check(rooms) : not done(rooms)
     <-  !check(doors);
@@ -69,5 +72,13 @@
 +done(objects) <-.print("All moved objects have been found!").
 
 +doorbellSounded
-    <-  !visit(entrance);
-        open.
+    <-  .print("Doorbell sounded!");
+        !visit(entrance);
+        open;
+        !identifyVisitor.
+
++!identifyVisitor
+    <-  scanFace.
+
++personIs(unknown)
+    <-  interrogate.
