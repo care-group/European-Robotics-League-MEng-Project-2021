@@ -38,14 +38,16 @@ public class bdiEnvironment extends Environment {
 		// logger.info(agName + " doing: " + action);
 		try {
 			switch (action.getFunctor()) {
+				/* === COMMON === */
 				case "moveTo":
 					moveTo(action.getTerm(0).toString());
 					break;
-				case "inspect":
-					knowHome.inspect(action.getTerm(0).toString());
-					break;
 				case "open":
 					knowHome.open();
+					break;
+				/* === GETTING TO KNOW MY HOME === */
+				case "inspect":
+					knowHome.inspect(action.getTerm(0).toString());
 					break;
 				case "find":
 					knowHome.find(action.getTerm(0).toString());
@@ -53,13 +55,12 @@ public class bdiEnvironment extends Environment {
 				case "next":
 					knowHome.next(action.getTerm(0).toString());
 					break;
-				// Temporary action to demonstrate subscriber method that waits for topic to be
-				// published to.
-				case "waitForBell":
-					welcome.waitForBell();
-					break;
 				case "saveChanges":
 					knowHome.saveChanges();
+					break;
+				/* === WELCOMING VISITORS === */
+				case "waitForBell":
+					welcome.waitForBell();
 					break;
 				case "scanFace":
 					welcome.scanFace();
