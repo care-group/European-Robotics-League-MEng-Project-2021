@@ -59,8 +59,6 @@ public class knowHome extends Environment {
 
     }
 
-    private static Logger logger = Logger.getLogger("jason_controller." + env.class.getName());
-
     // Objects to define world environment
     private static LinkedList<Room> rooms = new LinkedList<Room>();
     private static Map<String, String> objects = new LinkedHashMap<String, String>();
@@ -140,7 +138,7 @@ public class knowHome extends Environment {
                     target.update(location, itemCategory.OBJECT);
                     break;
                 default:
-                    logger.info("Unsure what to iterate through!");
+                    bdiEnvironment.logger.info("Unsure what to iterate through!");
                     target.type = itemCategory.UNKNOWN;
                     return;
             }
@@ -150,15 +148,15 @@ public class knowHome extends Environment {
 
     public static void printRooms() {
         for (Room room : rooms) {
-            logger.info(room.roomName);
-            logger.info("\tDoors");
+            bdiEnvironment.logger.info(room.roomName);
+            bdiEnvironment.logger.info("\tDoors");
             for (String door : room.doors) {
-                logger.info("\t\t" + door);
+                bdiEnvironment.logger.info("\t\t" + door);
             }
-            logger.info("\tFurniture");
+            bdiEnvironment.logger.info("\tFurniture");
 
             for (String f : room.furniture) {
-                logger.info("\t\t" + f);
+                bdiEnvironment.logger.info("\t\t" + f);
             }
         }
     }
@@ -185,7 +183,7 @@ public class knowHome extends Environment {
     }
 
     public static void inspect(String item) {
-        logger.info("Inspecting " + item);
+        bdiEnvironment.logger.info("Inspecting " + item);
         switch (target.type) {
             case DOOR:
                 inspectDoor(item);
@@ -259,7 +257,7 @@ public class knowHome extends Environment {
         Random r = new Random();
         changeDetected = r.nextBoolean();
 
-        logger.info(door + " is " + (changeDetected ? "closed" : "open"));
+        bdiEnvironment.logger.info(door + " is " + (changeDetected ? "closed" : "open"));
         if (!changeDetected) {
             rooms.getFirst().doors.removeFirst(); // remove door as we no longer care about it once
                                                   // confirmed it's open
@@ -274,7 +272,7 @@ public class knowHome extends Environment {
         Random r = new Random();
         changeDetected = r.nextBoolean();
 
-        logger.info(furniture + (changeDetected ? " has moved" : " remains untouched"));
+        bdiEnvironment.logger.info(furniture + (changeDetected ? " has moved" : " remains untouched"));
         if (!changeDetected) {
             rooms.getFirst().furniture.removeFirst(); // remove furniture as we no longer care about it once
                                                       // confirmed it's found
@@ -284,7 +282,7 @@ public class knowHome extends Environment {
     }
 
     public static void open() {
-        logger.info("Opening door.");
+        bdiEnvironment.logger.info("Opening door.");
         changeDetected = false;
         rooms.getFirst().doors.removeFirst(); // remove door as we no longer care
                                               // about it after opening it.
@@ -293,12 +291,12 @@ public class knowHome extends Environment {
 
     public static void find(String item) {
         if (target.type == itemCategory.FURNITURE) {
-            logger.info("finding " + item);
+            bdiEnvironment.logger.info("finding " + item);
             changeDetected = false;
             rooms.getFirst().furniture.removeFirst(); // remove furniture as we no longer care about it
                                                       // after finding it
         } else {
-            logger.info("finding " + objects.get(item) + " at other furniture");
+            bdiEnvironment.logger.info("finding " + objects.get(item) + " at other furniture");
             changeDetected = false;
             movedObjectFoundCounter++;
             Map.Entry<String, String> firstEntry = objects.entrySet().iterator().next();
@@ -309,13 +307,13 @@ public class knowHome extends Environment {
 
     private static void lookForObjectOnFurniture(String furniture) {
         String object = objects.get(furniture);
-        logger.info("Scanning " + furniture + " for " + object);
+        bdiEnvironment.logger.info("Scanning " + furniture + " for " + object);
 
         // stub code that will be replaced by a topic subscriber that informs if the
         // object is detected
         Random r = new Random();
         changeDetected = r.nextBoolean();
-        logger.info(object + (changeDetected ? " has moved" : " has been found at " + furniture));
+        bdiEnvironment.logger.info(object + (changeDetected ? " has moved" : " has been found at " + furniture));
         if (!changeDetected) {
             objects.remove(furniture); // remove object as we no longer care about it once
                                        // confirmed it's found
