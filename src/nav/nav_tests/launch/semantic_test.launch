@@ -1,0 +1,9 @@
+<launch>
+    <!-- My Package launch file -->
+    <node 
+        pkg="nav_tests" 
+        type="navtest.py" 
+        name="semantic_node"  
+        output="screen">
+    </node>
+</launch>
