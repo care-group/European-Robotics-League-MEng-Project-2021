@@ -1,0 +1,54 @@
+#! /usr/bin/env python
+
+print("Starting semantic.py")
+
+import rospy
+from std_msgs.msg import Float64MultiArray
+
+rospy.loginfo("Initiating test_node")
+rospy.init_node('test_node')
+
+pub = rospy.Publisher('/azm_nav/coord_goal_listener', Float64MultiArray, queue_size=1)
+
+msg = Float64MultiArray()
+
+msg.data = [1, 2, 3]
+
+print(msg)
+
+pub.publish(msg)
+
+'''
+semantic_coords = {
+    # coordinates in [x, y, w] 
+    # where w is the direction it is facing in degrees
+    "door" : [-0.416, 0, 0],
+    "drawers" : [0.1, 0, 0],
+    "full desk" : [1.5, 0, 0],
+    "trash" : [2.7, 0, 0],
+    "empty desk" : [0, 1.25, 0],
+    "passage" : [2.65, 2.2, 0],
+    "dude" : [0.4, 2.8, 0],
+    "shelves" : [2.25, 4.4, 0]
+}
+
+def send_semantic_goal(name, semantics):
+    if name not in semantics:
+        print("That label does not exist in the semantic map")
+        return False
+    t = semantics[name]
+    move_base_goal(t[0], t[1], t[2])
+
+class JasonListenerForGoals():
+    def __init__(self):
+        self.move_base_simple_publisher = rospy.Publisher('/move_base_simple/goal', PoseStamped, queue_size=1)
+        self.goal = PoseStamped()
+        self.ctrl_c = False
+        self.rate = rospy.Rate(10) # 10hz
+        rospy.on_shutdown(self.shutdownhook)
+    
+    def shutdownhook(self):
+        # works better than the rospy.is_shutdown()
+        self.ctrl_c = True
+'''
+
