@@ -43,39 +43,14 @@ public class welcome extends Environment {
                 });
     }
 
-    // Example of synchronous subscriber that will pause until topic has been
-    // published to, and returns the topic result
-    public Boolean isDoorbellRingingSync() {
-        final CountDownLatch latch = new CountDownLatch(1);
-        AtomicReference<Boolean> status = new AtomicReference<>(false);
-
-        bdiEnvironment.bridge.subscribe(SubscriptionRequestMsg.generate("/doorbell").setType("std_msgs/Bool")
-                .setThrottleRate(1).setQueueLength(1), new RosListenDelegate() {
-
-                    public void receive(JsonNode data, String stringRep) {
-                        MessageUnpacker<PrimitiveMsg<String>> unpacker = new MessageUnpacker<PrimitiveMsg<String>>(
-                                PrimitiveMsg.class);
-                        PrimitiveMsg<String> msg = unpacker.unpackRosMessage(data);
-                        status.set(((data.get("msg").get("data").asInt() > 0) ? true : false));
-                        latch.countDown();
-                    }
-                });
-
-        try {
-            latch.await();
-        } catch (InterruptedException e) {
-            e.printStackTrace();
-        }
-        return status.get();
-    }
-
     public static void waitForBell() {
-        welcome w = new welcome();
-        doorbellSounded = w.isDoorbellRingingSync();
+        bdiEnvironment.logger.info("Waiting for doorbell...");
+        String rawStatus = bdiEnvironment.subscribeSync("/jason/welcome/doorbell", "std_msgs/Bool");
+        doorbellSounded = rawStatus == "true" ? true : false;
     }
 
     public static void scanFace() {
-        visitor = Visitor.UNKNOWN;
+        visitor = Visitor.DR_KIMBLE;
         bdiEnvironment.logger.info("Face scan returned " + visitor.toString().toLowerCase());
 
     }
@@ -85,6 +60,12 @@ public class welcome extends Environment {
 
         // Publish to HRI stack
         // Sync Subscriber to await response.
+    }
+
+    public static void waitUntilVisitorDone() {
+        bdiEnvironment.logger.info("Waiting until visitor is done...");
+        bdiEnvironment.subscribeSync("/jason/welcome/visitorDone", "std_msgs/Bool");
+        bdiEnvironment.logger.info("Visitor is done");
     }
 
     public static LinkedList<Literal> getWelcomeHomePercepts() {

@@ -281,7 +281,7 @@ public class knowHome extends Environment {
         }
     }
 
-    public static void open() {
+    public static void openDoor() {
         bdiEnvironment.logger.info("Opening door.");
         changeDetected = false;
         rooms.getFirst().doors.removeFirst(); // remove door as we no longer care
