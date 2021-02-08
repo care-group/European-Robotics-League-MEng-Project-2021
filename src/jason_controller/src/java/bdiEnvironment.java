@@ -42,8 +42,14 @@ public class bdiEnvironment extends Environment {
 				case "moveTo":
 					moveTo(action.getTerm(0).toString());
 					break;
+				case "escort":
+					escort(action.getTerm(0).toString());
+					break;
 				case "open":
-					knowHome.open();
+					knowHome.openDoor();
+					break;
+				case "closeDoor":
+					closeDoor();
 					break;
 				/* === GETTING TO KNOW MY HOME === */
 				case "inspect":
@@ -68,6 +74,9 @@ public class bdiEnvironment extends Environment {
 				case "interrogate":
 					welcome.interrogate();
 					break;
+				case "waitUntilVisitorDone":
+					welcome.waitUntilVisitorDone();
+					break;
 				default:
 					logger.info("executing: " + action + ", but not implemented!");
 			}
@@ -89,6 +98,14 @@ public class bdiEnvironment extends Environment {
 
 	}
 
+	void escort(String location) {
+		logger.info("Escorting to " + location);
+	}
+
+	void closeDoor() {
+		logger.info("Closing door.");
+	}
+
 	// Generic function to publish any type of data to a specified topic. Limited to
 	// single-member data types (eg. String)
 	public <T> void publish(String topic, String type, T data) {
@@ -100,7 +117,7 @@ public class bdiEnvironment extends Environment {
 	}
 
 	// Synchronous subscriber to a given topic, returns the output as a string
-	String subscribeSync(String topic, String type) {
+	static String subscribeSync(String topic, String type) {
 		final CountDownLatch latch = new CountDownLatch(1);
 		AtomicReference<String> status = new AtomicReference<>();
 
