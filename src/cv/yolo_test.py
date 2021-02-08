@@ -14,7 +14,7 @@ output_layers=[]
 for i in net.getUnconnectedOutLayers():
     output_layers.append(layer_names[i[0]-1])
 #Loading the Image
-img=cv2.imread("Road.jpg")
+img=cv2.imread("images/Road.jpg")
 height,width,channels=img.shape
 #Extracting features to detect objects
 blob=cv2.dnn.blobFromImage(img,0.00392,(416,416),(0,0,0),True,crop=False)

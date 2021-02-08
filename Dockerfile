@@ -9,11 +9,6 @@ RUN sudo -E apt-key adv --keyserver 'hkp://keyserver.ubuntu.com:80' --recv-key C
 RUN sudo apt clean && sudo apt update
 RUN sudo apt-get upgrade -y
 
-# spaCY
-RUN pip install -U pip setuptools wheel
-RUN pip install -U spacy
-RUN python -m spacy download en_core_web_sm
-
 # Update Python
 RUN sudo update-alternatives --install /usr/bin/python python /usr/bin/python3 1
 RUN sudo apt install python3-pip -y
@@ -23,11 +18,18 @@ RUN pip3 install supervisor
 RUN pip3 install supervisor_twiddler
 RUN pip3 install argcomplete
 
+# spaCY
+RUN pip3 install -U pip setuptools wheel
+RUN pip3 install -U spacy
+RUN python -m spacy download en_core_web_sm
 
 # OpenCV
 RUN pip3 install scikit-build
 RUN pip3 install opencv-python==4.2.0.34
 RUN echo 'export QT_X11_NO_MITSHM=1' >> ~/.bashrc
+
+# Deepface
+RUN pip3 install deepface
 
 # Jason
 RUN sudo git clone https://github.com/jason-lang/jason.git
