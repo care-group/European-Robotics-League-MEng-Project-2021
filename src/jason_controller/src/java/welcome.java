@@ -1,5 +1,6 @@
 import jason.asSyntax.*;
 import jason.environment.*;
+
 import java.util.logging.*;
 import ros.Publisher;
 import ros.RosBridge;
@@ -17,10 +18,15 @@ import java.util.concurrent.atomic.AtomicReference;
 public class welcome extends Environment {
 
     public static Visitor visitor = Visitor.NULL;
+    public static Rooms plumberDesiredRoom = Rooms.NULL;
     private static Boolean doorbellSounded = false;
 
     public static enum Visitor {
         DR_KIMBLE, POSTMAN, DELIMAN, PLUMBER, UNKNOWN, NULL
+    };
+
+    private static enum Rooms {
+        KITCHEN, BATHROOM, NULL
     };
 
     // Asynchronous subscriber that will allow code to continue. The belief is
@@ -50,7 +56,7 @@ public class welcome extends Environment {
     }
 
     public static void scanFace() {
-        visitor = Visitor.DELIMAN;
+        visitor = Visitor.PLUMBER;
         bdiEnvironment.logger.info("Face scan returned " + visitor.toString().toLowerCase());
     }
 
@@ -63,7 +69,7 @@ public class welcome extends Environment {
 
     public static void waitUntilVisitorDone() {
         bdiEnvironment.logger.info("Waiting until visitor is done...");
-        bdiEnvironment.subscribeSync("/jason/welcome/visitorDone", "std_msgs/Bool");
+        // bdiEnvironment.subscribeSync("/jason/welcome/visitorDone", "std_msgs/Bool");
         bdiEnvironment.logger.info("Visitor is done");
     }
 
@@ -89,6 +95,22 @@ public class welcome extends Environment {
         bdiEnvironment.logger.info("Asking deliman to leave breakfast");
     }
 
+    public static void askPlumberDesiredRoom() {
+        bdiEnvironment.logger.info("Asking plumber where he wants to visit");
+        // bdiEnvironment.publish("/hri/ask", "std_msgs/String", "desired room");
+        // String desiredRoom =
+        // bdiEnvironment.subscribeSync("/jason/welcome/desiredRoom",
+        // "std_msgs/String");
+        String desiredRoom = "KITCHEN";
+        try {
+            plumberDesiredRoom = Rooms.valueOf(desiredRoom);
+        } catch (IllegalArgumentException e) {
+            bdiEnvironment.logger.warning("Unknown room string given.");
+        }
+        bdiEnvironment.logger.info(plumberDesiredRoom.toString());
+
+    }
+
     public static LinkedList<Literal> getWelcomeHomePercepts() {
 
         LinkedList<Literal> percepts = new LinkedList<Literal>();
@@ -97,6 +119,10 @@ public class welcome extends Environment {
         }
         if (doorbellSounded) {
             percepts.add(Literal.parseLiteral("doorbellSounded"));
+        }
+        if (plumberDesiredRoom != Rooms.NULL) {
+            percepts.add(
+                    Literal.parseLiteral("plumberDesiredRoomIs(" + plumberDesiredRoom.toString().toLowerCase() + ")"));
         }
 
         return percepts;

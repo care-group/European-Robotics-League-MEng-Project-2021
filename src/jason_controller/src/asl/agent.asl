@@ -108,5 +108,15 @@
         waitUntilVisitorLeft;
         closeDoor.
 
++!welcome(plumber)
+    <-  askPlumberDesiredRoom.
+
++plumberDesiredRoomIs(Room)
+    <-  escort(Room);
+        waitUntilVisitorDone;
+        escort(entrance);
+        waitUntilVisitorLeft;
+        closeDoor.
+
 +visitorOutOfBounds
     <- complain.
