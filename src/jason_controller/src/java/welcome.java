@@ -50,7 +50,7 @@ public class welcome extends Environment {
     }
 
     public static void scanFace() {
-        visitor = Visitor.DR_KIMBLE;
+        visitor = Visitor.POSTMAN;
         bdiEnvironment.logger.info("Face scan returned " + visitor.toString().toLowerCase());
 
     }
@@ -66,6 +66,16 @@ public class welcome extends Environment {
         bdiEnvironment.logger.info("Waiting until visitor is done...");
         bdiEnvironment.subscribeSync("/jason/welcome/visitorDone", "std_msgs/Bool");
         bdiEnvironment.logger.info("Visitor is done");
+    }
+
+    public static void acceptMail() {
+        bdiEnvironment.logger.info("Accepting mail from postman.");
+
+    }
+
+    public static void deliverMail() {
+        bdiEnvironment.logger.info("Giving Granny Annie the mail.");
+
     }
 
     public static LinkedList<Literal> getWelcomeHomePercepts() {
