@@ -92,6 +92,9 @@ public class bdiEnvironment extends Environment {
 				case "askToLeaveBreakfast":
 					welcome.askToLeaveBreakfast();
 					break;
+				case "askPlumberDesiredRoom":
+					welcome.askPlumberDesiredRoom();
+					break;
 				default:
 					logger.info("executing: " + action + ", but not implemented!");
 			}
@@ -123,7 +126,7 @@ public class bdiEnvironment extends Environment {
 
 	// Generic function to publish any type of data to a specified topic. Limited to
 	// single-member data types (eg. String)
-	public <T> void publish(String topic, String type, T data) {
+	public static <T> void publish(String topic, String type, T data) {
 		logger.info("Publishing to " + topic + ", with " + type + " data.");
 		Publisher pub = new Publisher(topic, type, bridge);
 		Map<String, T> map = new HashMap<String, T>();
