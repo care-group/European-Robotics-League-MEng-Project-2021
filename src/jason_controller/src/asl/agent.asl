@@ -91,13 +91,22 @@
     <-  escort(bedroom);
         waitUntilVisitorDone;
         escort(entrance);
+        waitUntilVisitorLeft;
         closeDoor.
     
 +!welcome(postman)
     <-  acceptMail;
+        waitUntilVisitorLeft;
         closeDoor;
         !visit(bedroom);
         deliverMail.
+
++!welcome(deliman)
+    <-  escort(kitchen);
+        askToLeaveBreakfast;
+        escort(entrance);
+        waitUntilVisitorLeft;
+        closeDoor.
 
 +visitorOutOfBounds
     <- complain.

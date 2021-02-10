@@ -77,6 +77,9 @@ public class bdiEnvironment extends Environment {
 				case "waitUntilVisitorDone":
 					welcome.waitUntilVisitorDone();
 					break;
+				case "waitUntilVisitorLeft":
+					welcome.waitUntilVisitorLeft();
+					break;
 				case "acceptMail":
 					welcome.acceptMail();
 					break;
@@ -85,6 +88,9 @@ public class bdiEnvironment extends Environment {
 					break;
 				case "complain":
 					welcome.complain();
+					break;
+				case "askToLeaveBreakfast":
+					welcome.askToLeaveBreakfast();
 					break;
 				default:
 					logger.info("executing: " + action + ", but not implemented!");
