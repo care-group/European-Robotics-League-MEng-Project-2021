@@ -52,7 +52,6 @@ public class welcome extends Environment {
     public static void scanFace() {
         visitor = Visitor.POSTMAN;
         bdiEnvironment.logger.info("Face scan returned " + visitor.toString().toLowerCase());
-
     }
 
     public static void interrogate() {
@@ -75,7 +74,10 @@ public class welcome extends Environment {
 
     public static void deliverMail() {
         bdiEnvironment.logger.info("Giving Granny Annie the mail.");
+    }
 
+    public static void complain() {
+        bdiEnvironment.logger.info("Visitor out of bounds, complaining!");
     }
 
     public static LinkedList<Literal> getWelcomeHomePercepts() {
