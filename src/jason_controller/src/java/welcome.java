@@ -50,7 +50,7 @@ public class welcome extends Environment {
     }
 
     public static void scanFace() {
-        visitor = Visitor.POSTMAN;
+        visitor = Visitor.DELIMAN;
         bdiEnvironment.logger.info("Face scan returned " + visitor.toString().toLowerCase());
     }
 
@@ -67,9 +67,14 @@ public class welcome extends Environment {
         bdiEnvironment.logger.info("Visitor is done");
     }
 
+    public static void waitUntilVisitorLeft() {
+        bdiEnvironment.logger.info("Waiting until visitor has left..");
+        // bdiEnvironment.subscribeSync("/jason/welcome/visitorLeft", "std_msgs/Bool");
+        bdiEnvironment.logger.info("Visitor has left");
+    }
+
     public static void acceptMail() {
         bdiEnvironment.logger.info("Accepting mail from postman.");
-
     }
 
     public static void deliverMail() {
@@ -78,6 +83,10 @@ public class welcome extends Environment {
 
     public static void complain() {
         bdiEnvironment.logger.info("Visitor out of bounds, complaining!");
+    }
+
+    public static void askToLeaveBreakfast() {
+        bdiEnvironment.logger.info("Asking deliman to leave breakfast");
     }
 
     public static LinkedList<Literal> getWelcomeHomePercepts() {
