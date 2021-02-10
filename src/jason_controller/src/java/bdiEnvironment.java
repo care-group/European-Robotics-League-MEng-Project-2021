@@ -83,6 +83,9 @@ public class bdiEnvironment extends Environment {
 				case "deliverMail":
 					welcome.deliverMail();
 					break;
+				case "complain":
+					welcome.complain();
+					break;
 				default:
 					logger.info("executing: " + action + ", but not implemented!");
 			}
@@ -147,13 +150,33 @@ public class bdiEnvironment extends Environment {
 		return status.get();
 	}
 
+	// Asynchronous subscriber to a given boolean topic, adding a given percept if
+	// true.
+	public void subscribeASync(String topic, String literal) {
+		bdiEnvironment.bridge.subscribe(
+				SubscriptionRequestMsg.generate(topic).setType("std_msgs/Bool").setThrottleRate(1).setQueueLength(1),
+				new RosListenDelegate() {
+
+					public void receive(JsonNode data, String stringRep) {
+						MessageUnpacker<PrimitiveMsg<String>> unpacker = new MessageUnpacker<PrimitiveMsg<String>>(
+								PrimitiveMsg.class);
+						PrimitiveMsg<String> msg = unpacker.unpackRosMessage(data);
+						if ((data.get("msg").get("data").asInt() > 0)) {
+							addPercept(Literal.parseLiteral(literal));
+						}
+					}
+				});
+	}
+
 	/** creates the agents perception based on the MarsModel */
 	void updatePercepts() {
 
 		clearPercepts();
+
+		callASyncSubscribers();
+
 		LinkedList<Literal> knowMyHomePercepts = knowHome.getKnowMyHomePercepts();
 		LinkedList<Literal> welcomePercepts = welcome.getWelcomeHomePercepts();
-
 		addPercepts(knowMyHomePercepts);
 		addPercepts(welcomePercepts);
 	}
@@ -164,6 +187,10 @@ public class bdiEnvironment extends Environment {
 				addPercept(l);
 			}
 		}
+	}
+
+	private void callASyncSubscribers() {
+		subscribeASync("/jason/welcome/visitorOutOfBounds", "visitorOutOfBounds");
 	}
 
 	/** Called before the end of MAS execution */

@@ -4,12 +4,13 @@
 /* Initial goals */
 
 //!check(rooms).
+!waitForBell.
 
 /* Plans */
-!waitForBell.
 
 +!waitForBell
     <- waitForBell.
+
 //Recursively checks each room
 +!check(rooms) : not done(rooms)
     <-  !check(doors);
@@ -82,3 +83,21 @@
 
 +personIs(unknown)
     <-  interrogate.
+
++personIs(Person)
+    <-  !welcome(Person).
+
++!welcome(dr_kimble)
+    <-  escort(bedroom);
+        waitUntilVisitorDone;
+        escort(entrance);
+        closeDoor.
+    
++!welcome(postman)
+    <-  acceptMail;
+        closeDoor;
+        !visit(bedroom);
+        deliverMail.
+
++visitorOutOfBounds
+    <- complain.
