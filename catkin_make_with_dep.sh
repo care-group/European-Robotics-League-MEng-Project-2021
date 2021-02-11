@@ -10,14 +10,14 @@ catkin config -DPYTHON_EXECUTABLE=/usr/bin/python3 -DPYTHON_INCLUDE_DIR=/usr/inc
 # Instruct catkin to install built packages into install place. It is $CATKIN_WORKSPACE/install folder
 catkin config --install
 # Clone cv_bridge src
-git clone https://github.com/ros-perception/vision_opencv.git src/vision_opencv
+git clone https://github.com/ros-perception/vision_opencv.git src/cv/vision_opencv
 # Find version of cv_bridge in your repository
 apt-cache show ros-melodic-cv-bridge | grep Version
     Version: 1.12.8-0xenial-20180416-143935-0800
 # Checkout rcvight version in git repo. In our case it is 1.12.8
-cd src/vision_opencv/
+cd src/cv/vision_opencv/
 git checkout melodic
-cd ../../
+cd ../../../
 # Build
 catkin build cv_bridge
 # Extend environment with new package
