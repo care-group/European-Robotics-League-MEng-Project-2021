@@ -1,8 +1,15 @@
+# YOLO code initially adapted from https://www.codespeedy.com/yolo-object-detection-from-image-with-opencv-and-python/
+
 import cv2
 import numpy as np
 import rospy
 from sensor_msgs.msg import Image
 from cv_bridge import CvBridge
+
+def yolo_callback(msg):
+    cv_image = bridge.imgmsg_to_cv2(msg, desired_encoding='passthrough')
+    obj_coords = search_for_objects(cv_image,target,net,classes,layer_names,output_layers)
+    rate.sleep()
 
 def init_yolo():
     #Load YOLO Algorithm
@@ -20,7 +27,7 @@ def init_yolo():
         output_layers.append(layer_names[i[0]-1])
     return net,classes,layer_names,output_layers
 
-def search_for_objects(img,net,classes,layer_names,output_layers):
+def search_for_objects(img,target,net,classes,layer_names,output_layers):
     height,width,channels=img.shape
     #Extracting features to detect objects
     blob=cv2.dnn.blobFromImage(img,0.00392,(416,416),(0,0,0),True,crop=False)
@@ -54,25 +61,42 @@ def search_for_objects(img,net,classes,layer_names,output_layers):
             #cv2.rectangle(img,(x,y),(x+w,y+h),(0,255,0),2)
     #Removing Double Boxes
     indexes=cv2.dnn.NMSBoxes(boxes,confidences,0.3,0.4)
+    target_obj_positions=[]
     for i in range(len(boxes)):
         if i in indexes:
             x, y, w, h = boxes[i]
             label = classes[class_ids[i]]  # name of the objects
-            cv2.rectangle(img, (x, y), (x + w, y + h), (0, 255, 0), 2)
-            cv2.putText(img, label, (x, y), cv2.FONT_HERSHEY_PLAIN, 1, (0, 0, 255), 2)
-        
+            print(label)
+            if(is_target_obj(label,target)):
+                img = draw_obj(img,label,x,y,w,h,(0,255,0))
+                target_obj_positions.append(get_center_coords(x,y,w,h))
     cv2.imshow("Output",img)
     cv2.waitKey(1)
+    return target_obj_positions
 
-def yolo_callback(msg):
-    cv_image = bridge.imgmsg_to_cv2(msg, desired_encoding='passthrough')
-    search_for_objects(cv_image,net,classes,layer_names,output_layers)
-    rate.sleep()
+def get_center_coords(x,y,w,h):
+    return int(x+0.5*w),int(y+0.5*h)
+
+def draw_obj(img,label, x,y,w,h,colour):
+    cv2.rectangle(img, (x, y), (x + w, y + h), colour, 2)
+    cv2.putText(img, label, (x, y), cv2.FONT_HERSHEY_PLAIN, 1, colour, 2)
+    
+    # Draw center marker
+    center_x,center_y = get_center_coords(x,y,w,h)
+    cv2.circle(img, (center_x,center_y), radius=5, color=(0, 0, 255), thickness=-1)
+
+    return img
+
+def is_target_obj(obj,desired):
+    return obj == desired
+
 
 rospy.init_node('face_tracker')
 net,classes,layer_names,output_layers = init_yolo()
+target = "sports ball"
 bridge = CvBridge()
 camera_subscriber = rospy.Subscriber('/hsrb/head_rgbd_sensor/rgb/image_color', Image, yolo_callback)
 rate = rospy.Rate(1000)
+
 while not rospy.is_shutdown():
     rate.sleep()
