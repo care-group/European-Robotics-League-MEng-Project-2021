@@ -5,8 +5,9 @@ print("Starting navtest.py")
 import rospy
 import math
 import tf
-from std_msgs.msg import Float64MultiArray
+from std_msgs.msg import Float64MultiArray, String
 from geometry_msgs.msg import PoseStamped, Quaternion
+from move_base_msgs.msg import MoveBaseActionResult
 
 def quaternion_from_euler(roll, pitch, yaw):
     '''
@@ -24,6 +25,8 @@ class SimpleMoveBase():
     This class is adapted from theconstructsim.com ROS Basics in 5 Days course - Using Python Classes in ROS
     It implements a pseudo action server to move the HSR to coordinate nav goals 
     provided through the /azm_nav/coord_goal_listener topic
+    
+    Gives simple result feeback thru /azm_nav/goal_result
     '''
 
     def __init__(self, openListenerTopic=True):
@@ -34,10 +37,18 @@ class SimpleMoveBase():
         self.ctrl_c = False
         self.rate = rospy.Rate(10) # 10hz
         rospy.on_shutdown(self.shutdownhook)
+        self.move_base_result_sub = rospy.Subscriber('/move_base/result', MoveBaseActionResult, self.goal_result_cb)
+        self.goal_result_pub = rospy.Publisher('/azm_nav/goal_result', String, queue_size=1)
+        self.result_fb = String()
+        self.result_flag = False # Toggles on/off listening to goal result messages
         if openListenerTopic:
             #start_topic_listener()
             self.goal_listener = rospy.Subscriber('/azm_nav/coord_goal_listener', Float64MultiArray, self.goal_callback)
     
+
+    
+    # TODO maybe combine both publish_once topics into one?
+    # TODO make it stop trying to send the message after x number of attempts
     def publish_once(self):
         """
         This is because publishing in topics sometimes fails the first time you publish.
@@ -54,6 +65,23 @@ class SimpleMoveBase():
             else:
                 self.rate.sleep()
 
+    def publish_once_result(self):
+        """
+        This is because publishing in topics sometimes fails the first time you publish.
+        In continuous publishing systems, this is no big deal, but in systems that publish only
+        once, it IS very important.
+        """
+        rospy.loginfo("Attempting to publish result")
+        while not self.ctrl_c:
+            connections = self.goal_result_pub.get_num_connections()
+            if connections > 0:
+                self.goal_result_pub.publish(self.result_fb)
+                rospy.loginfo("Goal result success published to /azm_nav/goal_result")
+                break
+            else:
+                rospy.loginfo("failed to pub result, sleeping")
+                self.rate.sleep()
+
     def simple_move_base_goal(self, x=0, y=0, theta=0):
         # Set message variables
         self.goal.header.frame_id = "map"
@@ -61,6 +89,10 @@ class SimpleMoveBase():
         self.goal.pose.position.y = y
         self.goal.pose.orientation = quaternion_from_euler(0, 0, theta)
 
+        # Toggles on listening to goal result messages
+        #rospy.sleep(2)
+        rospy.loginfo("Started listening to goal result")
+        self.result_flag = True
         # Publish
         self.publish_once()
 
@@ -76,13 +108,27 @@ class SimpleMoveBase():
             rospy.loginfo("Goal position received, moving?")
             self.simple_move_base_goal(msg.data[0], msg.data[1], msg.data[2])
 
+    # TODO maybe change the message to include more information (like what the goal was and/or coords)
+    # TODO make it react to all possible results "rosmsg info MoveBaseActionResult"
+    # might want to use goal ids in case there are unexpected overlaps
+    # like sending two goals at the same time or something
+    def goal_result_cb(self, msg):
+        ''' Listens for /move_base/status messages '''
+        print(msg)
+        if self.result_flag:
+            if msg.status.status == 3:
+                self.result_fb.data = 'success'
+            else:
+                self.result_fb.data = msg.status.text
+            self.result_flag = False
+            self.publish_once_result()
+            rospy.loginfo("Stopped listening to goal result")
 
 def run_move_to_coords(obj, x, y, w):
     print("sending goal command")
     obj.simple_move_base_goal(x, y, w)
 
 if __name__ == '__main__':
-    rospy.loginfo("executing navtest.py as main")
     print("executing navtest.py as main")
     print("Creating SimpleMoveBase obj")
     simple_move_obj = SimpleMoveBase()
