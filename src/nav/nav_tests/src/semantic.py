@@ -24,20 +24,19 @@ class SemanticToCoords():
         self.semantic_goal_sub = rospy.Subscriber('/azm_nav/semantic_goal_listener', String, self.sem_goal_cb)
         self.coord_goal_pub = rospy.Publisher('/azm_nav/coord_goal_listener', Float64MultiArray, queue_size=1)
         self.goal = Float64MultiArray()
-
         self.ctrl_c = False
         self.rate = rospy.Rate(10) # 10hz
         self.semantic_coords = {
             # coordinates in [x, y, w] 
             # where w is the direction it is facing in degrees
-            "door" : [-0.416, 0, 0],
-            "drawers" : [0.1, 0, 0],
-            "full desk" : [1.5, 0, 0],
-            "trash" : [2.7, 0, 0],
-            "empty desk" : [0, 1.25, 0],
-            "passage" : [2.65, 2.2, 0],
-            "dude" : [0.4, 2.8, 0],
-            "shelves" : [2.25, 4.4, 0]
+            "door" : [-0.416, 0, 30],
+            "drawers" : [0.1, 0, 30],
+            "full desk" : [1.5, 0, 30],
+            "trash" : [2.7, 0, 30],
+            "empty desk" : [0, 1.25, 30],
+            "passage" : [2.65, 2.2, 30],
+            "dude" : [0.4, 2.8, 30],
+            "shelves" : [2.25, 4.4, 30]
         }
         rospy.on_shutdown(self.shutdownhook)
 
@@ -45,7 +44,7 @@ class SemanticToCoords():
         # works better than the rospy.is_shutdown()
         self.ctrl_c = True
     
-    def publish_once(self):
+    def publish_once_goal(self):
         """
         This is because publishing in topics sometimes fails the first time you publish.
         In continuous publishing systems, this is no big deal, but in systems that publish only
@@ -56,7 +55,7 @@ class SemanticToCoords():
             connections = self.coord_goal_pub.get_num_connections()
             if connections > 0:
                 self.coord_goal_pub.publish(self.goal)
-                rospy.loginfo("Coord Goal Published to /azm_nav/coord_goal_listener")
+                rospy.loginfo("Coord goal published to /azm_nav/coord_goal_listener")
                 break
             else:
                 self.rate.sleep()
@@ -64,16 +63,17 @@ class SemanticToCoords():
     def sem_goal_cb(self, msg):
         ''' Listens for semantic goals to move to '''
         if msg.data not in self.semantic_coords:
-            rospy.loginfo("Semantic Goal received which doesn't not have associated coordinates, ignoring.")
+            rospy.loginfo("Semantic goal received which doesn't not have associated coordinates, ignoring.")
         else:
-            rospy.loginfo("Semantic Goal checks out, translating and sending")
+            rospy.loginfo("Semantic goal checks out, translating and sending")
             t = self.semantic_coords[msg.data]
             self.goal.data = [t[0], t[1], t[2]]
-            self.publish_once()
+            self.publish_once_goal()
 
 
 if __name__ == '__main__':
-    rospy.loginfo("executing semantic.py as main")
+    print("executing semantic.py as main")
+    print("Creating SemanticToCoords obj")
     semantic_translator_obj = SemanticToCoords()
     rospy.loginfo("semantic.py is spinning")
     rospy.spin()
