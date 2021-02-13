@@ -21,13 +21,13 @@ def quaternion_from_euler(roll, pitch, yaw):
 
 
 class SimpleMoveBase():
-    ''' 
+    """
     This class is adapted from theconstructsim.com ROS Basics in 5 Days course - Using Python Classes in ROS
     It implements a pseudo action server to move the HSR to coordinate nav goals 
     provided through the /azm_nav/coord_goal_listener topic
     
     Gives simple result feeback thru /azm_nav/goal_result
-    '''
+    """
 
     def __init__(self, openListenerTopic=True):
         rospy.loginfo("Initiating basic_coordinate_goal_nav_node")
@@ -45,41 +45,28 @@ class SimpleMoveBase():
             #start_topic_listener()
             self.goal_listener = rospy.Subscriber('/azm_nav/coord_goal_listener', Float64MultiArray, self.goal_callback)
     
-
-    
-    # TODO maybe combine both publish_once topics into one?
     # TODO make it stop trying to send the message after x number of attempts
-    def publish_once(self):
+    # TODO add error checking if msg doesnt match topic type
+    # TODO DEBUG maybe make an ID to link attempt to success?
+    def publish_once(self, topic, msg, content="message"):
         """
-        This is because publishing in topics sometimes fails the first time you publish.
-        In continuous publishing systems, this is no big deal, but in systems that publish only
-        once, it IS very important.
-        """
-        rospy.loginfo("Attempting to publish goal")
-        while not self.ctrl_c:
-            connections = self.move_base_simple_publisher.get_num_connections()
-            if connections > 0:
-                self.move_base_simple_publisher.publish(self.goal)
-                rospy.loginfo("Goal Published")
-                break
-            else:
-                self.rate.sleep()
+        Adapted from theconstruct's ros in 5 days course
+        will keep retrying to publish the message if the publisher has no connections
 
-    def publish_once_result(self):
+        Args:
+            topic (rospy publisher object): topic object to publish to
+            msg (rospy message object): message object to publish 
+            content (String): very short description of message for debug purposes
         """
-        This is because publishing in topics sometimes fails the first time you publish.
-        In continuous publishing systems, this is no big deal, but in systems that publish only
-        once, it IS very important.
-        """
-        rospy.loginfo("Attempting to publish result")
+        rospy.loginfo("Attempting to publish {} to {}".format(content, topic.name))
         while not self.ctrl_c:
-            connections = self.goal_result_pub.get_num_connections()
+            connections = topic.get_num_connections()
             if connections > 0:
-                self.goal_result_pub.publish(self.result_fb)
-                rospy.loginfo("Goal result success published to /azm_nav/goal_result")
+                topic.publish(msg)
+                rospy.loginfo("Message published to {}".format(topic.name))
                 break
             else:
-                rospy.loginfo("failed to pub result, sleeping")
+                rospy.loginfo("No subscribers on {}, sleeping.".format(topic.name))
                 self.rate.sleep()
 
     def simple_move_base_goal(self, x=0, y=0, theta=0):
@@ -91,10 +78,10 @@ class SimpleMoveBase():
 
         # Toggles on listening to goal result messages
         #rospy.sleep(2)
-        rospy.loginfo("Started listening to goal result")
+        rospy.loginfo("Started listening for goal result")
         self.result_flag = True
         # Publish
-        self.publish_once()
+        self.publish_once(self.move_base_simple_publisher, self.goal, "goal")
 
     def shutdownhook(self):
         # works better than the rospy.is_shutdown()
@@ -114,14 +101,13 @@ class SimpleMoveBase():
     # like sending two goals at the same time or something
     def goal_result_cb(self, msg):
         ''' Listens for /move_base/status messages '''
-        print(msg)
         if self.result_flag:
             if msg.status.status == 3:
                 self.result_fb.data = 'success'
             else:
                 self.result_fb.data = msg.status.text
             self.result_flag = False
-            self.publish_once_result()
+            self.publish_once(self.goal_result_pub, self.result_fb, "result_feedback")
             rospy.loginfo("Stopped listening to goal result")
 
 def run_move_to_coords(obj, x, y, w):
