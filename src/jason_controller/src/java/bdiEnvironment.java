@@ -95,6 +95,13 @@ public class bdiEnvironment extends Environment {
 				case "askPlumberDesiredRoom":
 					welcome.askPlumberDesiredRoom();
 					break;
+				/* === CATERING FOR GRANNY ANNIE'S COMFORT === */
+				case "getCommand":
+					catering.getCommand();
+					break;
+				case "executeCommand":
+					catering.executeCommand();
+					break;
 				default:
 					logger.info("executing: " + action + ", but not implemented!");
 			}
@@ -111,14 +118,26 @@ public class bdiEnvironment extends Environment {
 		return true; // the action was executed with success
 	}
 
-	void moveTo(String location) throws Exception {
+	public static void moveTo(String location) {
 		logger.info("Moving to " + location);
-
 	}
 
-	void escort(String location) {
+	public static void escort(String location) {
 		logger.info("Escorting to " + location);
 	}
+
+	public static void follow(String location) {
+		logger.info("Following to " + location);
+	}
+
+	public static void pickup() {
+		logger.info("Picking up item");
+	}
+
+	public static void place() {
+		logger.info("Placing item down");
+	}
+
 
 	void closeDoor() {
 		logger.info("Closing door.");
@@ -186,8 +205,11 @@ public class bdiEnvironment extends Environment {
 
 		LinkedList<Literal> knowMyHomePercepts = knowHome.getKnowMyHomePercepts();
 		LinkedList<Literal> welcomePercepts = welcome.getWelcomeHomePercepts();
+		LinkedList<Literal> cateringPercepts = catering.getCateringLiterals();
+		
 		addPercepts(knowMyHomePercepts);
 		addPercepts(welcomePercepts);
+		addPercepts(cateringPercepts);
 	}
 
 	private void addPercepts(LinkedList<Literal> literals) {
@@ -200,6 +222,7 @@ public class bdiEnvironment extends Environment {
 
 	private void callASyncSubscribers() {
 		subscribeASync("/jason/welcome/visitorOutOfBounds", "visitorOutOfBounds");
+		subscribeASync("/jason/catering/grannyAlarm", "grannyAlarm");
 	}
 
 	/** Called before the end of MAS execution */
