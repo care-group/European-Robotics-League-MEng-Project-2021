@@ -14,20 +14,17 @@ RUN pip install -U pip setuptools wheel
 RUN pip install -U spacy
 RUN python -m spacy download en_core_web_sm
 
-# Update Python
-RUN sudo update-alternatives --install /usr/bin/python python /usr/bin/python3 1
-RUN sudo apt install python3-pip -y
 
-# Required python3 modules
-RUN pip3 install supervisor
-RUN pip3 install supervisor_twiddler
-RUN pip3 install argcomplete
-RUN pip3 install rospkg==1.2.9 defusedxml netifaces
+# # Required python3 modules
+# RUN pip3 install supervisor
+# RUN pip3 install supervisor_twiddler
+# RUN pip3 install argcomplete
+# RUN pip3 install rospkg==1.2.9 defusedxml netifaces
 
-# OpenCV
-RUN pip3 install scikit-build
-RUN pip3 install opencv-python==4.2.0.34
-RUN echo 'export QT_X11_NO_MITSHM=1' >> ~/.bashrc
+# # OpenCV
+# RUN pip3 install scikit-build
+# RUN pip3 install opencv-python==4.2.0.34
+# RUN echo 'export QT_X11_NO_MITSHM=1' >> ~/.bashrc
 
 # Jason
 RUN sudo git clone https://github.com/jason-lang/jason.git
