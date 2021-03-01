@@ -42,6 +42,7 @@ class Face_Detection:
                     print("Not " + face)
              # No face detected, return immediately    
             except ValueError:
+                print("No face detected.")
                 return None
 
         return None
@@ -51,9 +52,7 @@ class Face_Detection:
         return (result.empty == False)
 
     def publish_results(self,person):
-
         if(person!=None):
-            print("publishing that " +person+" is found")
             self.results_publisher.publish(person)
         else:
             self.results_publisher.publish("unknown")
