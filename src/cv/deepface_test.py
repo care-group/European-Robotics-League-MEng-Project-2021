@@ -11,6 +11,6 @@ def check_if_faces_match(img1,img2):
         print("\tDifferent faces")
 
 
-check_if_faces_match("images/faces/bezos_1.jpg", "images/faces/bezos_2.jpg")
-check_if_faces_match("images/faces/bezos_1.jpg", "images/faces/bezos_3.jpg")
-check_if_faces_match("images/faces/bezos_1.jpg", "images/faces/samuel_1.jpg")
+check_if_faces_match("images/faces/bezos/bezos_1.jpg", "images/faces/bezos/bezos_2.jpg")
+check_if_faces_match("images/faces/bezos/bezos_1.jpg", "images/faces/bezos/bezos_3.jpg")
+check_if_faces_match("images/faces/bezos/bezos_1.jpg", "images/faces/samuel/samuel_1.jpg")

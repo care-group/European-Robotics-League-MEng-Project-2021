@@ -27,7 +27,7 @@ RUN python -m spacy download en_core_web_sm
 RUN pip3 install scikit-build
 RUN pip3 install opencv-python==4.2.0.34
 RUN echo 'export QT_X11_NO_MITSHM=1' >> ~/.bashrc
-
+RUN sudo apt-get install git-lfs
 # Deepface
 RUN pip3 install deepface
 
