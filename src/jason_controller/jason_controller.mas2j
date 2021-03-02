@@ -2,7 +2,7 @@ MAS jason_controller {
 
 	infrastructure: Centralised
 
-	environment: env
+	environment: bdiEnvironment
 
 	agents:
 		agent agent;

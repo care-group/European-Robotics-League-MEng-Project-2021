@@ -1,6 +1,12 @@
 .vscode
 build/
 devel/
+install/
 src/jason_controller/bin/*
 .catkin_workspace
 erl.code-workspace
+output/
+logs/
+.catkin_tools/
+*.pyc
+*.pkl
