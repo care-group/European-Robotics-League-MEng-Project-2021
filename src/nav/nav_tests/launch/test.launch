@@ -1,0 +1,9 @@
+<launch>
+    <!-- My Package launch file -->
+    <node 
+        pkg="nav_tests" 
+        type="test.py" 
+        name="base_and_sensor"  
+        output="screen">
+    </node>
+</launch>
