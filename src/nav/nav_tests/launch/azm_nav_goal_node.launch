@@ -3,7 +3,7 @@
     <node 
         pkg="nav_tests" 
         type="navtest.py" 
-        name="semantic_node"  
+        name="azm_nav_goal_node"  
         output="screen">
     </node>
 </launch>
