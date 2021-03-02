@@ -13,11 +13,11 @@ print("Hi")
 
 laser = Laser()
 while True:
-    print("Waiting for laser scan data.")
+    print("Waiting for  laser scan data.")
     scan_data = laser.get_data()
     try:
         a = scan_data.ranges[360]
-        print("Got laser data, moving on.")
+        print("Got laserdata, moving on.")
         break
     except AttributeError:
         print("No laser scan data yet, sleeping for 500ms.")
