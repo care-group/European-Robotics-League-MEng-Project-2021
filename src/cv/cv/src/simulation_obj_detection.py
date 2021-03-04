@@ -1,21 +1,27 @@
+#!/usr/bin/python
+
 # YOLO code initially adapted from https://www.codespeedy.com/yolo-object-detection-from-image-with-opencv-and-python/
 
 import cv2
-import numpy as np
 import rospy
 from sensor_msgs.msg import Image
 from std_msgs.msg import String
 from geometry_msgs.msg import Point
 from cv_bridge import CvBridge
+import time
+import numpy as np
+import rospkg
 
 # Commanded by the jason agent /jason/detect_object to look for a given object from the robot's camera feed using YOLO.
 # Once found, the coordinates are published /yolo/<target>, and a debugging image with bounding boxes is published to /yolo/<target>/img
 class Object_Detection:
     def __init__(self):
         rospy.init_node('Object_Detection')
+        self.yolo_path = rospkg.RosPack().get_path('cv')+"/yolo/"
         self.init_yolo()
         self.target = ""
         self.bridge = CvBridge()
+        self.TIMEOUT = 60
 
     def subscribe_jason(self):
         jason_subscriber = rospy.Subscriber('/jason/detect_object', String,self.jason_callback)
@@ -23,34 +29,42 @@ class Object_Detection:
     # Sets the target object and subscribes to the camera feed
     def jason_callback(self, msg):
         self.target=msg.data
-        self.img_subscriber = rospy.Subscriber('/hsrb/head_rgbd_sensor/rgb/image_color', Image,self.img_callback)
+        startingTime=time.time()
+        self.img_subscriber = rospy.Subscriber('/hsrb/head_rgbd_sensor/rgb/image_color', Image,self.img_callback,[startingTime])
     
     # Takes the current image from the camera feed and searches for the target object, returning coordinates 
-    def img_callback(self, msg):
+    def img_callback(self, msg,args):
         cv_image = self.bridge.imgmsg_to_cv2(msg, desired_encoding='passthrough')
         obj_coords,img = self.search_for_objects(cv_image)
-        print(obj_coords)
-        
-        #Pub to debug
-        img_pub = rospy.Publisher('/yolo/'+self.target+'/img', Image, queue_size=10)
-        img_pub.publish(self.bridge.cv2_to_imgmsg(img,encoding='passthrough'))
-        
-        obj_coord = Point()
-        obj_coord.x=obj_coords[0][0]
-        obj_coord.z=obj_coords[0][1]
 
-        coord_pub = rospy.Publisher('/yolo/'+self.target, Point, queue_size=10)
-        coord_pub.publish(obj_coord) # Has potential to return multiple objects.
+        duration = time.time()-args[0]
 
-        #Unregister to prevent continuously subscribing to camera feed.
-        self.img_subscriber.unregister()
+        if(duration >self.TIMEOUT or len(obj_coords)!=0):
+
+            print(obj_coords)
+            
+            #Pub to debug
+            img_pub = rospy.Publisher('/yolo/'+self.target+'/img', Image, queue_size=10)
+            img_pub.publish(self.bridge.cv2_to_imgmsg(img,encoding='passthrough'))
+            
+            obj_coord = Point()
+            obj_coord.x=obj_coords[0][0]
+            obj_coord.z=obj_coords[0][1]
+
+            coord_pub = rospy.Publisher('/yolo/'+self.target, Point, queue_size=10)
+            coord_pub.publish(obj_coord) # Has potential to return multiple objects.
+
+            #Unregister to prevent continuously subscribing to camera feed.
+            self.img_subscriber.unregister()
+        else:
+            print("Object not found.")
 
     def init_yolo(self):
         #Load YOLO Algorithm
-        self.net=cv2.dnn.readNet("yolo/yolov3.weights","yolo/yolov3.cfg")
+        self.net=cv2.dnn.readNet(self.yolo_path+"yolov3.weights",self.yolo_path+"yolov3.cfg")
         #To load all objects that have to be detected
         self.classes=[]
-        with open("yolo/coco.names","r") as f:
+        with open(self.yolo_path+"coco.names","r") as f:
             read=f.readlines()
         for i in range(len(read)):
             self.classes.append(read[i].strip("\n"))
