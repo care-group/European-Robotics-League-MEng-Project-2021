@@ -1,0 +1,11 @@
+FROM ghcr.io/hsr-project/tmc_wrs_docker
+
+RUN git -C /wrs/src/Virtual-RALT-Standalone pull || git clone https://github.com/chulme/Virtual-RALT-Standalone.git /wrs/src/Virtual-RALT-Standalone
+RUN cp /wrs/src/Virtual-RALT-Standalone/launch/virtual_ralt_standalone.launch /wrs_ws/src/hsrb_wrs_gazebo_launch/launch/virtual_ralt_standalone.launch
+RUN cp -r /wrs/src/Virtual-RALT-Standalone/structure/ /wrs_ws/src/tmc_wrs_gazebo/tmc_wrs_gazebo_worlds/models/
+RUN cp /wrs/src/Virtual-RALT-Standalone/worlds/virtual_ralt_standalone.world /wrs_ws/src/tmc_wrs_gazebo/tmc_wrs_gazebo_worlds/worlds/virtual_ralt_standalone.world
+
+RUN cd /wrs_ws && source /opt/ros/$ROS_DISTRO/setup.bash && catkin_make install -DCMAKE_BUILD_TYPE=Release -DCMAKE_INSTALL_PREFIX=/opt/ros/$ROS_DISTRO -DCATKIN_ENABLE_TESTING=0
+RUN source /opt/ros/$ROS_DISTRO/setup.bash
+
+ADD supervisord.conf /etc/supervisor/supervisord.conf
