@@ -3,6 +3,12 @@
 # `python3-numpy` and `python3-yaml` is cv_bridge dependencies
 # `ros-kinetic-cv-bridge` is needed to install a lot of cv_bridge deps. Probaply you already have it installed.
 sudo apt-get install python-catkin-tools python3-dev python3-catkin-pkg-modules python3-numpy python3-yaml ros-melodic-cv-bridge
+
+# Move the deepface weights to the appropriate directory
+mkdir /home/developer/.deepface
+mkdir /home/developer/.deepface/weights
+mv vgg_face_weights.h5 /home/developer/.deepface/weights/vgg_face_weights.h5
+
 # Create catkin workspace
 catkin init
 # Instruct catkin to set cmake variables
