@@ -1,0 +1,7 @@
+<launch>
+    <!-- My Package launch file -->
+    <node pkg="cv" name="moveHead" type="moveHead.py" output="screen"/>
+    <node pkg="cv" name="faceDetection" type="simulation_face_detection.py" output="screen"/>
+    <node pkg="cv" name="objectDetection" type="simulation_obj_detection.py" output="screen"/>
+
+</launch>

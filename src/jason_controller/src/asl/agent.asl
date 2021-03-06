@@ -4,7 +4,7 @@
 /* Initial goals */
 
 //!check(rooms).
-!waitForBell.
+//!waitForBell.
 
 /* Plans */
 
@@ -120,3 +120,37 @@
 
 +visitorOutOfBounds
     <- complain.
+
+
++grannyAlarm
+    <-  !visit(bedroom);
+        getCommand;
+        executeCommand.
+
+
+//recursively carry out individual elements of command
++!executeCommand : not done(commands)
+    <- next(command);
+       !executeCommand.
++!executeCommand
+    <- .print("hgfhfg!").
+
+
++task(search)
+    <- .print("search task!");
+        chooseMostLikelyLocation;
+        !visit(MostLikelyLocation).
+
+//Recursively checks each location
++!check(likelyLocation) : not done(likelyLocations)
+    <-  next(likelyLocation);
+        !check(likelyLocations).
++!check(likelyLocations).
+
+
+
++task(accompany)
+    <- .print("accompany task!").
+
++task(manipulate)
+    <- .print("manipulate task!").
