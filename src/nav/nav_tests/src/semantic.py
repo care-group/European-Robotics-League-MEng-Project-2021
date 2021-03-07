@@ -3,6 +3,7 @@
 print("Starting semantic.py")
 
 import rospy
+import json
 from std_msgs.msg import Float64MultiArray, String
 
 ''' TODO
@@ -25,24 +26,27 @@ class SemanticToCoords():
         self.coord_goal_pub = rospy.Publisher('/azm_nav/coord_goal_listener', Float64MultiArray, queue_size=1)
         self.goal = Float64MultiArray()
         self.ctrl_c = False
-        self.rate = rospy.Rate(10) # 10hz
-        self.semantic_coords = {
-            # coordinates in [x, y, w] 
-            # where w is the direction it is facing in degrees
-            "door" : [-0.416, 0, 30],
-            "drawers" : [0.1, 0, 30],
-            "full desk" : [1.5, 0, 30],
-            "trash" : [2.7, 0, 30],
-            "empty desk" : [0, 1.25, 30],
-            "passage" : [2.65, 2.2, 30],
-            "dude" : [0.4, 2.8, 30],
-            "shelves" : [2.25, 4.4, 30]
-        }
+        self.rate = rospy.Rate(10)
         rospy.on_shutdown(self.shutdownhook)
+
+        self.semantic_map = []
+        self.semantic_map_path = r'/workspace/src/nav/nav_tests/maps/semantic.txt'
+
+        try:
+            with open(self.semantic_map_path, "r") as f:
+                self.semantic_map = json.loads(f.read())
+        except Exception as e:
+            rospy.logerr("An error occured while loading the JSON semantic map")
+            rospy.logerr(e)
+
+    def save_semantic_map():
+        # TODO saves the current version of the semantic map to the file
+        return
 
     def shutdownhook(self):
         # works better than the rospy.is_shutdown()
         self.ctrl_c = True
+        save_semantic_map()
     
     def publish_once_goal(self):
         """
@@ -62,13 +66,24 @@ class SemanticToCoords():
 
     def sem_goal_cb(self, msg):
         ''' Listens for semantic goals to move to '''
-        if msg.data not in self.semantic_coords:
-            rospy.loginfo("Semantic goal received which doesn't not have associated coordinates, ignoring.")
-        else:
-            rospy.loginfo("Semantic goal checks out, translating and sending")
-            t = self.semantic_coords[msg.data]
-            self.goal.data = [t[0], t[1], t[2]]
-            self.publish_once_goal()
+        for entry in self.semantic_map:
+            if entry["name"] == msg.data:
+                rospy.loginfo("Semantic goal checks out, translating and sending")
+                t = entry["coords"]
+                self.goal.data = [t[0], t[1], t[2]]
+                self.publish_once_goal()
+                return
+        rospy.loginfo("The label received does not match any entry in the semantic map, ignoring.")
+    
+    def add_to_semantic_map(self, msg):
+        # TODO listens for objects to add to the semantic map
+        return
+
+    def remove_from_semantic_map():
+        # TODO removes specified object from semantic map
+        # how to pick and when is TBD
+        return
+    
 
 
 if __name__ == '__main__':
