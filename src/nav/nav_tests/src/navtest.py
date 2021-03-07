@@ -58,16 +58,25 @@ class SimpleMoveBase():
             msg (rospy message object): message object to publish 
             content (String): very short description of message for debug purposes
         """
+        attempts = 8
+        time_multiplier = 1.5
+        sleep = 0.2
         rospy.loginfo("Attempting to publish {} to {}".format(content, topic.name))
-        while not self.ctrl_c:
+        while not self.ctrl_c and attempts:
             connections = topic.get_num_connections()
+            if not attempts:
+                rospy.logwarn("No listeners on {}, {} wasn't sent.".format(topic, content))
+                return
             if connections > 0:
                 topic.publish(msg)
                 rospy.loginfo("Message published to {}".format(topic.name))
                 break
             else:
                 rospy.loginfo("No subscribers on {}, sleeping.".format(topic.name))
-                self.rate.sleep()
+                rospy.sleep(sleep)
+                attempts -= 1
+                sleep *= time_multiplier
+
 
     def simple_move_base_goal(self, x=0, y=0, theta=0):
         # Set message variables

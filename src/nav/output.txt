@@ -1,0 +1,75 @@
+[
+    {
+        "other": {
+            "color": "brown", 
+            "material": "wood"
+        }, 
+        "coords": [
+            -0.416, 
+            0, 
+            30
+        ], 
+        "name": "door"
+    }, 
+    {
+        "other": {
+            "race": "white", 
+            "weight": 63, 
+            "height": 183
+        }, 
+        "coords": [
+            0.4, 
+            2.8, 
+            30
+        ], 
+        "name": "dude"
+    }, 
+    {
+        "coords": [
+            1.5, 
+            0, 
+            30
+        ], 
+        "name": "full desk"
+    }, 
+    {
+        "coords": [
+            2.7, 
+            0, 
+            30
+        ], 
+        "name": "trash"
+    }, 
+    {
+        "coords": [
+            0, 
+            1.25, 
+            30
+        ], 
+        "name": "empty desk"
+    }, 
+    {
+        "coords": [
+            2.65, 
+            2.2, 
+            30
+        ], 
+        "name": "passage"
+    }, 
+    {
+        "coords": [
+            0.4, 
+            2.8, 
+            30
+        ], 
+        "name": "dude"
+    }, 
+    {
+        "coords": [
+            2.25, 
+            4.4, 
+            30
+        ], 
+        "name": "shelves"
+    }
+]
