@@ -17,7 +17,7 @@ RUN sudo apt install python3-pip -y
 RUN pip3 install supervisor
 RUN pip3 install supervisor_twiddler
 RUN pip3 install argcomplete
-RUN pip3 install rospkg==1.2.9 defusedxml netifaces
+RUN pip3 install rospkg==1.2.10 defusedxml netifaces
 
 # spaCY
 RUN pip3 install -U pip setuptools wheel
