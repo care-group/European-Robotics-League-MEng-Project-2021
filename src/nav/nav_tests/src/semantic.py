@@ -9,6 +9,7 @@ from std_msgs.msg import Float64MultiArray, String
 ''' TODO
 5. make my own maps
 6. live updating of semantic map
+7. make a service to return array of all entries of name
 '''
 
 class SemanticToCoords():
@@ -37,6 +38,7 @@ class SemanticToCoords():
             rospy.logerr("An error occured while loading the JSON semantic map")
             rospy.logerr(e)
         # Dynamic semantic map inits
+        self.semantic_labels_sub = rospy.Subscriber('/azm_nav/semantic_labels_additions', String, self.add_to_semantic_map)
         # subscriber
 
     def save_semantic_map():
@@ -91,8 +93,13 @@ class SemanticToCoords():
         rospy.loginfo("The label received does not match any entry in the semantic map, ignoring.")
     
     def add_to_semantic_map(self, msg):
-        # TODO listens for objects to add to the semantic map
-        return
+        t = json.loads(msg.data)
+        if ("name" not in t or
+            "coords" not in t or
+            "others" not in t):
+            rospy.logwarn("Label received does not feature all required keys (name, coords, others), label received: {}".format(t))
+        else:
+            self.semantic_map.append(t)
 
     def remove_from_semantic_map():
         # TODO removes specified object from semantic map
@@ -102,6 +109,13 @@ class SemanticToCoords():
     def update_entry_descriptions():
         # TODO looks up an entry
         pass
+
+    def get_entry_by_name(self, name):
+        o = []
+        for entry in self.semantic_map:
+            if entry["name"] == name:
+                o.append(entry)
+        return o
 
 
     
