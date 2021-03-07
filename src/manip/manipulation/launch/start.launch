@@ -1,0 +1,5 @@
+<launch>
+    <!-- My Package launch file -->
+    <node pkg="manipulation" type="initial.py" name="Init"  output="screen">
+    </node>
+</launch>
