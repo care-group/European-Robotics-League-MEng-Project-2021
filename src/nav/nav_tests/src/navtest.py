@@ -31,8 +31,8 @@ class SimpleMoveBase():
 
     def __init__(self):
         # Base node inits
-        rospy.loginfo("Initiating basic_coordinate_goal_nav_node")
-        rospy.init_node('basic_semantic_nav_node')
+        rospy.loginfo("Initiating basic__nav_node")
+        rospy.init_node('basic_nav_node')
         self.ctrl_c = False
         self.rate = rospy.Rate(10) # 10hz
         rospy.on_shutdown(self.shutdownhook)
