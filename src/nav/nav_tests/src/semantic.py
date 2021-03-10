@@ -19,8 +19,8 @@ class SemanticToCoords():
     '''
     def __init__(self):
         # Base node inits
-        rospy.loginfo("Initiating semantic_translator_node")
-        rospy.init_node('semantic_translator_node')
+        rospy.loginfo("Initiating semantic_node")
+        rospy.init_node('semantic_node')
         self.ctrl_c = False
         self.rate = rospy.Rate(10)
         rospy.on_shutdown(self.shutdownhook)
@@ -31,29 +31,34 @@ class SemanticToCoords():
         # Semantic map inits
         self.semantic_map = []
         self.semantic_map_path = r'/workspace/src/nav/nav_tests/maps/semantic.txt' # TODO change this to be passed in from the launch file
+        self.load_semantic_map()
+        # Dynamic semantic map inits
+        self.semantic_labels_sub = rospy.Subscriber('/azm_nav/semantic_label_additions', String, self.add_to_semantic_map)
+        # subscriber
+
+    def load_semantic_map():
         try:
             with open(self.semantic_map_path, "r") as f:
                 self.semantic_map = json.loads(f.read())
         except Exception as e:
             rospy.logerr("An error occured while loading the JSON semantic map")
             rospy.logerr(e)
-        # Dynamic semantic map inits
-        self.semantic_labels_sub = rospy.Subscriber('/azm_nav/semantic_labels_additions', String, self.add_to_semantic_map)
-        # subscriber
 
     def save_semantic_map():
-        # TODO saves the current version of the semantic map to the file
-        returb
+        try:
+            with open(self.semantic_map_path, "r") as f:
+                f.write(json.dumps(self.semantic_map))
+        except Exception as e:
+            rospy.logerr("An error occured while saving the JSON semantic map, hope you made a backup")
+            rospy.logerr(e)
 
     def shutdownhook(self):
         # works better than the rospy.is_shutdown()
         self.ctrl_c = True
         save_semantic_map()
     
-
-    
     def publish_once(self, topic, msg, content="message"):
-    """
+    '''
     Adapted from theconstruct's ros in 5 days course
     will keep retrying to publish the message if the publisher has no connections
 
@@ -61,7 +66,7 @@ class SemanticToCoords():
         topic (rospy publisher object): topic object to publish to
         msg (rospy message object): message object to publish 
         content (String): very short description of message for debug purposes
-    """
+    '''
     attempts = 8
     time_multiplier = 1.5
     sleep = 0.2
@@ -92,10 +97,11 @@ class SemanticToCoords():
                 return
         rospy.loginfo("The label received does not match any entry in the semantic map, ignoring.")
     
-    def add_to_semantic_map(self, msg):
-        t = json.loads(msg.data)
+    def add_to_semantic_map(entry_dic):
+        t = json.loads(entry_dic)
         if ("name" not in t or
             "coords" not in t or
+            "type" not in t or
             "others" not in t):
             rospy.logwarn("Label received does not feature all required keys (name, coords, others), label received: {}".format(t))
         else:
