@@ -11,6 +11,12 @@ import json
 7. make a service to return array of all entries of name
 '''
 
+def dynamic_euclid_dist(a, b):
+    o = 0
+    for i in range(len(a)):
+        o += (a[i]-b[i])**2
+    return sqrt(o)
+
 class SemanticToCoords():
     '''
     This class will start a node that will listen for semantic nav goals on /azm_nav/semantic_goal_listener
@@ -41,6 +47,7 @@ class SemanticToCoords():
             with open(self.semantic_map_path, "r") as f:
                 self.semantic_map = json.loads(f.read())
         except Exception as e:
+            # TODO make rospy.log
             print("An error occured while loading the JSON semantic map")
             print(e)
 
@@ -49,6 +56,7 @@ class SemanticToCoords():
             with open(self.semantic_map_path, "w") as f:
                 f.write(json.dumps(self.semantic_map, indent=4))
         except Exception as e:
+            # TODO make rospy.log
             print("An error occured while saving the JSON semantic map, hope you made a backup")
             print(e)
 
@@ -61,27 +69,60 @@ class SemanticToCoords():
     def shutdownhook(self):
         # works better than the rospy.is_shutdown()
         self.ctrl_c = True
+        print("Semantic shutting down, saving")
         self.save_semantic_map()
     
     def add_new_to_semantic_map(self, input):
+        """
+        Adds a new label object to the semantic map,
+        input dict must contain minimum {"name":str, "coords":list, "type":str, "others":dict}
+        but only the coords need to be populated
+        Args:
+            input (dict): a dictionary representing a label object in the semantic map
+
+        Returns:
+            bool: returns false if the input did not pass validation checks, true otherwise
+        """ 
         validation_map = {"name":str, "coords":list, "type":str, "others":dict}
         if not all(i in input and type(input[i]) == validation_map[i] for i in validation_map):
+            # TODO make rospy.log
             print("Label received does not feature all required keys (name:str, type:str, coords:list, others:dict), label received: {}".format(input))
             return False
         else:
+            # TODO check if repeat
             self.semantic_map.append(input)
             return True
 
-    def remove_from_semantic_map(self):
-        # TODO removes specified object from semantic map
-        # how to pick and when is TBD
-        return
-    
+    # TODO test
+    def delete_from_semantic_map_by_coords(self, coords, distance_threshold=0.2):
+        """
+        Deletes the first entry whose coords are under the distance threshold
+
+        Args:
+            coords (list, tuple): list or tuple with 3 ints/floats describing the position of the label to be deleted
+            distance_threshold (float, optional): the threshold with which to accept a coord as matching that of the label. Defaults to 0.2.
+
+        Returns:
+            None, dict: Returns the removed dict if it succeeds, returns None otherwise
+        """
+        if not (isinstance(coords, (list, tuple)) and
+           all(isinstance(i, (int, float)) for i in coords) and
+           len(coords) == 3):
+            # TODO make rospy.log
+            print("Bad input when trying to delete from semantic map")
+            return None
+        for entry in self.semantic_map:
+            if dynamic_euclid_dist(entry["coords"], coords)<distance_threshold:
+                self.semantic_map.remove(entry)
+                return entry
+        return None
+
+    # TODO looks up an entry
     def update_entry_descriptions(self):
-        # TODO looks up an entry
         pass
 
-    def get_entry_by_name(self, name):
+    # TODO Needs docstring
+    def get_entries_by_name(self, name):
         o = []
         for entry in self.semantic_map:
             if entry["name"] == name:
@@ -95,6 +136,5 @@ if __name__ == '__main__':
     print("Creating SemanticToCoords obj")
     sem = SemanticToCoords(r'C:\Users\AZM\Documents\ERL\european_robotic_league\src\nav\nav_tests\maps\semantic.txt')
     
-
     # rospy.loginfo("semantic.py is spinning")
     # rospy.spin()
