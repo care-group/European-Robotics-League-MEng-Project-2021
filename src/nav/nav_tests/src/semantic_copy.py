@@ -3,6 +3,7 @@
 print("Starting semantic_copy.py")
 
 import json
+from math import sqrt
 #from std_msgs.msg import Float64MultiArray, String
 
 ''' TODO
@@ -72,7 +73,7 @@ class SemanticToCoords():
         print("Semantic shutting down, saving")
         self.save_semantic_map()
     
-    def add_new_to_semantic_map(self, input):
+    def add_new_to_semantic_map(self, input, distance_threshold=0.1):
         """
         Adds a new label object to the semantic map,
         input dict must contain minimum {"name":str, "coords":list, "type":str, "others":dict}
@@ -81,19 +82,26 @@ class SemanticToCoords():
             input (dict): a dictionary representing a label object in the semantic map
 
         Returns:
-            bool: returns false if the input did not pass validation checks, true otherwise
+            int: returns 0 if the input did not pass validation checks, 
+                         1 if it gets added,
+                         2 if it didn't get added because an item under the threshold already exists
+
         """ 
         validation_map = {"name":str, "coords":list, "type":str, "others":dict}
         if not all(i in input and type(input[i]) == validation_map[i] for i in validation_map):
             # TODO make rospy.log
-            print("Label received does not feature all required keys (name:str, type:str, coords:list, others:dict), label received: {}".format(input))
-            return False
-        else:
-            # TODO check if repeat
-            self.semantic_map.append(input)
-            return True
+            print("Label received does not feature all required keys (name:str, type:str, coords:list, others:dict)," +
+                  "label received: {}".format(input))
+            return 0
+        for entry in self.semantic_map:
+            if entry["name"] == input["name"] and dynamic_euclid_dist(entry["coords"], input["coords"])<distance_threshold:
+                # Assume it's already here
+                return 2
+        self.semantic_map.append(input)
+        return 1
 
-    # TODO test
+    # TODO make it iterate thru the entire input and delete the one whose coords are the closest it
+    # TODO refactor to use integer retursns like in the add method
     def delete_from_semantic_map_by_coords(self, coords, distance_threshold=0.2):
         """
         Deletes the first entry whose coords are under the distance threshold
@@ -103,19 +111,19 @@ class SemanticToCoords():
             distance_threshold (float, optional): the threshold with which to accept a coord as matching that of the label. Defaults to 0.2.
 
         Returns:
-            None, dict: Returns the removed dict if it succeeds, returns None otherwise
+            False, dict: Returns the removed dict if it succeeds, returns False otherwise
         """
         if not (isinstance(coords, (list, tuple)) and
            all(isinstance(i, (int, float)) for i in coords) and
            len(coords) == 3):
             # TODO make rospy.log
             print("Bad input when trying to delete from semantic map")
-            return None
+            return False
         for entry in self.semantic_map:
             if dynamic_euclid_dist(entry["coords"], coords)<distance_threshold:
                 self.semantic_map.remove(entry)
                 return entry
-        return None
+        return False
 
     # TODO looks up an entry
     def update_entry_descriptions(self):
