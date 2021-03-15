@@ -32,7 +32,7 @@ def transform_pose(input_pose, from_frame, to_frame):
         raise
     
 #get the position of the object from a topic
-def graspObject(pose)
+def graspObject(pose):
     transformed_pose = transform_pose(my_pose, "fixture", "world")
 
     whole_body.set_pose_target(p)
