@@ -29,23 +29,26 @@ class SimpleMoveBase():
     Gives simple result feeback thru /azm_nav/goal_result
     """
 
-    def __init__(self, openListenerTopic=True):
-        rospy.loginfo("Initiating basic_coordinate_goal_nav_node")
-        rospy.init_node('basic_semantic_nav_node')
-        self.move_base_simple_publisher = rospy.Publisher('/move_base_simple/goal', PoseStamped, queue_size=1)
-        self.goal = PoseStamped()
+    def __init__(self):
+        # Base node inits
+        rospy.loginfo("Initiating basic__nav_node")
+        rospy.init_node('basic_nav_node')
         self.ctrl_c = False
         self.rate = rospy.Rate(10) # 10hz
         rospy.on_shutdown(self.shutdownhook)
+        # Goal publishing inits
+        self.move_base_simple_publisher = rospy.Publisher('/move_base_simple/goal', PoseStamped, queue_size=1)
+        self.goal = PoseStamped()
+        # Goal feedback inits
         self.move_base_result_sub = rospy.Subscriber('/move_base/result', MoveBaseActionResult, self.goal_result_cb)
         self.goal_result_pub = rospy.Publisher('/azm_nav/goal_result', String, queue_size=1)
         self.result_fb = String()
         self.result_flag = False # Toggles on/off listening to goal result messages
-        if openListenerTopic:
-            #start_topic_listener()
-            self.goal_listener = rospy.Subscriber('/azm_nav/coord_goal_listener', Float64MultiArray, self.goal_callback)
+        # Goal cancelling inits
+        # Goal listening inits
+        self.goal_listener = rospy.Subscriber('/azm_nav/coord_goal_listener', Float64MultiArray, self.goal_callback)
+        
     
-    # TODO make it stop trying to send the message after x number of attempts
     # TODO add error checking if msg doesnt match topic type
     # TODO DEBUG maybe make an ID to link attempt to success?
     def publish_once(self, topic, msg, content="message"):
@@ -77,7 +80,7 @@ class SimpleMoveBase():
                 attempts -= 1
                 sleep *= time_multiplier
 
-
+    # TODO check if we can omit theta
     def simple_move_base_goal(self, x=0, y=0, theta=0):
         # Set message variables
         self.goal.header.frame_id = "map"

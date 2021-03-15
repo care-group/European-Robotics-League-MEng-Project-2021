@@ -10,3 +10,4 @@ logs/
 .catkin_tools/
 *.pyc
 *.pkl
+src/nav/nav_tests/src/speedtest.py
