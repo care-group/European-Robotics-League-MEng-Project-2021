@@ -1,75 +1,83 @@
 [
     {
         "other": {
-            "color": "brown", 
+            "color": "brown",
             "material": "wood"
-        }, 
+        },
         "coords": [
-            -0.416, 
-            0, 
+            -0.416,
+            0,
             30
-        ], 
-        "name": "door"
-    }, 
+        ],
+        "name": "door",
+        "type": "object"
+    },
     {
         "other": {
-            "race": "white", 
-            "weight": 63, 
+            "race": "white",
+            "weight": 63,
             "height": 183
-        }, 
+        },
         "coords": [
-            0.4, 
-            2.8, 
+            0.4,
+            2.8,
             30
-        ], 
-        "name": "dude"
-    }, 
+        ],
+        "name": "dude",
+        "type": "person"
+    },
     {
         "coords": [
-            1.5, 
-            0, 
+            1.5,
+            0,
             30
-        ], 
-        "name": "full desk"
-    }, 
+        ],
+        "name": "full desk",
+        "type": "object"
+    },
     {
         "coords": [
-            2.7, 
-            0, 
+            2.7,
+            0,
             30
-        ], 
-        "name": "trash"
-    }, 
+        ],
+        "name": "trash",
+        "type": "object"
+    },
     {
         "coords": [
-            0, 
-            1.25, 
+            0,
+            1.25,
             30
-        ], 
-        "name": "empty desk"
-    }, 
+        ],
+        "name": "empty desk",
+        "type": "object"
+    },
     {
         "coords": [
-            2.65, 
-            2.2, 
+            2.65,
+            2.2,
             30
-        ], 
-        "name": "passage"
-    }, 
+        ],
+        "name": "passage",
+        "type": "object"
+    },
     {
         "coords": [
-            0.4, 
-            2.8, 
+            0.4,
+            2.8,
             30
-        ], 
-        "name": "dude"
-    }, 
+        ],
+        "name": "dude",
+        "type": "object"
+    },
     {
         "coords": [
-            2.25, 
-            4.4, 
+            2.25,
+            4.4,
             30
-        ], 
-        "name": "shelves"
+        ],
+        "name": "shelves",
+        "type": "object"
     }
 ]
