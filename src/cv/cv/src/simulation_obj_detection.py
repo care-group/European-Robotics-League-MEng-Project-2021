@@ -30,7 +30,7 @@ class Object_Detection:
     def jason_callback(self, msg):
         self.target=msg.data
         startingTime=time.time()
-        self.img_subscriber = rospy.Subscriber('/hsrb/head_rgbd_sensor/rgb/image_color', Image,self.img_callback,[startingTime])
+        self.img_subscriber = rospy.Subscriber('/hsrb/head_rgbd_sensor/rgb/image_color', Image,self.img_callback,[startingTime],buff_size=1, queue_size=1)
     
     # Takes the current image from the camera feed and searches for the target object, returning coordinates 
     def img_callback(self, msg,args):
@@ -44,7 +44,7 @@ class Object_Detection:
             print(obj_coords)
             
             #Pub to debug
-            img_pub = rospy.Publisher('/yolo/'+self.target+'/img', Image, queue_size=10)
+            img_pub = rospy.Publisher('/yolo/'+self.target+'/img', Image, queue_size=1)
             img_pub.publish(self.bridge.cv2_to_imgmsg(img,encoding='passthrough'))
             
             obj_coord = Point()

@@ -15,8 +15,7 @@ class Face_Detection:
         rospy.init_node('Face_Detection')
 
         self.bridge = CvBridge()
-        self.results_publisher = rospy.Publisher('/cv/face/personIs', String, queue_size=10)
-        self.img_pub = rospy.Publisher('/cv/image', Image, queue_size=10)
+        self.results_publisher = rospy.Publisher('/cv/face/personIs', String, queue_size=0)
         self.db_base_path = rospkg.RosPack().get_path('cv')
 
         self.TIMEOUT = 60
@@ -27,12 +26,14 @@ class Face_Detection:
     # Sets the target object and subscribes to the camera feed
     def jason_callback(self, msg):        
         startingTime=time.time()
-        self.img_subscriber = rospy.Subscriber('/hsrb/head_rgbd_sensor/rgb/image_color', Image,self.img_callback,[startingTime])
+        self.img_subscriber = rospy.Subscriber('/hsrb/head_rgbd_sensor/rgb/image_color', Image,self.img_callback,[startingTime], buff_size=1, queue_size=1)
 
     # Takes the current image from the camera feed and searches for the target object, returning coordinates 
     def img_callback(self, msg,args):
         cv_image = self.bridge.imgmsg_to_cv2(msg, desired_encoding='passthrough')
-        self.img_pub.publish(msg) #Publish what the component sees for debugging (as there is a delay due to system performance)
+        
+        img_pub = rospy.Publisher('/cv/face/image', Image, queue_size=1)
+        img_pub.publish(msg) #Publish what the component sees for debugging (as there is a delay due to system performance)
 
         person = self.get_person_from_face(cv_image)
 
