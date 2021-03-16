@@ -5,11 +5,14 @@
 
 //!check(rooms).
 //!waitForBell.
-
+!waitForEntranceOpened.
 /* Plans */
-
+/*
 +!waitForBell
     <- waitForBell.
+*/
++!waitForEntranceOpened
+    <- waitForEntranceOpened.
 
 //Recursively checks each room
 +!check(rooms) : not done(rooms)
@@ -148,9 +151,20 @@
 +!check(likelyLocations).
 
 
-
 +task(accompany)
     <- .print("accompany task!").
 
 +task(manipulate)
     <- .print("manipulate task!").
+
+
++entranceOpened
+    <-  moveTo(wayPoint1);
+        moveTo(wayPoint2);
+        moveTo(wayPoint3);
+        follow.
+
+
++obstacleDetected
+    <-  identifyObstacle;
+        moveObstacle.
