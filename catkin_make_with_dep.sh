@@ -7,7 +7,7 @@ sudo apt-get install python-catkin-tools python3-dev python3-catkin-pkg-modules 
 # Move the deepface weights to the appropriate directory
 mkdir /home/developer/.deepface
 mkdir /home/developer/.deepface/weights
-mv vgg_face_weights.h5 /home/developer/.deepface/weights/vgg_face_weights.h5
+cp vgg_face_weights.h5 /home/developer/.deepface/weights/vgg_face_weights.h5
 
 # Create catkin workspace
 catkin init
