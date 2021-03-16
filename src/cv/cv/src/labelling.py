@@ -39,10 +39,10 @@ class Semantic_Labelling:
         if(len(semantic_labels)!=0):
 
             #Pub to debug
-            img_pub = rospy.Publisher('/semantic_labels/img', Image, queue_size=10)
+            img_pub = rospy.Publisher('/semantic_labels/img', Image, queue_size=1)
             img_pub.publish(self.bridge.cv2_to_imgmsg(img,encoding='passthrough'))
             
-            coord_pub = rospy.Publisher('/semantic_labels', SemanticLabel, queue_size=10)
+            coord_pub = rospy.Publisher('/semantic_labels', SemanticLabel, queue_size=1)
             for obj in semantic_labels:
                 print(obj)
                 coord_pub.publish(obj)            
