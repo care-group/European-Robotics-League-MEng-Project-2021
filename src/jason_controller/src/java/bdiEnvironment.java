@@ -20,7 +20,7 @@ import java.util.concurrent.atomic.AtomicReference;
 
 public class bdiEnvironment extends Environment {
 
-	public static Logger logger = Logger.getLogger("jason_controller." + env.class.getName());
+	public static Logger logger = Logger.getLogger("jason_controller." + bdiEnvironment.class.getName());
 	public static RosBridge bridge = new RosBridge();
 
 	/** Called before the MAS execution with the args informed in .mas2j */
@@ -101,6 +101,19 @@ public class bdiEnvironment extends Environment {
 					break;
 				case "executeCommand":
 					catering.executeCommand();
+					break;
+				/* === VISITING MY HOME === */
+				case "waitForEntranceOpened":
+					visitingHome.waitForEntranceOpened();
+					break;
+				case "identifyObstacle":
+					visitingHome.identifyObstacle();
+					break;
+				case "moveObstacle":
+					visitingHome.moveObstacle();
+					break;
+				case "follow":
+					follow("waypoint4");
 					break;
 				default:
 					logger.info("executing: " + action + ", but not implemented!");
@@ -207,9 +220,12 @@ public class bdiEnvironment extends Environment {
 		LinkedList<Literal> welcomePercepts = welcome.getWelcomeHomePercepts();
 		LinkedList<Literal> cateringPercepts = catering.getCateringLiterals();
 		
+		LinkedList<Literal> visitingHomePercepts = visitingHome.getVisitingHomePercepts();
+
 		addPercepts(knowMyHomePercepts);
 		addPercepts(welcomePercepts);
 		addPercepts(cateringPercepts);
+		addPercepts(visitingHomePercepts);
 	}
 
 	private void addPercepts(LinkedList<Literal> literals) {
@@ -223,6 +239,7 @@ public class bdiEnvironment extends Environment {
 	private void callASyncSubscribers() {
 		subscribeASync("/jason/welcome/visitorOutOfBounds", "visitorOutOfBounds");
 		subscribeASync("/jason/catering/grannyAlarm", "grannyAlarm");
+		subscribeASync("/jason/visitingHome/obstacle", "obstacleDetected");
 	}
 
 	/** Called before the end of MAS execution */

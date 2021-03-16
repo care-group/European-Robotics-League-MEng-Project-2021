@@ -6,56 +6,46 @@ import cv2
 import rospy
 from sensor_msgs.msg import Image
 from std_msgs.msg import String
-from geometry_msgs.msg import Point
+from cv.msg import SemanticLabel
 from cv_bridge import CvBridge
 import time
 import numpy as np
 import rospkg
 
-# Commanded by the jason agent /jason/detect_object to look for a given object from the robot's camera feed using YOLO.
-# Once found, the coordinates are published /yolo/<target>, and a debugging image with bounding boxes is published to /yolo/<target>/img
-class Object_Detection:
+# Commanded by /nav/semantic_labelling to look for all objects from the robot's camera feed using YOLO.
+# Once objects are found, the labels and coordinates are published /semantic_labels, and a debugging image with bounding boxes is published to /semantic_labels/img
+class Semantic_Labelling:
     def __init__(self):
-        rospy.init_node('Object_Detection')
+        rospy.init_node('Semantic_Labelling')
         self.yolo_path = rospkg.RosPack().get_path('cv')+"/yolo/"
         self.init_yolo()
-        self.target = ""
         self.bridge = CvBridge()
-        self.TIMEOUT = 60
 
     def subscribe_jason(self):
-        jason_subscriber = rospy.Subscriber('/jason/detect_object', String,self.jason_callback)
+        nav_subscriber = rospy.Subscriber('/nav/semantic_labelling', String,self.nav_callback)
     
     # Sets the target object and subscribes to the camera feed
-    def jason_callback(self, msg):
+    def nav_callback(self, msg):
         self.target=msg.data
         startingTime=time.time()
-        self.img_subscriber = rospy.Subscriber('/hsrb/head_rgbd_sensor/rgb/image_color', Image,self.img_callback,[startingTime],buff_size=1, queue_size=1)
+        self.img_subscriber = rospy.Subscriber('/hsrb/head_rgbd_sensor/rgb/image_color', Image,self.img_callback)
     
     # Takes the current image from the camera feed and searches for the target object, returning coordinates 
-    def img_callback(self, msg,args):
+    def img_callback(self, msg):
         cv_image = self.bridge.imgmsg_to_cv2(msg, desired_encoding='passthrough')
-        obj_coords,img = self.search_for_objects(cv_image)
+        semantic_labels,img = self.search_for_objects(cv_image)
 
-        duration = time.time()-args[0]
 
-        if(duration >self.TIMEOUT or len(obj_coords)!=0):
+        if(len(semantic_labels)!=0):
 
-            print(obj_coords)
-            
             #Pub to debug
-            img_pub = rospy.Publisher('/yolo/'+self.target+'/img', Image, queue_size=1)
+            img_pub = rospy.Publisher('/semantic_labels/img', Image, queue_size=1)
             img_pub.publish(self.bridge.cv2_to_imgmsg(img,encoding='passthrough'))
             
-            obj_coord = Point()
-            obj_coord.x=obj_coords[0][0]
-            obj_coord.z=obj_coords[0][1]
-
-            coord_pub = rospy.Publisher('/yolo/'+self.target, Point, queue_size=10)
-            coord_pub.publish(obj_coord) # Has potential to return multiple objects.
-
-            #Unregister to prevent continuously subscribing to camera feed.
-            self.img_subscriber.unregister()
+            coord_pub = rospy.Publisher('/semantic_labels', SemanticLabel, queue_size=1)
+            for obj in semantic_labels:
+                print(obj)
+                coord_pub.publish(obj)            
         else:
             print("Object not found.")
 
@@ -108,15 +98,23 @@ class Object_Detection:
                 #cv2.rectangle(img,(x,y),(x+w,y+h),(0,255,0),2)
         #Removing Double Boxes
         indexes=cv2.dnn.NMSBoxes(boxes,confidences,0.3,0.4)
-        target_obj_positions=[]
+        semantic_labels=[]
         for i in range(len(boxes)):
             if i in indexes:
                 x, y, w, h = boxes[i]
                 label = self.classes[class_ids[i]]  # name of the objects
-                if(self.is_target_obj(label)):
-                    img = self.draw_obj(img,label,x,y,w,h,(0,255,0))
-                    target_obj_positions.append(self.get_center_coords(x,y,w,h))
-        return target_obj_positions,img
+                img = self.draw_obj(img,label,x,y,w,h,(0,255,0))
+                
+                semantic_label = SemanticLabel()
+                semantic_label.label = label
+
+                centerX,centerZ = self.get_center_coords(x,y,w,h)
+                semantic_label.point.x = centerX
+                semantic_label.point.y = 0
+                semantic_label.point.z = centerZ
+
+                semantic_labels.append(semantic_label)
+        return semantic_labels,img
 
     def get_center_coords(self,x,y,w,h):
         return int(x+0.5*w),int(y+0.5*h)
@@ -134,6 +132,6 @@ class Object_Detection:
     def is_target_obj(self,obj):
         return obj == self.target
 
-obj_detection = Object_Detection()
-obj_detection.subscribe_jason()
+semantic_labelling = Semantic_Labelling()
+semantic_labelling.subscribe_jason()
 rospy.spin()
