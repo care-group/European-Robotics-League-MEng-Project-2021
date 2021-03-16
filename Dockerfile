@@ -12,7 +12,7 @@ RUN sudo apt-get upgrade -y
 # Update Python
 RUN sudo update-alternatives --install /usr/bin/python python /usr/bin/python3 1
 RUN sudo apt install python3-pip -y
-
+RUN sudo apt-get install python3-empy
 # Required python3 modules
 RUN pip3 install supervisor
 RUN pip3 install supervisor_twiddler
