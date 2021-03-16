@@ -8,14 +8,13 @@ from tools import armInitialState, closeGripper, openGripper, move_base_vel, get
 
 class graspingAction():
     def __init__(self):
-        #self._subscriber = rospy.Subscriber(
-        #        '/TargetPoint',PointStamped ,self._grasp)
+        self._subscriber = rospy.Subscriber(
+                '/TargetPoint',PointStamped ,self._grasp)
         print("Initiated target point listener")
+
     def _get3D(self):
         depthTool =Get3DPosition()
         print(depthTool._get3DPointMap(-0.149,0.9,"map"))
-
-
 
     def _transform_pose(self,value, from_frame, to_frame):
         listener = tf.TransformListener()
@@ -40,39 +39,40 @@ class graspingAction():
         print("End effector pose")
         pose= self._transform_pose([pose.position.x,pose.position.y,pose.position.z],"odom","map")
         print(pose.point.z, msg.point.z)  
-        '''
         print(pose)
         if pose.point.z > msg.point.z:
             while not (msg.point.z-error < pose.point.z < msg.point.z-error):
                 if not moveJoint('1','0'):
                     break
                 pose = getEndEffectorPose()
+                pose= self._transform_pose([pose.position.x,pose.position.y,pose.position.z],"odom","map")
                 print(pose.point.z, msg.point.z)
         if pose.point.z < msg.point.z:
             while not (msg.point.z-error < msg.point.z < msg.point.z-error):
                 if not moveJoint('1','1'):
                     break
                 pose = getEndEffectorPose()
+                pose= self._transform_pose([pose.position.x,pose.position.y,pose.position.z],"odom","map")
                 print(pose.point.z, msg.point.z)
         print("Alignment completed")
         print(pose.point.z, msg.point.z)    
-        '''
+        
         objectPose = self._transform_pose([msg.point.x,msg.point.y,msg.point.z],"map","base_link")
         if(objectPose.point.y<0-error):
             while not(-error<objectPose.point.y<error):
-                move_base_vel(0,0,-2)
+                move_base_vel(0,0,-5)
                 objectPose = self._transform_pose([msg.point.x,msg.point.y,msg.point.z],"map","base_link")
                 print(objectPose.point.y)
         if(objectPose.point.y>0+error):
             while not(-error<objectPose.point.y<error):
-                move_base_vel(0,0,2)
+                move_base_vel(0,0,5)
                 objectPose = self._transform_pose([msg.point.x,msg.point.y,msg.point.z],"map","base_link")
                 print(objectPose.point.y)
         print("Point in base link frame")
         print(objectPose.point.y)
-        move_base_vel(0,-1,0)
-        move_base_vel(0,-1,0)
-        move_base_vel(0,-1,0)
+        pose = getEndEffectorPose()
+        pose= self._transform_pose([pose.position.x,pose.position.y,pose.position.z],"odom","map")
+        while((pose.x-msg.point.x)+(pose.z-msg.point.z))
         
         
 
