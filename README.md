@@ -25,7 +25,9 @@ docker-compose up
 ```
 Access the container through the [online IDE](http://localhost:3001) or locally-installed Visual Studio Code and run
 ```
-catkin_make
+cd /workspace
+sh catkin_make_with_dep.sh
+source devel/setup.bash --extend
 ```
 ## Development
 - The simulator's screen http://localhost:3000
