@@ -5,6 +5,7 @@ import numpy as np
 import rospy
 from sensor_msgs.msg import Image
 from std_msgs.msg import String
+from geometry_msgs.msg import Point
 from cv_bridge import CvBridge
 
 # Commanded by the jason agent /jason/detect_object to look for a given object from the robot's camera feed using YOLO.
@@ -34,8 +35,12 @@ class Object_Detection:
         img_pub = rospy.Publisher('/yolo/'+self.target+'/img', Image, queue_size=10)
         img_pub.publish(self.bridge.cv2_to_imgmsg(img,encoding='passthrough'))
         
-        coord_pub = rospy.Publisher('/yolo/'+self.target, Image, queue_size=10)
-        coord_pub.publish(obj_coords[0]) # Has potential to return multiple objects.
+        obj_coord = Point()
+        obj_coord.x=obj_coords[0][0]
+        obj_coord.z=obj_coords[0][1]
+
+        coord_pub = rospy.Publisher('/yolo/'+self.target, Point, queue_size=10)
+        coord_pub.publish(obj_coord) # Has potential to return multiple objects.
 
         #Unregister to prevent continuously subscribing to camera feed.
         self.img_subscriber.unregister()

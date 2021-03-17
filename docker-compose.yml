@@ -60,7 +60,6 @@ services:
       - "3002:8888"
     volumes:
       - .:/workspace:cached
-      - ~/.gitconfig:/home/developer/.gitconfig
     build: .
     environment:
       - DISPLAY=:0

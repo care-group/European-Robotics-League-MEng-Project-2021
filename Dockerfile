@@ -8,15 +8,16 @@ RUN sudo -E apt-key adv --keyserver 'hkp://keyserver.ubuntu.com:80' --recv-key C
 RUN sudo apt clean && sudo apt update
 RUN sudo apt-get upgrade -y
 
+
 # Update Python
 RUN sudo update-alternatives --install /usr/bin/python python /usr/bin/python3 1
 RUN sudo apt install python3-pip -y
-
+RUN sudo apt-get install python3-empy
 # Required python3 modules
 RUN pip3 install supervisor
 RUN pip3 install supervisor_twiddler
 RUN pip3 install argcomplete
-RUN pip3 install rospkg==1.2.9 defusedxml netifaces
+RUN pip3 install rospkg==1.2.10 defusedxml netifaces
 
 # spaCY
 RUN pip3 install -U pip setuptools wheel
@@ -27,9 +28,10 @@ RUN python -m spacy download en_core_web_sm
 RUN pip3 install scikit-build
 RUN pip3 install opencv-python==4.2.0.34
 RUN echo 'export QT_X11_NO_MITSHM=1' >> ~/.bashrc
-
+RUN sudo apt-get install git-lfs
 # Deepface
 RUN pip3 install deepface
+RUN sudo apt-get install python-catkin-tools python3-dev python3-catkin-pkg-modules python3-numpy python3-yaml ros-melodic-cv-bridge -y
 
 # Jason
 RUN sudo git clone https://github.com/jason-lang/jason.git /additional_software/jason
@@ -58,3 +60,6 @@ RUN source /home/developer/google-cloud-sdk/path.bash.inc
 RUN source /home/developer/google-cloud-sdk/completion.bash.inc
 
 
+
+
+RUN source /opt/ros/melodic/setup.bash
