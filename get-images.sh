@@ -27,6 +27,11 @@
 # POSSIBILITY OF SUCH DAMAGE.
 
 docker pull devrt/xserver
-docker build -t devrt/ros-devcontainer-vscode:erl .
-docker pull ghcr.io/hsr-project/tmc_wrs_docker
+if [ $1 = "testbed" ]; then
+    docker build -t ghcr.io/hsr-project/tmc_wrs_docker:testbed -f Dockerfile.binaries . 
+    docker build -t devrt/ros-devcontainer-vscode:testbed .
+else
+    docker build -t devrt/ros-devcontainer-vscode:erl .
+    docker pull ghcr.io/hsr-project/tmc_wrs_docker
+fi
 $SHELL
