@@ -3,21 +3,9 @@
 print("Starting navtest.py")
 
 import rospy
-import math
-import tf
 from std_msgs.msg import Float64MultiArray, String
 from geometry_msgs.msg import PoseStamped, Quaternion
 from move_base_msgs.msg import MoveBaseActionResult
-
-def quaternion_from_euler(roll, pitch, yaw):
-    '''
-    From HSR's utils.py
-    '''
-    q = tf.transformations.quaternion_from_euler(roll / 180.0 * math.pi,
-                                                 pitch / 180.0 * math.pi,
-                                                 yaw / 180.0 * math.pi, 'rxyz')
-    
-    return Quaternion(q[0], q[1], q[2], q[3])
 
 
 class SimpleMoveBase():
