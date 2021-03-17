@@ -45,3 +45,16 @@ RUN sudo apt-get install ros-melodic-rosbridge-suite -y
 RUN source /opt/ros/melodic/setup.bash
 
 RUN sudo apt-get install python-catkin-tools python3-dev python3-catkin-pkg-modules python3-numpy python3-yaml ros-melodic-cv-bridge -y
+
+# google cloud SDK
+RUN curl -sSL https://sdk.cloud.google.com | bash
+
+RUN pip3 install --upgrade google-cloud-speech
+
+RUN export GOOGLE_APPLICATION_CREDENTIALS=/home/developer/workspace/src/hri/auth.json
+
+RUN source /home/developer/google-cloud-sdk/path.bash.inc
+
+RUN source /home/developer/google-cloud-sdk/completion.bash.inc
+
+
