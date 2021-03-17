@@ -1,0 +1,75 @@
+[
+    {
+        "name": "object1",
+        "type": "object",
+        "coords": [],
+        "others": {}
+    },
+    {
+        "name": "object1",
+        "type": "object",
+        "coords": [],
+        "others": {}
+    },
+    {
+        "name": "object1",
+        "type": "object",
+        "coords": [],
+        "others": {}
+    },
+    {
+        "name": "object1",
+        "type": "object",
+        "coords": [],
+        "others": {}
+    },
+    {
+        "name": "object1",
+        "type": "object",
+        "coords": [],
+        "others": {}
+    },
+    {
+        "name": "object1",
+        "type": "object",
+        "coords": [],
+        "others": {}
+    },
+    {
+        "name": "object1",
+        "type": "object",
+        "coords": [],
+        "others": {}
+    },
+    {
+        "name": "object1",
+        "type": "object",
+        "coords": [],
+        "others": {}
+    },
+    {
+        "name": "",
+        "type": "",
+        "coords": [],
+        "others": {}
+    },
+    {
+        "name": "",
+        "type": "",
+        "coords": [],
+        "others": {}
+    },
+    {
+        "name": "",
+        "type": "",
+        "coords": [],
+        "others": {}
+    },
+    {
+        "name": "",
+        "type": "",
+        "in": "",
+        "coords": [],
+        "others": {}
+    }
+]
