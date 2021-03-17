@@ -29,3 +29,4 @@
 docker pull devrt/xserver
 docker build -t devrt/ros-devcontainer-vscode:erl .
 docker pull ghcr.io/hsr-project/tmc_wrs_docker
+$SHELL
