@@ -30,6 +30,7 @@ RUN pip3 install opencv-python==4.2.0.34
 RUN echo 'export QT_X11_NO_MITSHM=1' >> ~/.bashrc
 RUN sudo apt-get install git-lfs
 # Deepface
+RUN sudo apt-get update
 RUN pip3 install deepface
 RUN sudo apt-get install python-catkin-tools python3-dev python3-catkin-pkg-modules python3-numpy python3-yaml ros-melodic-cv-bridge -y
 

@@ -6,7 +6,7 @@ import cv2
 import rospy
 from sensor_msgs.msg import Image
 from std_msgs.msg import String
-from geometry_msgs.msg import Point
+from geometry_msgs.msg import PointStamped
 from cv_bridge import CvBridge
 import time
 import numpy as np
@@ -35,6 +35,7 @@ class Object_Detection:
     # Takes the current image from the camera feed and searches for the target object, returning coordinates 
     def img_callback(self, msg,args):
         cv_image = self.bridge.imgmsg_to_cv2(msg, desired_encoding='passthrough')
+                
         obj_coords,img = self.search_for_objects(cv_image)
 
         duration = time.time()-args[0]
@@ -43,16 +44,18 @@ class Object_Detection:
 
             print(obj_coords)
             
-            #Pub to debug
-            img_pub = rospy.Publisher('/yolo/'+self.target+'/img', Image, queue_size=1)
+            #Pub image with bounding boxes debug
+            print("Publishing to /yolo/img")
+            img_pub = rospy.Publisher('/yolo/img', Image, queue_size=1,latch=True)
             img_pub.publish(self.bridge.cv2_to_imgmsg(img,encoding='passthrough'))
             
-            obj_coord = Point()
-            obj_coord.x=obj_coords[0][0]
-            obj_coord.z=obj_coords[0][1]
+            obj_coord = PointStamped()
+            obj_coord.header=msg.header
+            obj_coord.point.x=obj_coords[0][0] # Has potential to return multiple objects, so use [0] element
+            obj_coord.point.z=obj_coords[0][1]
 
-            coord_pub = rospy.Publisher('/yolo/'+self.target, Point, queue_size=10)
-            coord_pub.publish(obj_coord) # Has potential to return multiple objects.
+            coord_pub = rospy.Publisher('/cv/obj_2d_position', PointStamped, queue_size=1,latch=True)
+            coord_pub.publish(obj_coord) 
 
             #Unregister to prevent continuously subscribing to camera feed.
             self.img_subscriber.unregister()

@@ -1,4 +1,4 @@
-#!/usr/bin/python
+#!/usr/bin/python2.7
 # -*- coding: utf-8 -*-
 import rospy
 from sensor_msgs.msg import PointCloud2, PointField, Image
@@ -28,14 +28,14 @@ class Get3DPosition(object):
             '/cv/obj_2d_position',PointStamped ,self._get3DPointMapFromTopic)
 
     def _pointPublisher(self,point):
-        pub = rospy.Publisher('TargetPoint', PointStamped, queue_size=10)
+        pub = rospy.Publisher('/TargetPoint', PointStamped, queue_size=10)
         rate = rospy.Rate(10) # 10hz
         while not rospy.is_shutdown():  
             pub.publish(point) 
             rate.sleep()
 
     def _pointPublisherCV(self,point):
-        pub = rospy.Publisher('3DLocatedPoint', PointStamped, queue_size=10)
+        pub = rospy.Publisher('/3DLocatedPoint', PointStamped, queue_size=10)
         rate = rospy.Rate(10) # 10hz
         while not rospy.is_shutdown():  
             pub.publish(point) 
