@@ -8,6 +8,9 @@ from sensor_msgs.msg import Image
 from std_msgs.msg import String
 from cv.msg import SemanticLabel
 from cv_bridge import CvBridge
+from geometry_msgs.msg import PointStamped
+from geometry_msgs.msg import Point
+
 import time
 import numpy as np
 import rospkg
@@ -28,24 +31,29 @@ class Semantic_Labelling:
     def nav_callback(self, msg):
         self.target=msg.data
         startingTime=time.time()
-        self.img_subscriber = rospy.Subscriber('/hsrb/head_rgbd_sensor/rgb/image_color', Image,self.img_callback)
+        self.img_subscriber = rospy.Subscriber('/hsrb/head_rgbd_sensor/rgb/image_color', Image,self.img_callback,buff_size=1, queue_size=1)
     
     # Takes the current image from the camera feed and searches for the target object, returning coordinates 
     def img_callback(self, msg):
         cv_image = self.bridge.imgmsg_to_cv2(msg, desired_encoding='passthrough')
-        semantic_labels,img = self.search_for_objects(cv_image)
+        semantic_points,img = self.search_for_objects(cv_image)
+        
+        img_header = msg.header
 
+        if(len(semantic_points)!=0):
 
-        if(len(semantic_labels)!=0):
-
-            #Pub to debug
+            #Pub image with bounding boxes to debug
             img_pub = rospy.Publisher('/semantic_labels/img', Image, queue_size=1)
             img_pub.publish(self.bridge.cv2_to_imgmsg(img,encoding='passthrough'))
-            
-            coord_pub = rospy.Publisher('/semantic_labels', SemanticLabel, queue_size=1)
-            for obj in semantic_labels:
-                print(obj)
-                coord_pub.publish(obj)            
+
+            coord_pub = rospy.Publisher('/cv/obj_2d_position', PointStamped, queue_size=1)
+            for point in semantic_points:
+                stampedPoint = PointStamped()
+                stampedPoint.header = img_header
+                stampedPoint.point = point["Point"]
+                print(point["Label"] + ": ")
+                print(stampedPoint.point)
+                coord_pub.publish(stampedPoint)            
         else:
             print("Object not found.")
 
@@ -98,23 +106,25 @@ class Semantic_Labelling:
                 #cv2.rectangle(img,(x,y),(x+w,y+h),(0,255,0),2)
         #Removing Double Boxes
         indexes=cv2.dnn.NMSBoxes(boxes,confidences,0.3,0.4)
-        semantic_labels=[]
+        semantic_points=[]
         for i in range(len(boxes)):
             if i in indexes:
                 x, y, w, h = boxes[i]
                 label = self.classes[class_ids[i]]  # name of the objects
                 img = self.draw_obj(img,label,x,y,w,h,(0,255,0))
                 
-                semantic_label = SemanticLabel()
-                semantic_label.label = label
+                point = Point()
 
                 centerX,centerZ = self.get_center_coords(x,y,w,h)
-                semantic_label.point.x = centerX
-                semantic_label.point.y = 0
-                semantic_label.point.z = centerZ
+                point.x = centerX
+                point.y = 0
+                point.z = centerZ
 
-                semantic_labels.append(semantic_label)
-        return semantic_labels,img
+                point_dict={}
+                point_dict["Point"]=point
+                point_dict["Label"]=label
+                semantic_points.append(point_dict)
+        return semantic_points,img # Returns array of dictionaries consisting of Point and Label, and processed image.
 
     def get_center_coords(self,x,y,w,h):
         return int(x+0.5*w),int(y+0.5*h)
