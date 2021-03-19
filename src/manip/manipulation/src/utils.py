@@ -176,11 +176,11 @@ def get_relative_coordinate(parent, child):
 
 # moveitでの制御対象として全身制御を指定
 #whole_body = moveit_commander.MoveGroupCommander("whole_body_light")
-whole_body = moveit_commander.MoveGroupCommander("whole_body_weighted")
-whole_body.allow_replanning(True)
-whole_body.set_workspace([-3.0, -3.0, 3.0, 3.0])
+#whole_body = moveit_commander.MoveGroupCommander("whole_body_weighted")
+#whole_body.allow_replanning(True)
+#whole_body.set_workspace([-3.0, -3.0, 3.0, 3.0])
 
-
+'''
 def move_wholebody_ik(x, y, z, roll, pitch, yaw):
     u"""ロボットを全身の逆運動学で制御する関数
 
@@ -214,7 +214,7 @@ def move_wholebody_ik(x, y, z, roll, pitch, yaw):
     whole_body.set_pose_target(p)
     return whole_body.go()
 
-
+'''
 # moveitでの制御対象としてアームを指定
 arm = moveit_commander.MoveGroupCommander('arm')
 
