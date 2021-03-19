@@ -12,7 +12,7 @@ RUN sudo apt-get upgrade -y
 # Update Python
 RUN sudo update-alternatives --install /usr/bin/python python /usr/bin/python3 1
 RUN sudo apt install python3-pip -y
-
+RUN sudo apt-get install python3-empy
 # Required python3 modules
 RUN pip3 install supervisor
 RUN pip3 install supervisor_twiddler
@@ -30,6 +30,7 @@ RUN pip3 install opencv-python==4.2.0.34
 RUN echo 'export QT_X11_NO_MITSHM=1' >> ~/.bashrc
 RUN sudo apt-get install git-lfs
 # Deepface
+RUN sudo apt-get update
 RUN pip3 install deepface
 RUN sudo apt-get install python-catkin-tools python3-dev python3-catkin-pkg-modules python3-numpy python3-yaml ros-melodic-cv-bridge -y
 
@@ -44,6 +45,22 @@ RUN echo 'export PATH=$JASON_HOME/scripts:$PATH' >> ~/.bashrc
 RUN sudo apt-get install openjdk-8-jre -y
 RUN sudo apt-get install openjdk-11-jdk -y
 RUN sudo apt-get install ros-melodic-rosbridge-suite -y
+RUN source /opt/ros/melodic/setup.bash
+
+RUN sudo apt-get install python-catkin-tools python3-dev python3-catkin-pkg-modules python3-numpy python3-yaml ros-melodic-cv-bridge -y
+
+# google cloud SDK
+RUN curl -sSL https://sdk.cloud.google.com | bash
+
+RUN pip3 install --upgrade google-cloud-speech
+
+RUN export GOOGLE_APPLICATION_CREDENTIALS=/home/developer/workspace/src/hri/auth.json
+
+RUN source /home/developer/google-cloud-sdk/path.bash.inc
+
+RUN source /home/developer/google-cloud-sdk/completion.bash.inc
+
+
 
 
 RUN source /opt/ros/melodic/setup.bash
