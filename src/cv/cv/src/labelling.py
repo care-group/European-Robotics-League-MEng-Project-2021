@@ -10,10 +10,11 @@ from cv.msg import SemanticLabel
 from cv_bridge import CvBridge
 from geometry_msgs.msg import PointStamped
 from geometry_msgs.msg import Point
-
 import time
 import numpy as np
 import rospkg
+from image_geometry import PinholeCameraModel
+from sensor_msgs.msg import CameraInfo
 
 # Commanded by /nav/semantic_labelling to look for all objects from the robot's camera feed using YOLO.
 # Once objects are found, the labels and coordinates are published /semantic_labels, and a debugging image with bounding boxes is published to /semantic_labels/img
@@ -23,37 +24,46 @@ class Semantic_Labelling:
         self.yolo_path = rospkg.RosPack().get_path('cv')+"/yolo/"
         self.init_yolo()
         self.bridge = CvBridge()
+        self.coord_pub = rospy.Publisher('/cv/obj_2d_position', PointStamped, queue_size=10,latch=True)
+        self.img_pub = rospy.Publisher('/semantic_labels/img', Image, queue_size=1)
 
     def subscribe_jason(self):
+        startingTime=time.time()
         nav_subscriber = rospy.Subscriber('/nav/semantic_labelling', String,self.nav_callback)
-    
+        info_subscriber = rospy.Subscriber('/hsrb/head_rgbd_sensor/rgb/camera_info', CameraInfo,self.info_callback)
+
     # Sets the target object and subscribes to the camera feed
     def nav_callback(self, msg):
         self.target=msg.data
         startingTime=time.time()
         self.img_subscriber = rospy.Subscriber('/hsrb/head_rgbd_sensor/rgb/image_color', Image,self.img_callback,buff_size=1, queue_size=1)
     
+    # Gets camera info
+    def info_callback(self, msg):
+        self.cam_info = msg
+
     # Takes the current image from the camera feed and searches for the target object, returning coordinates 
     def img_callback(self, msg):
         cv_image = self.bridge.imgmsg_to_cv2(msg, desired_encoding='passthrough')
         semantic_points,img = self.search_for_objects(cv_image)
         
-        img_header = msg.header
-
         if(len(semantic_points)!=0):
 
             #Pub image with bounding boxes to debug
-            img_pub = rospy.Publisher('/semantic_labels/img', Image, queue_size=1)
-            img_pub.publish(self.bridge.cv2_to_imgmsg(img,encoding='passthrough'))
+            self.img_pub.publish(self.bridge.cv2_to_imgmsg(img,encoding='passthrough'))
 
-            coord_pub = rospy.Publisher('/cv/obj_2d_position', PointStamped, queue_size=1)
             for point in semantic_points:
+                model = PinholeCameraModel()
+                model.fromCameraInfo(self.cam_info)
+                xyz = model.projectPixelTo3dRay((point["Point"].x,point["Point"].z))
+                
                 stampedPoint = PointStamped()
-                stampedPoint.header = img_header
-                stampedPoint.point = point["Point"]
-                print(point["Label"] + ": ")
-                print(stampedPoint.point)
-                coord_pub.publish(stampedPoint)            
+                stampedPoint.header=msg.header
+                stampedPoint.point.x=xyz[0]
+                stampedPoint.point.y=0
+                stampedPoint.point.z=xyz[1]
+                
+                self.coord_pub.publish(stampedPoint) 
         else:
             print("Object not found.")
 
