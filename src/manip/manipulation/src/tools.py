@@ -7,6 +7,7 @@ import moveit_commander
 import moveit_msgs.msg
 import geometry_msgs.msg
 from geometry_msgs.msg import Twist
+#import utils
 import time
 import math
 #sys.path.insert(1, '/home/developer/workspace/src/nav/nav_tests/src')
@@ -126,7 +127,66 @@ def move_base_vel (vx, vy, vw):
 
 
 if __name__ == '__main__':
+    
     rospy.init_node('Test')
+    groupArm.set_planning_time(20)
+    groupArm.set_workspace([-3.0, -3.0, 3.0, 3.0])
+    groupArm.set_planner_id("TRRTkConfigDefault")
+    
+    end_effector_value = groupArm.get_current_pose().pose
+    print(end_effector_value)
+    end_effector_value.position.x = end_effector_value.position.x
+    end_effector_value.position.y = end_effector_value.position.y
+    end_effector_value.position.z = end_effector_value.position.z+0.2
+    end_effector_value.orientation.x = end_effector_value.orientation.x
+    end_effector_value.orientation.y = end_effector_value.orientation.y 
+    end_effector_value.orientation.z = end_effector_value.orientation.z 
+    end_effector_value.orientation.w = end_effector_value.orientation.w 
+    groupArm.clear_pose_targets()
+    groupArm.set_pose_target(end_effector_value)
+    groupArm.set_goal_tolerance(10)
+    plan= groupArm.plan(end_effector_value)
+    groupArm.execute(plan)
+    end_effector_value = groupArm.get_current_pose().pose
+    print(end_effector_value)
+    '''
+    waypoints = []
+
+    # start with the current pose
+    waypoints.append(groupArm.get_current_pose().pose)
+
+    # first orient gripper and move forward (+x)
+    wpose = geometry_msgs.msg.Pose()
+    wpose.orientation.w = 1.0
+    wpose.position.x = waypoints[0].position.x + 1
+    wpose.position.y = waypoints[0].position.y
+    wpose.position.z = waypoints[0].position.z
+    waypoints.append(copy.deepcopy(wpose))
+
+    # second move down
+    wpose.position.z -= 0.10
+    waypoints.append(copy.deepcopy(wpose))
+
+    # third move to the side
+    wpose.position.y += 0.1
+    waypoints.append(copy.deepcopy(wpose))
+    groupArm.set_planning_time(10000)
+    (plan3, fraction) = groupArm.compute_cartesian_path(
+                             waypoints,   # waypoints to follow
+                             0.1,        # eef_step
+                             0.1)         # jump_threshold
+    print(plan3)
+    count = 1
+    for point in plan3.joint_trajectory.points:
+        print(point)
+        point.time_from_start.secs = count * 5
+        count=count+1
+    try:
+        groupArm.execute(plan3,wait=True)
+    except:
+        print("got error")
+    groupArm.clear_pose_targets()
+    
     while not finish:
         value = str(raw_input("Enter the number of the joint to move followed by a 1 or a 0 to move in respective direction. Type exit to close the node or close or open for the gripper and initial to move the arm to the initial state"))
         try:
@@ -148,6 +208,7 @@ if __name__ == '__main__':
         except Exception as e:
             print(e)
             print("invalid")
+    '''
 
 '''
 end_effector_value = group.get_current_pose().pose

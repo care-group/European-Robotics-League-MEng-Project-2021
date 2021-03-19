@@ -4,8 +4,11 @@ import rospy
 from getting3DPosition import Get3DPosition
 from geometry_msgs.msg import PointStamped
 import tf
+import math
+import sys
 from tools import armInitialState, closeGripper, openGripper, move_base_vel, getEndEffectorPose, moveJoint
-
+sys.path.insert(1, '/home/developer/workspace/src/nav/nav_tests/src')
+import navtest as nav
 class graspingAction():
     def __init__(self):
         self._subscriber = rospy.Subscriber(
@@ -14,7 +17,7 @@ class graspingAction():
 
     def _get3D(self):
         depthTool =Get3DPosition()
-        print(depthTool._get3DPointMap(-0.149,0.9,"map"))
+        print(depthTool._get3DPointMap(-0.06,0.685,"map"))
 
     def _transform_pose(self,value, from_frame, to_frame):
         listener = tf.TransformListener()
@@ -72,7 +75,10 @@ class graspingAction():
         print(objectPose.point.y)
         pose = getEndEffectorPose()
         pose= self._transform_pose([pose.position.x,pose.position.y,pose.position.z],"odom","map")
-        while((pose.x-msg.point.x)+(pose.z-msg.point.z))
+        while(math.sqrt((pose.point.x-msg.point.x)**2+(pose.point.z-msg.point.z)**2)>0.1):
+            print(math.sqrt((pose.x-msg.point.x)**2+(pose.z-msg.point.z)**2))
+            move_base_vel(1,0,0)
+        print("Completed approachment")
         
         
 
