@@ -8,48 +8,107 @@ import sys
 import sensor_msgs.point_cloud2 as pc2
 import struct
 import ctypes
+import tf
+import time
+from geometry_msgs.msg import PointStamped
 done = False
+pointCloud = None
 #np.set_printoptions(threshold=sys.maxsize)
-class Get3DPosition(object):
 
+# Class for obtaining the depth component of a 2D detected object
+# Once the class is instantiated the point cloud will be updated continously
+# In order to get the 3D resulting point which include the depth component, 
+# call the _get3DPointMap giving the X and Z coordinates and the initial reference frame.
+# It will return the point referenced to the Map coordinate frame
+class Get3DPosition(object):
     def __init__(self):
         self._subscriber = rospy.Subscriber(
-            '/hsrb/head_rgbd_sensor/depth_registered/rectified_points',PointCloud2 ,self._showPoints)
+            '/hsrb/head_rgbd_sensor/depth_registered/rectified_points',PointCloud2 ,self._definePointCloud)
+        self._subscriber = rospy.Subscriber(
+            '/cv/obj_2d_position',PointStamped ,self._get3DPointMapFromTopic)
 
-    def _showPoints(self, msg):
+
+    def _pointPublisherCV(self,point):
+        pub = rospy.Publisher('3DLocatedPoint', PointStamped, queue_size=10)
+        rate = rospy.Rate(10) # 10hz
+        while not rospy.is_shutdown():  
+            pub.publish(point) 
+            rate.sleep()
+
+    def _transform_pose(self,value, from_frame, to_frame):
+        listener = tf.TransformListener()
+        listener.waitForTransform(from_frame, to_frame, rospy.Time(0),rospy.Duration(4.0))
+        point=PointStamped()
+        point.header.frame_id = from_frame
+        point.header.stamp =rospy.Time(0)
+        point.point.x=value[0]
+        point.point.y=value[1]
+        point.point.z=value[2]
+        point=listener.transformPoint(to_frame,point)
+        return point
+        #self._pointPublisher(point)
+
+    def _inRange(self,data,error,targetX,targetY):
+        for value in data:
+            #print " x : %f  y: %f  z: %f " %(value[0],value[1],value[2])
+            if ((targetX-error)<=round(value[0],2)<=(targetX+error) and (targetY-error)<=(round(value[1],2))<=(targetY+error)):
+                print " x : %f  y: %f  z: %f " %(value[0],value[1],value[2]) 
+                # cast float32 to int so that bitwise operations are possible
+                #s = struct.pack('>f' ,test)
+                #i = struct.unpack('>l',s)[0]
+                # you can get back the float value by the inverse operations
+                #pack = ctypes.c_uint32(i).value
+                #r = (pack & 0x00FF0000)>> 16
+                #g = (pack & 0x0000FF00)>> 8
+                #b = (pack & 0x000000FF)
+                #detected = True
+                target = value
+                transformed_point = self._transform_pose(value,"head_rgbd_sensor_rgb_frame", "map")
+                return transformed_point
+        return None                               
+
+    def _definePointCloud(self, msg):
+        global pointCloud 
+        pointCloud = msg
+    
+    def _get3DPointMapFromTopic(self,msg):
         global done
-        if(not(done)):
-            print("Header: ",msg.header)
-            print("Height: ",msg.height)
-            print("Width: ",msg.width)
-            print("Point Step: ",msg.point_step)
-            print("Row Step: ",msg.row_step)
-            print("Point Fields: ",msg.fields)
-            data = pc2.read_points(msg, field_names = ("x", "y", "z", "rgb"), skip_nans=True)
-        
-            counter = 0
-            for value in data:
-                if 0.30<=round(value[0],2)<=0.37 and 0.5<=round(value[1],2)<=0.6 and 1.7<=round(value[2],2)<=1.8:
-                    print " x : %f  y: %f  z: %f " %(value[0],value[1],value[2])
-                    counter = counter +1
-                    test = value[3] 
-                    # cast float32 to int so that bitwise operations are possible
-                    s = struct.pack('>f' ,test)
-                    i = struct.unpack('>l',s)[0]
-                    # you can get back the float value by the inverse operations
-                    pack = ctypes.c_uint32(i).value
-                    r = (pack & 0x00FF0000)>> 16
-                    g = (pack & 0x0000FF00)>> 8
-                    b = (pack & 0x000000FF)
-                    #print(r,g,b) 
-                
-            print(counter)
-            '''
-            for value in data:
-                print " x : %f  y: %f  z: %f rgb: %f" %(value[0],value[1],value[2],value[3])
-                print(value[3])
-            done=True
-            '''
+        global pointCloud
+        coordinateX = msg.point.x
+        coordinateZ = msg.point.z
+        referenceFrame = msg.header.frame_id
+        #valueX=-0.5
+        #valueZ=1.04
+        completed = False
+        depthSensorFrame = None
+        while(not completed):
+            try:
+                depthSensorFrame = self._transform_pose([coordinateX,0,coordinateZ],referenceFrame,"head_rgbd_sensor_rgb_frame")
+                print("Point transformed correctly")
+                print(depthSensorFrame)
+                completed = True
+
+                time.sleep(1)
+            except: 
+                print("Error transforming given point to head rgbd sensor frame")
+                time.sleep(1)
+        #self._pointPublisher(depthSensorFrame)
+        valueX=depthSensorFrame.point.x
+        valueY=depthSensorFrame.point.y
+        data = pc2.read_points(pointCloud, field_names = ("x", "y", "z", "rgb"), skip_nans=True)
+
+        error=0.005
+        detected = False
+        target = None
+        print("-------- NEW DATA ----- Error "+str(error))
+        transformed_point = self._inRange(data,error,valueX,valueY)
+        if transformed_point is None:
+            print("Not correlated point detected")
+            #return None
+        else:
+            print("Found point")
+            self._pointPublisherCV(transformed_point)
+            #return transformed_point   
     
 def main():
     rospy.init_node('get_3d_position')

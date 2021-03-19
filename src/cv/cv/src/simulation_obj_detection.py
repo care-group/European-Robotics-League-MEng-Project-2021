@@ -6,11 +6,14 @@ import cv2
 import rospy
 from sensor_msgs.msg import Image
 from std_msgs.msg import String
-from geometry_msgs.msg import Point
+from geometry_msgs.msg import PointStamped
 from cv_bridge import CvBridge
 import time
 import numpy as np
 import rospkg
+from image_geometry import PinholeCameraModel, StereoCameraModel
+from sensor_msgs.msg import CameraInfo
+
 
 # Commanded by the jason agent /jason/detect_object to look for a given object from the robot's camera feed using YOLO.
 # Once found, the coordinates are published /yolo/<target>, and a debugging image with bounding boxes is published to /yolo/<target>/img
@@ -22,37 +25,46 @@ class Object_Detection:
         self.target = ""
         self.bridge = CvBridge()
         self.TIMEOUT = 60
+        self.coord_pub = rospy.Publisher('/cv/obj_2d_position', PointStamped, queue_size=10,latch=True)
+        self.img_pub = rospy.Publisher('/yolo/img', Image, queue_size=1,latch=True)
 
     def subscribe_jason(self):
         jason_subscriber = rospy.Subscriber('/jason/detect_object', String,self.jason_callback)
-    
+        info_subscriber = rospy.Subscriber('/hsrb/head_rgbd_sensor/rgb/camera_info', CameraInfo,self.info_callback)
+
+    def info_callback(self, msg):
+        self.cam_info = msg
+
     # Sets the target object and subscribes to the camera feed
     def jason_callback(self, msg):
         self.target=msg.data
         startingTime=time.time()
-        self.img_subscriber = rospy.Subscriber('/hsrb/head_rgbd_sensor/rgb/image_color', Image,self.img_callback,[startingTime])
+        self.img_subscriber = rospy.Subscriber('/hsrb/head_rgbd_sensor/rgb/image_color', Image,self.img_callback,[startingTime],buff_size=1, queue_size=1)
     
     # Takes the current image from the camera feed and searches for the target object, returning coordinates 
     def img_callback(self, msg,args):
-        cv_image = self.bridge.imgmsg_to_cv2(msg, desired_encoding='passthrough')
+        cv_image = self.bridge.imgmsg_to_cv2(msg, desired_encoding='passthrough')    
         obj_coords,img = self.search_for_objects(cv_image)
-
         duration = time.time()-args[0]
 
         if(duration >self.TIMEOUT or len(obj_coords)!=0):
 
             print(obj_coords)
             
-            #Pub to debug
-            img_pub = rospy.Publisher('/yolo/'+self.target+'/img', Image, queue_size=10)
-            img_pub.publish(self.bridge.cv2_to_imgmsg(img,encoding='passthrough'))
+            #Pub image with bounding boxes debug
+            self.img_pub.publish(self.bridge.cv2_to_imgmsg(img,encoding='passthrough'))
+    
+            model = PinholeCameraModel()
+            model.fromCameraInfo(self.cam_info)
+            xyz = model.projectPixelTo3dRay((obj_coords[0][0],obj_coords[0][1]))  # Has potential to return multiple objects, so use [0] element
             
-            obj_coord = Point()
-            obj_coord.x=obj_coords[0][0]
-            obj_coord.z=obj_coords[0][1]
-
-            coord_pub = rospy.Publisher('/yolo/'+self.target, Point, queue_size=10)
-            coord_pub.publish(obj_coord) # Has potential to return multiple objects.
+            stampedPoint = PointStamped()
+            stampedPoint.header=msg.header
+            stampedPoint.point.x=xyz[0]
+            stampedPoint.point.y=0
+            stampedPoint.point.z=xyz[1]
+            
+            self.coord_pub.publish(stampedPoint) 
 
             #Unregister to prevent continuously subscribing to camera feed.
             self.img_subscriber.unregister()
