@@ -32,7 +32,7 @@ while(not completed2):
         time.sleep(1)
 while(not completed1):
     try:
-        groupArm = moveit_commander.MoveGroupCommander("arm")
+        groupArm = moveit_commander.MoveGroupCommander("whole_body")
         completed1 = True
         print("Connected to commander arm")
     except: 
@@ -131,20 +131,20 @@ if __name__ == '__main__':
     rospy.init_node('Test')
     groupArm.set_planning_time(20)
     groupArm.set_workspace([-3.0, -3.0, 3.0, 3.0])
-    groupArm.set_planner_id("TRRTkConfigDefault")
+    groupArm.set_planner_id("TRAC_IKKConfigDefault")
     
     end_effector_value = groupArm.get_current_pose().pose
     print(end_effector_value)
-    end_effector_value.position.x = end_effector_value.position.x
-    end_effector_value.position.y = end_effector_value.position.y
-    end_effector_value.position.z = end_effector_value.position.z+0.2
-    end_effector_value.orientation.x = end_effector_value.orientation.x
-    end_effector_value.orientation.y = end_effector_value.orientation.y 
-    end_effector_value.orientation.z = end_effector_value.orientation.z 
-    end_effector_value.orientation.w = end_effector_value.orientation.w 
+    end_effector_value.position.x = 0.5
+    end_effector_value.position.y = 2
+    end_effector_value.position.z = 3
+    end_effector_value.orientation.x = 1
+    end_effector_value.orientation.y = 0
+    end_effector_value.orientation.z = 4 
+    end_effector_value.orientation.w = 4 
     groupArm.clear_pose_targets()
     groupArm.set_pose_target(end_effector_value)
-    groupArm.set_goal_tolerance(10)
+    groupArm.set_goal_tolerance(0.1)
     plan= groupArm.plan(end_effector_value)
     groupArm.execute(plan)
     end_effector_value = groupArm.get_current_pose().pose
