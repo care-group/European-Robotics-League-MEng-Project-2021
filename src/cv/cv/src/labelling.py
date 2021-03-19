@@ -15,6 +15,7 @@ import numpy as np
 import rospkg
 from image_geometry import PinholeCameraModel
 from sensor_msgs.msg import CameraInfo
+import json
 
 # Commanded by /nav/semantic_labelling to look for all objects from the robot's camera feed using YOLO.
 # Once objects are found, the labels and coordinates are published /semantic_labels, and a debugging image with bounding boxes is published to /semantic_labels/img
@@ -26,6 +27,7 @@ class Semantic_Labelling:
         self.bridge = CvBridge()
         self.coord_pub = rospy.Publisher('/cv/obj_2d_position', PointStamped, queue_size=10,latch=True)
         self.img_pub = rospy.Publisher('/semantic_labels/img', Image, queue_size=1)
+        self.nav_pub = rospy.Publisher('/nav/somenavtopic', String, queue_size=1)
 
     def subscribe_jason(self):
         startingTime=time.time()
@@ -64,6 +66,15 @@ class Semantic_Labelling:
                 stampedPoint.point.z=xyz[1]
                 
                 self.coord_pub.publish(stampedPoint) 
+                # Wait for 3D coordinate...
+                threeDPoint = PointStamped()
+                dictMsg={}
+                dictMsg["name"]=point["Label"]
+                dictMsg["type"]="object"
+                dictMsg["coords"]=[threeDPoint.point.x,threeDPoint.point.y,threeDPoint.point.z]
+                dictMsg["others"]=None
+                self.nav_pub.publish(json.dumps(dictMsg))
+
         else:
             print("Object not found.")
 
