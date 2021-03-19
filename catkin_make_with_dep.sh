@@ -9,6 +9,8 @@ mkdir /home/developer/.deepface
 mkdir /home/developer/.deepface/weights
 cp vgg_face_weights.h5 /home/developer/.deepface/weights/vgg_face_weights.h5
 
+catkin clean -y
+
 # Create catkin workspace
 catkin init
 # Instruct catkin to set cmake variables
@@ -26,5 +28,3 @@ git checkout melodic
 cd ../../../
 # Build
 catkin build
-# Extend environment with new package
-source devel/setup.bash --extend
