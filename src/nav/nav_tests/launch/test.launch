@@ -2,8 +2,8 @@
     <!-- My Package launch file -->
     <node 
         pkg="nav_tests" 
-        type="test.py" 
-        name="base_and_sensor"  
+        type="tempnode.py" 
+        name="tempnode"  
         output="screen">
     </node>
 </launch>

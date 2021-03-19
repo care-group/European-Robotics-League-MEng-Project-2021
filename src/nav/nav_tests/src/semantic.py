@@ -5,7 +5,7 @@ print("Starting semantic.py")
 import rospy
 import json
 from std_msgs.msg import Float64MultiArray, String
-from azmutils import dynamic_euclid_dist
+from azmutils import dynamic_euclid_dist, str_to_obj, obj_to_str
 
 ''' TODO
 5. make my own maps
@@ -38,8 +38,8 @@ class SemanticToCoords():
         # Dynamic semantic map inits
         self.semantic_labels_sub = rospy.Subscriber('/azm_nav/semantic_label_additions', String, self.add_to_semantic_map_callback)
         # Get pose inits TODO
-        self.pose_sub = rospy.Subscriber('', Pose, self.pose_cb)
-        self.robot_pose = 0
+        # self.pose_sub = rospy.Subscriber('', Pose, self.pose_cb)
+        self.robot_pose = []
 
 
     def load_semantic_map(self):
@@ -47,30 +47,21 @@ class SemanticToCoords():
             with open(self.semantic_map_path, "r") as f:
                 self.semantic_map = json.loads(f.read())
         except Exception as e:
-            # TODO make rospy.log
-            rospy.logwarn("An error occured while loading the JSON semantic map")
-            rospy.logwarn(e)
+            rospy.logwarn("An error occured while loading the JSON semantic map: {}".format(e))
 
     def save_semantic_map(self):
         try:
             with open(self.semantic_map_path, "w") as f:
                 f.write(json.dumps(self.semantic_map, indent=4))
         except Exception as e:
-            # TODO make rospy.log
-            rospy.logwarn("An error occured while saving the JSON semantic map, hope you made a backup")
-            rospy.logwarn(e)
-    
-    def string_to_obj(self, string):
-        return json.loads(string)
-    
-    def obj_to_string(self, obj):
-        return json.dumps(obj)
+            rospy.logwarn("An error occured while saving the JSON semantic map, hope you made a backup. Error: {}".format(e))
 
     def shutdownhook(self):
         # works better than the rospy.is_shutdown()
         self.ctrl_c = True
-        self.save_semantic_map()
-        rospy.loginfo("Saved map before shutting down")
+        if not len(self.semantic_map):
+            self.save_semantic_map()
+            rospy.loginfo("Saved map before shutting down")
     
     def publish_once(self, topic, msg, content="message"):
         '''
@@ -83,7 +74,7 @@ class SemanticToCoords():
             content (String): very short description of message for debug purposes
         '''
         attempts = 8
-        time_multiplier = 1.5
+        time_multiplier = 1.3
         sleep = 0.2
         rospy.loginfo("Attempting to publish {} to {}".format(content, topic.name))
         while not self.ctrl_c and attempts:
@@ -126,17 +117,20 @@ class SemanticToCoords():
                          2 if it didn't get added because an item under the threshold already exists
 
         """ 
-        validation_map = {"name":str, "coords":list, "type":str, "others":dict}
+        # TODO, shouldnt be a problem but eventually this should handle both full string inputs and unicode
+        # if this ever is swapped to python 3 then both are considered to be of type str and this should also be changed
+        validation_map = {"name":unicode, "coords":list, "type":unicode, "others":dict}
         if not all(i in input and type(input[i]) == validation_map[i] for i in validation_map):
-            # TODO make rospy.log
             rospy.logwarn("Label received does not feature all required keys (name:str, type:str, coords:list, others:dict)," +
                   "label received: {}".format(input))
+            print([type(input[i]) for i in input])
             return 0
         for entry in self.semantic_map:
             if entry["name"] == input["name"] and dynamic_euclid_dist(entry["coords"], input["coords"])<distance_threshold:
                 # Assume it's already here
                 return 2
         self.semantic_map.append(input)
+        rospy.loginfo("New label ({}) added to semantic map.".format(input["name"]))
         return 1
 
     # TODO make it iterate thru the entire input and delete the one whose coords are the closest it
@@ -155,7 +149,6 @@ class SemanticToCoords():
         if not (isinstance(coords, (list, tuple)) and
            all(isinstance(i, (int, float)) for i in coords) and
            len(coords) == 3):
-            # TODO make rospy.log
             rospy.logwarn("Bad input when trying to delete from semantic map")
             return False
         for entry in self.semantic_map:
@@ -184,9 +177,11 @@ class SemanticToCoords():
             int: 0 for failure
                  1 for success
         """
-        input = self.string_to_obj(msg.data)
-        if "others" not in input:
+        t = msg.data.encode('ascii','replace').replace("\\", "")
+        input = str_to_obj(t)
+        if not input or "others" not in input:
             rospy.logwarn("Semantic: label received did not have minimum requirements")
+            rospy.loginfo(input)
             return 0
         input["others"]["seen_from"] = self.robot_pose
         self.add_new_to_semantic_map(input)
@@ -201,6 +196,6 @@ class SemanticToCoords():
 if __name__ == '__main__':
     print("executing semantic.py as main")
     print("Creating SemanticToCoords obj")
-    semantic_translator_obj = SemanticToCoords(r'C:\Users\AZM\Documents\ERL\european_robotic_league\src\nav\nav_tests\maps\semantic.txt')
+    semantic_translator_obj = SemanticToCoords(r'/workspace/src/nav/nav_tests/maps/semantic.txt')
     rospy.loginfo("semantic.py is spinning")
     rospy.spin()
