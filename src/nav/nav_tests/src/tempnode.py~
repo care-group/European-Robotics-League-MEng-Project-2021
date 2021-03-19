@@ -1,0 +1,68 @@
+#! /usr/bin/env python
+
+print("Starting tempnode.py")
+
+import rospy
+from std_msgs.msg import String
+
+class tempnode():
+    """
+    This class is adapted from theconstructsim.com ROS Basics in 5 Days course - Using Python Classes in ROS
+    It implements a pseudo action server to move the HSR to coordinate nav goals 
+    provided through the /azm_nav/coord_goal_listener topic
+    
+    Gives simple result feeback thru /azm_nav/goal_result
+    """
+
+    def __init__(self):
+        # Base node inits
+        rospy.loginfo("Initiating tempnode")
+        rospy.init_node('tempnode')
+        self.ctrl_c = False
+        self.rate = rospy.Rate(10) # 10hz
+        rospy.on_shutdown(self.shutdownhook)
+        # Goal publishing inits
+        self.pub = rospy.Publisher('/azm_nav/semantic_label_additions', String, queue_size=1)
+
+    def publish_once(self, topic, msg, content="message"):
+        """
+        Adapted from theconstruct's ros in 5 days course
+        will keep retrying to publish the message if the publisher has no connections
+
+        Args:
+            topic (rospy publisher object): topic object to publish to
+            msg (rospy message object): message object to publish 
+            content (String): very short description of message for debug purposes
+        """
+        attempts = 8
+        time_multiplier = 1.5
+        sleep = 0.2
+        rospy.loginfo("Attempting to publish {} to {}".format(content, topic.name))
+        while not self.ctrl_c and attempts:
+            connections = topic.get_num_connections()
+            if not attempts:
+                rospy.logwarn("No listeners on {}, {} wasn't sent.".format(topic, content))
+                return
+            if connections > 0:
+                topic.publish(msg)
+                rospy.loginfo("Message published to {}".format(topic.name))
+                break
+            else:
+                rospy.loginfo("No subscribers on {}, sleeping.".format(topic.name))
+                rospy.sleep(sleep)
+                attempts -= 1
+                sleep *= time_multiplier
+
+    def shutdownhook(self):
+        # works better than the rospy.is_shutdown()
+        self.ctrl_c = True
+
+
+if __name__ == '__main__':
+    print("executing tempnode.py as main")
+    print("Creating tempnode obj")
+    tempnode = tempnode()
+    topic = "/azm_nav/semantic_label_additions"
+    msg = String()
+    msg.data = '{"name":"stuff1","type":"object","coords":[2.7,0,30],"others":{}}'
+    tempnode.publish_once(topic, msg)

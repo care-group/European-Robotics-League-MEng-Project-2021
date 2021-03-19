@@ -36,13 +36,13 @@
         "type": "object"
     },
     {
+        "name": "trash",
+        "type": "object",
         "coords": [
             2.7,
             0,
             30
-        ],
-        "name": "trash",
-        "type": "object"
+        ]
     },
     {
         "coords": [
