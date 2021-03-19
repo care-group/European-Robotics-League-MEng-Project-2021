@@ -99,11 +99,13 @@ class Get3DPosition(object):
                     print("Error transforming given point to head rgbd sensor frame")
                     time.sleep(1)
             #self._pointPublisher(depthSensorFrame)
-            valueX=depthSensorFrame.point.x+0.11
+            #valueX=depthSensorFrame.point.x+0.11
+            valueX=depthSensorFrame.point.x
             valueY=depthSensorFrame.point.y
+            print(valueX,valueY)
             data = pc2.read_points(pointCloud, field_names = ("x", "y", "z", "rgb"), skip_nans=True)
 
-            error=0.005
+            error=0.01
             detected = False
             target = None
             print("-------- NEW DATA ----- Error "+str(error))
