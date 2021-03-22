@@ -1,4 +1,4 @@
-#!/usr/bin/python2.7
+#!/usr/bin/python
 # -*- coding: utf-8 -*-
 import rospy
 from sensor_msgs.msg import PointCloud2, PointField, Image
@@ -27,18 +27,15 @@ class Get3DPosition(object):
         self._subscriber = rospy.Subscriber(
             '/cv/obj_2d_position',PointStamped ,self._get3DPointMapFromTopic)
 
-    def _pointPublisher(self,point):
-        pub = rospy.Publisher('/TargetPoint', PointStamped, queue_size=10)
-        rate = rospy.Rate(10) # 10hz
-        while not rospy.is_shutdown():  
-            pub.publish(point) 
-            rate.sleep()
 
-    def _pointPublisherCV(self,point):
-        pub = rospy.Publisher('/3DLocatedPoint', PointStamped, queue_size=10)
+    def _pointPublisherCV(self,point,pointOdom):
+        pub = rospy.Publisher('3DLocatedPoint', PointStamped, queue_size=10)
+        rate = rospy.Rate(10) # 10hz
+        pub1 = rospy.Publisher('3DLocatedPointOdom', PointStamped, queue_size=10)
         rate = rospy.Rate(10) # 10hz
         while not rospy.is_shutdown():  
             pub.publish(point) 
+            pub1.publish(pointOdom) 
             rate.sleep()
 
     def _transform_pose(self,value, from_frame, to_frame):
@@ -70,51 +67,14 @@ class Get3DPosition(object):
                 #detected = True
                 target = value
                 transformed_point = self._transform_pose(value,"head_rgbd_sensor_rgb_frame", "map")
+                transformed_pointOdom = self._transform_pose(value,"head_rgbd_sensor_rgb_frame", "odom")
                 
-                return transformed_point
+                return transformed_point, transformed_pointOdom
         return None                               
 
     def _definePointCloud(self, msg):
         global pointCloud 
         pointCloud = msg
-
-    def _get3DPointMap(self,coordinateX,coordinateZ,referenceFrame):
-        global done
-        global pointCloud
-        if(not(done)):
-            done=True
-            #valueX=-0.5
-            #valueZ=1.04
-            completed = False
-            depthSensorFrame = None
-            while(not completed):
-                try:
-                    depthSensorFrame = self._transform_pose([coordinateX,0,coordinateZ],referenceFrame,"head_rgbd_sensor_rgb_frame")
-                    print("Point transformed correctly")
-                    print(depthSensorFrame)
-                    completed = True
-
-                    time.sleep(1)
-                except: 
-                    print("Error transforming given point to head rgbd sensor frame")
-                    time.sleep(1)
-            #self._pointPublisher(depthSensorFrame)
-            valueX=depthSensorFrame.point.x+0.11
-            valueY=depthSensorFrame.point.y
-            data = pc2.read_points(pointCloud, field_names = ("x", "y", "z", "rgb"), skip_nans=True)
-
-            error=0.005
-            detected = False
-            target = None
-            print("-------- NEW DATA ----- Error "+str(error))
-            transformed_point = self._inRange(data,error,valueX,valueY)
-            if transformed_point is None:
-                print("Not correlated point detected")
-                #return None
-            else:
-                print("Found point")
-                self._pointPublisher(transformed_point)
-                #return transformed_point   
     
     def _get3DPointMapFromTopic(self,msg):
         global done
@@ -122,40 +82,38 @@ class Get3DPosition(object):
         coordinateX = msg.point.x
         coordinateZ = msg.point.z
         referenceFrame = msg.header.frame_id
-        if(not(done)):
-            done=True
-            #valueX=-0.5
-            #valueZ=1.04
-            completed = False
-            depthSensorFrame = None
-            while(not completed):
-                try:
-                    depthSensorFrame = self._transform_pose([coordinateX,0,coordinateZ],referenceFrame,"head_rgbd_sensor_rgb_frame")
-                    print("Point transformed correctly")
-                    print(depthSensorFrame)
-                    completed = True
+        #valueX=-0.5
+        #valueZ=1.04
+        completed = False
+        depthSensorFrame = None
+        while(not completed):
+            try:
+                depthSensorFrame = self._transform_pose([coordinateX,0,coordinateZ],referenceFrame,"head_rgbd_sensor_rgb_frame")
+                print("Point transformed correctly")
+                print(depthSensorFrame)
+                completed = True
 
-                    time.sleep(1)
-                except: 
-                    print("Error transforming given point to head rgbd sensor frame")
-                    time.sleep(1)
-            #self._pointPublisher(depthSensorFrame)
-            valueX=depthSensorFrame.point.x+0.11
-            valueY=depthSensorFrame.point.y
-            data = pc2.read_points(pointCloud, field_names = ("x", "y", "z", "rgb"), skip_nans=True)
+                time.sleep(1)
+            except: 
+                print("Error transforming given point to head rgbd sensor frame")
+                time.sleep(1)
+        #self._pointPublisher(depthSensorFrame)
+        valueX=depthSensorFrame.point.x
+        valueY=depthSensorFrame.point.y
+        data = pc2.read_points(pointCloud, field_names = ("x", "y", "z", "rgb"), skip_nans=True)
 
-            error=0.005
-            detected = False
-            target = None
-            print("-------- NEW DATA ----- Error "+str(error))
-            transformed_point = self._inRange(data,error,valueX,valueY)
-            if transformed_point is None:
-                print("Not correlated point detected")
-                #return None
-            else:
-                print("Found point")
-                self._pointPublisherCV(transformed_point)
-                #return transformed_point   
+        error=0.005
+        detected = False
+        target = None
+        print("-------- NEW DATA ----- Error "+str(error))
+        transformed_point,transformed_pointOdom = self._inRange(data,error,valueX,valueY)
+        if transformed_point is None:
+            print("Not correlated point detected")
+            #return None
+        else:
+            print("Found point")
+            self._pointPublisherCV(transformed_point,transformed_pointOdom)
+            #return transformed_point   
     
 def main():
     rospy.init_node('get_3d_position')
