@@ -6,7 +6,6 @@ import cv2
 import rospy
 from sensor_msgs.msg import Image
 from std_msgs.msg import String
-from cv.msg import SemanticLabel
 from cv_bridge import CvBridge
 from geometry_msgs.msg import PointStamped
 from geometry_msgs.msg import Point
