@@ -62,7 +62,11 @@ class SemanticToCoords():
             print(e)
 
     def string_to_obj(self, string):
-        return json.loads(string)
+        try:
+            return json.loads(string)
+        except ValueError as e:
+            rospy.logwarn("ValueError occured when loading JSON string: {}".format(e))
+            return  0
     
     def obj_to_string(self, obj):
         return json.dumps(obj)
