@@ -24,8 +24,18 @@ class Spacy_Test:
     def cloud_callback(self, msg):
         #parse text and execute main code
         self.text = msg.data
-        self.string_to_obj(self.check_action())
-        self.string_to_obj(self.return_objects())
+
+        dictMsg={}
+        dictMsg["action"]=self.check_action()
+        dictMsg["object"]=self.return_objects()
+
+
+        dictWrapper=dictMsg
+        jsonStr = json.dumps(dictWrapper)
+        print(jsonStr)
+        output_pub = rospy.Publisher('/hri/cloud_output', String, queue_size=1,latch=True)
+        output_pub.publish(jsonStr) #Publish what the component sees for debugging (as there is a delay due to system performance)
+
 
     def pub_output(self,msg,args):
         output_pub = rospy.Publisher('/hri/cloud_output', String,self.cloud_callback, queue_size=1)
@@ -117,7 +127,7 @@ class Spacy_Test:
             objectSpan = Span(doc, start, end, label="OBJECTS")
 
             print(objectSpan.text)
-        
+            return objectSpan.text
 
 
     def return_people(self):
