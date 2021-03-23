@@ -14,6 +14,9 @@ import java.util.*;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicReference;
+import javax.json.*;
+import java.io.StringReader;
+import java.util.StringTokenizer;
 
 public class catering extends Environment {
 
@@ -31,6 +34,27 @@ public class catering extends Environment {
         private String object;  // eg. coffee
         private String location; //eg. kitchen
         private AccompanyType accompanyType;
+
+        private Command(JsonObject json){
+            switch(json.getString("action")){
+                case "fetch":
+                    action = Action.SEARCH;
+                    object = json.getString("object");
+                    accompanyType=AccompanyType.NULL;
+                break;
+                case "ACCOMPANY":
+                    action = Action.ACCOMPANY;
+                    object = json.getString("object");
+                    accompanyType = (json.getString("accompanyType").equals(AccompanyType.LEAD.toString())) ? AccompanyType.LEAD : AccompanyType.FOLLOW;
+                break;
+                case "MANIPULATE":
+                    action = Action.MANIPULATE;
+                    object = json.getString("object");
+                    location = json.getString("location");
+                break;
+            }
+   
+        }
         private Command(Action a, String o){
             action = a;
             object = o;
@@ -59,19 +83,37 @@ public class catering extends Environment {
         //pub/sub to NLP stack.
         //populate commands#
         bdiEnvironment.logger.info("Getting commands");
-        Command c1 = new Command(Action.SEARCH,"bottle");
-        Command c2 = new Command(Action.ACCOMPANY,"kitchen",AccompanyType.FOLLOW);
-        Command c3 = new Command(Action.ACCOMPANY,"bathroom",AccompanyType.LEAD);
-        Command c4 = new Command(Action.MANIPULATE,"bottle","kitchen_table");
-        
-        commands.push(c4);
-        commands.push(c3);
-        commands.push(c2);
-        commands.push(c1);
 
+        String jsonStringCmd = bdiEnvironment.subscribeSync("/hri/cloud_output", "std_msgs/String");
+        // String[] output = jsonStringCmd.split("},");
+        // for (int i=0;i<output.length;i++){
+        //     output[i] += "}";
+        //     output[i] = output[i].substring(1);
+        //     output[i]=output[i].substring(0, output[i].length() - 2);
+        //     bdiEnvironment.logger.info(output[i]);
+        // }
+        //output[output.length]=output[output.length].substring(0, output[output.length].length() - 2);
+        // bdiEnvironment.logger.info("===");
+        // for(String strCmd : output){
+        //     bdiEnvironment.logger.info(strCmd);
+        // }
+        //bdiEnvironment.logger.info(output[0]);
+        JsonObject jsonCmd = stringToJson(jsonStringCmd);
+        //JsonArray arrObj = jsonCmd.getJsonArray("");
+        Command cmd = new Command(jsonCmd);
+        commands.push(cmd);
     }
 
+    private static JsonObject stringToJson(String str){
+        JsonReader jsonReader = Json.createReader(new StringReader(str));
+        JsonObject object = jsonReader.readObject();
+        jsonReader.close();
+        return object;
+    }
+
+
     public static void executeCommand(){
+        bdiEnvironment.logger.info("Executing commands");
         for(Command cmd : commands){
             bdiEnvironment.logger.info("Executing command "+cmd.action.toString());
             switch (cmd.action) {
