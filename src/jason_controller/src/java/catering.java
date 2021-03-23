@@ -80,28 +80,25 @@ public class catering extends Environment {
     private static LinkedList<String> likelyLocations = new LinkedList<String>(Arrays.asList("kitchen_table","kitchen_counter","kitchen_cupboard"));
    
     public static void getCommand(){
-        //pub/sub to NLP stack.
-        //populate commands#
         bdiEnvironment.logger.info("Getting commands");
 
         String jsonStringCmd = bdiEnvironment.subscribeSync("/hri/cloud_output", "std_msgs/String");
-        // String[] output = jsonStringCmd.split("},");
-        // for (int i=0;i<output.length;i++){
-        //     output[i] += "}";
-        //     output[i] = output[i].substring(1);
-        //     output[i]=output[i].substring(0, output[i].length() - 2);
-        //     bdiEnvironment.logger.info(output[i]);
-        // }
-        //output[output.length]=output[output.length].substring(0, output[output.length].length() - 2);
-        // bdiEnvironment.logger.info("===");
-        // for(String strCmd : output){
-        //     bdiEnvironment.logger.info(strCmd);
-        // }
-        //bdiEnvironment.logger.info(output[0]);
-        JsonObject jsonCmd = stringToJson(jsonStringCmd);
-        //JsonArray arrObj = jsonCmd.getJsonArray("");
-        Command cmd = new Command(jsonCmd);
-        commands.push(cmd);
+        
+
+        String[] output = jsonStringCmd.split("},");
+        for (int i=0;i<output.length;i++){
+            output[i] = output[i].substring(1);
+            output[i] += "}";
+            
+        }
+        output[output.length-1]=output[output.length-1].substring(0, output[output.length-1].length() - 2);
+        
+        for (int i=0;i<output.length;i++){
+            bdiEnvironment.logger.info(output[i]);
+            JsonObject jsonCmd = stringToJson(output[i]);
+            Command cmd = new Command(jsonCmd);
+            commands.push(cmd);
+        }
     }
 
     private static JsonObject stringToJson(String str){
