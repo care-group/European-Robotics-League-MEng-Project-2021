@@ -5,12 +5,14 @@
 
 //!check(rooms).
 //!waitForBell.
-!waitForEntranceOpened.
+//!waitForEntranceOpened.
+//!getCommand.
 /* Plans */
-/*
++!getCommand
+    <- getCommand.
 +!waitForBell
     <- waitForBell.
-*/
+
 +!waitForEntranceOpened
     <- waitForEntranceOpened.
 
