@@ -45,7 +45,6 @@ class Get3DPosition(object):
 
     def _inRange(self,data,error,targetX,targetY):
         for value in data:
-            #print " x : %f  y: %f  z: %f " %(value[0],value[1],value[2])
             if ((targetX-error)<=round(value[0],2)<=(targetX+error) and (targetY-error)<=(round(value[1],2))<=(targetY+error)):
                 print " x : %f  y: %f  z: %f " %(value[0],value[1],value[2]) 
                 # cast float32 to int so that bitwise operations are possible
@@ -91,7 +90,7 @@ class Get3DPosition(object):
                 time.sleep(1)
         #self._pointPublisher(depthSensorFrame)
         valueX=depthSensorFrame.point.x
-        valueY=depthSensorFrame.point.y
+        valueY=depthSensorFrame.point.z
         data = pc2.read_points(pointCloud, field_names = ("x", "y", "z", "rgb"), skip_nans=True)
 
         error=0.005
