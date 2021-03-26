@@ -1,4 +1,4 @@
-#!/usr/bin/python
+#!/usr/bin/python2.7
 # -*- coding: utf-8 -*-
 import rospy
 from sensor_msgs.msg import PointCloud2, PointField, Image
@@ -11,6 +11,8 @@ import ctypes
 import tf
 import time
 from geometry_msgs.msg import PointStamped
+from cv.srv import LocalizePoint
+
 done = False
 pointCloud = None
 #np.set_printoptions(threshold=sys.maxsize)
@@ -24,19 +26,9 @@ class Get3DPosition(object):
     def __init__(self):
         self._subscriber = rospy.Subscriber(
             '/hsrb/head_rgbd_sensor/depth_registered/rectified_points',PointCloud2 ,self._definePointCloud)
-        self._subscriber = rospy.Subscriber(
-            '/cv/obj_2d_position',PointStamped ,self._get3DPointMapFromTopic)
-
-
-    def _pointPublisherCV(self,point,pointOdom):
-        pub = rospy.Publisher('3DLocatedPoint', PointStamped, queue_size=10)
-        rate = rospy.Rate(10) # 10hz
-        pub1 = rospy.Publisher('3DLocatedPointOdom', PointStamped, queue_size=10)
-        rate = rospy.Rate(10) # 10hz
-        while not rospy.is_shutdown():  
-            pub.publish(point) 
-            pub1.publish(pointOdom) 
-            rate.sleep()
+        # self._subscriber = rospy.Subscriber(
+        #     '/cv/obj_2d_position',PointStamped ,self._get3DPointMapFromTopic)
+        s = rospy.Service('get_3d_position',LocalizePoint,self._get3DPointMapFromTopic)
 
     def _transform_pose(self,value, from_frame, to_frame):
         listener = tf.TransformListener()
@@ -53,7 +45,6 @@ class Get3DPosition(object):
 
     def _inRange(self,data,error,targetX,targetY):
         for value in data:
-            #print " x : %f  y: %f  z: %f " %(value[0],value[1],value[2])
             if ((targetX-error)<=round(value[0],2)<=(targetX+error) and (targetY-error)<=(round(value[1],2))<=(targetY+error)):
                 print " x : %f  y: %f  z: %f " %(value[0],value[1],value[2]) 
                 # cast float32 to int so that bitwise operations are possible
@@ -79,9 +70,9 @@ class Get3DPosition(object):
     def _get3DPointMapFromTopic(self,msg):
         global done
         global pointCloud
-        coordinateX = msg.point.x
-        coordinateZ = msg.point.z
-        referenceFrame = msg.header.frame_id
+        coordinateX = msg.unlocalizedPoint.point.x
+        coordinateZ = msg.unlocalizedPoint.point.z
+        referenceFrame = msg.unlocalizedPoint.header.frame_id
         #valueX=-0.5
         #valueZ=1.04
         completed = False
@@ -99,7 +90,7 @@ class Get3DPosition(object):
                 time.sleep(1)
         #self._pointPublisher(depthSensorFrame)
         valueX=depthSensorFrame.point.x
-        valueY=depthSensorFrame.point.y
+        valueY=depthSensorFrame.point.z
         data = pc2.read_points(pointCloud, field_names = ("x", "y", "z", "rgb"), skip_nans=True)
 
         error=0.005
@@ -112,8 +103,7 @@ class Get3DPosition(object):
             #return None
         else:
             print("Found point")
-            self._pointPublisherCV(transformed_point,transformed_pointOdom)
-            #return transformed_point   
+            return {'localizedPointMap':transformed_point, 'localizedPointOdom':transformed_pointOdom}
     
 def main():
     rospy.init_node('get_3d_position')
