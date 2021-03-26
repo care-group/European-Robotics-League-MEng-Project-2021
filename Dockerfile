@@ -64,3 +64,4 @@ RUN source /home/developer/google-cloud-sdk/completion.bash.inc
 
 
 RUN source /opt/ros/melodic/setup.bash
+RUN echo 'source /home/developer/workspace/devel/setup.bash' >> ~/.bashrc

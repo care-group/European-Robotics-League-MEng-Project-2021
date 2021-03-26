@@ -1,0 +1,4 @@
+geometry_msgs/PointStamped unlocalizedPoint
+---
+geometry_msgs/PointStamped localizedPointOdom
+geometry_msgs/PointStamped localizedPointMap

@@ -6,7 +6,6 @@ import cv2
 import rospy
 from sensor_msgs.msg import Image
 from std_msgs.msg import String
-from cv.msg import SemanticLabel
 from cv_bridge import CvBridge
 from geometry_msgs.msg import PointStamped
 from geometry_msgs.msg import Point
@@ -15,6 +14,8 @@ import numpy as np
 import rospkg
 from image_geometry import PinholeCameraModel
 from sensor_msgs.msg import CameraInfo
+import json
+from cv.srv import LocalizePoint
 
 # Commanded by /nav/semantic_labelling to look for all objects from the robot's camera feed using YOLO.
 # Once objects are found, the labels and coordinates are published /semantic_labels, and a debugging image with bounding boxes is published to /semantic_labels/img
@@ -24,8 +25,8 @@ class Semantic_Labelling:
         self.yolo_path = rospkg.RosPack().get_path('cv')+"/yolo/"
         self.init_yolo()
         self.bridge = CvBridge()
-        self.coord_pub = rospy.Publisher('/cv/obj_2d_position', PointStamped, queue_size=10,latch=True)
         self.img_pub = rospy.Publisher('/semantic_labels/img', Image, queue_size=1)
+        self.nav_pub = rospy.Publisher('/nav/somenavtopic', String, queue_size=1)
 
     def subscribe_jason(self):
         startingTime=time.time()
@@ -63,7 +64,18 @@ class Semantic_Labelling:
                 stampedPoint.point.y=0
                 stampedPoint.point.z=xyz[1]
                 
-                self.coord_pub.publish(stampedPoint) 
+                rospy.wait_for_service('get_3d_position')
+                get_3d_points =rospy.ServiceProxy('get_3d_position',LocalizePoint)
+                resp = get_3d_points(stampedPoint)
+
+                threeDPoint = resp.localizedPointMap
+                dictMsg={}
+                dictMsg["name"]=point["Label"]
+                dictMsg["type"]="object"
+                dictMsg["coords"]=[threeDPoint.point.x,threeDPoint.point.y,threeDPoint.point.z]
+                dictMsg["others"]=None
+                self.nav_pub.publish(json.dumps(dictMsg))
+
         else:
             print("Object not found.")
 
