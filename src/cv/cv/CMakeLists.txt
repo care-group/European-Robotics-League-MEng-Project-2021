@@ -48,17 +48,15 @@ find_package(catkin REQUIRED COMPONENTS
 ##   * add every package in MSG_DEP_SET to generate_messages(DEPENDENCIES ...)
 
 ## Generate messages in the 'msg' folder
-add_message_files(
-  FILES
-  SemanticLabel.msg
-)
+# add_message_files(
+#   FILES
+# )
 
 ## Generate services in the 'srv' folder
-# add_service_files(
-#   FILES
-#   Service1.srv
-#   Service2.srv
-# )
+add_service_files(
+  FILES
+  LocalizePoint.srv
+)
 
 ## Generate actions in the 'action' folder
 # add_action_files(
@@ -104,10 +102,10 @@ generate_messages(
 ## CATKIN_DEPENDS: catkin_packages dependent projects also need
 ## DEPENDS: system dependencies of this project that dependent projects also need
 catkin_package(
-#  INCLUDE_DIRS include
-#  LIBRARIES exercise_3_3
-	CATKIN_DEPENDS rospy message_runtime
-#  DEPENDS system_lib
+#   INCLUDE_DIRS include
+#   LIBRARIES exercise_3_3
+  CATKIN_DEPENDS rospy message_runtime
+#   DEPENDS system_lib
 )
 
 

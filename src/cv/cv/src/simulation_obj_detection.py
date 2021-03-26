@@ -13,7 +13,7 @@ import numpy as np
 import rospkg
 from image_geometry import PinholeCameraModel, StereoCameraModel
 from sensor_msgs.msg import CameraInfo
-
+from cv.srv import LocalizePoint
 
 # Commanded by the jason agent /jason/detect_object to look for a given object from the robot's camera feed using YOLO.
 # Once found, the coordinates are published /yolo/<target>, and a debugging image with bounding boxes is published to /yolo/<target>/img
@@ -25,7 +25,8 @@ class Object_Detection:
         self.target = ""
         self.bridge = CvBridge()
         self.TIMEOUT = 60
-        self.coord_pub = rospy.Publisher('/cv/obj_2d_position', PointStamped, queue_size=10,latch=True)
+        self.coord_pub_map = rospy.Publisher('/cv/detected_obj/coords/map', PointStamped, queue_size=10,latch=True)
+        self.coord_pub_odom = rospy.Publisher('/cv/detected_obj/coords/odom', PointStamped, queue_size=10,latch=True)
         self.img_pub = rospy.Publisher('/yolo/img', Image, queue_size=1,latch=True)
 
     def subscribe_jason(self):
@@ -64,13 +65,18 @@ class Object_Detection:
             stampedPoint.point.y=0
             stampedPoint.point.z=xyz[1]
             
-            self.coord_pub.publish(stampedPoint) 
+            rospy.wait_for_service('get_3d_position')
+            get_3d_points =rospy.ServiceProxy('get_3d_position',LocalizePoint)
+            resp = get_3d_points(stampedPoint)
 
+            self.coord_pub_map.publish(resp.localizedPointMap)
+            self.coord_pub_odom.publish(resp.localizedPointOdom)
+            print("published coords")
             #Unregister to prevent continuously subscribing to camera feed.
             self.img_subscriber.unregister()
         else:
             print("Object not found.")
-
+    
     def init_yolo(self):
         #Load YOLO Algorithm
         self.net=cv2.dnn.readNet(self.yolo_path+"yolov3.weights",self.yolo_path+"yolov3.cfg")
