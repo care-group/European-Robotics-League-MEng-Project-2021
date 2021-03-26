@@ -2,6 +2,7 @@ from math import sqrt
 from math import pi
 import json
 import tf
+from geometry_msgs.msg import Quaternion
 
 def dynamic_euclid_dist(a, b):
     o = 0
