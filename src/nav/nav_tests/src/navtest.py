@@ -6,6 +6,7 @@ import rospy
 from std_msgs.msg import Float64MultiArray, String
 from geometry_msgs.msg import PoseStamped, Quaternion
 from move_base_msgs.msg import MoveBaseActionResult
+from azmutils import quaternion_from_euler
 
 
 class SimpleMoveBase():
