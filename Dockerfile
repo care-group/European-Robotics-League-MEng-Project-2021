@@ -19,6 +19,7 @@ RUN pip3 install supervisor_twiddler
 RUN pip3 install argcomplete
 RUN pip3 install rospkg==1.2.10 defusedxml netifaces
 
+
 # spaCY
 RUN pip3 install -U pip setuptools wheel
 RUN pip3 install -U spacy
@@ -26,7 +27,8 @@ RUN python -m spacy download en_core_web_sm
 
 # OpenCV
 RUN pip3 install scikit-build
-RUN pip3 install opencv-python==4.2.0.34
+RUN python2.7 -m pip install opencv-contrib-python==3.4.4.19
+RUN pip3 install opencv-python
 RUN echo 'export QT_X11_NO_MITSHM=1' >> ~/.bashrc
 RUN sudo apt-get install git-lfs
 # Deepface
