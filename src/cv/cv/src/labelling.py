@@ -73,7 +73,7 @@ class Semantic_Labelling:
                 dictMsg["name"]=point["Label"]
                 dictMsg["type"]="object"
                 dictMsg["coords"]=[threeDPoint.point.x,threeDPoint.point.y,threeDPoint.point.z]
-                dictMsg["others"]=None
+                dictMsg["others"]={}
                 self.nav_pub.publish(json.dumps(dictMsg))
 
         else:
