@@ -128,7 +128,7 @@
 
 
 +grannyAlarm
-    <-  !visit(bedroom);
+    <-  !visit(dude);
         getCommand;
         executeCommand.
 
