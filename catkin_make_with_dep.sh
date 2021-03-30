@@ -1,3 +1,7 @@
+git lfs pull
+git update-index --assume-unchanged vgg_face_weights.h5
+git update-index --assume-unchanged src/cv/yolo/yolov3.weights
+
 # `python-catkin-tools` is needed for catkin tool
 # `python3-dev` and `python3-catkin-pkg-modules` is needed to build cv_bridge
 # `python3-numpy` and `python3-yaml` is cv_bridge dependencies
