@@ -7,7 +7,15 @@
 //!waitForBell.
 //!waitForEntranceOpened.
 //!getCommand.
+!testGoal.
+
 /* Plans */
+
++!testGoal
+    <-  findObject(apple).
+
+
+
 +!getCommand
     <- getCommand.
 +!waitForBell
