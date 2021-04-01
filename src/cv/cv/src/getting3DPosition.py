@@ -7,7 +7,7 @@ from cv.srv import LocalizePoint
 
 class Get3DPosition(object):
     def __init__(self):
-        s = rospy.Service('get_3d_position',LocalizePoint,self._get3DPointMapFromTopic)
+        s = rospy.Service('transform_point',LocalizePoint,self._get3DPointMapFromTopic)
 
     def _transform_pose(self,value, from_frame, to_frame):
         listener = tf.TransformListener()
