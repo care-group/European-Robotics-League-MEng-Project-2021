@@ -16,6 +16,8 @@ from sensor_msgs.msg import CameraInfo
 from cv.srv import LocalizePoint
 import json
 from yolo import Yolo
+from sensor_msgs.msg import PointCloud2, PointField
+import sensor_msgs.point_cloud2 as pc2
 
 # Commanded by the jason agent /jason/detect_object to look for a given object from the robot's camera feed using YOLO.
 # Once found, the coordinates are published /yolo/<target>, and a debugging image with bounding boxes is published to /yolo/<target>/img
@@ -32,11 +34,15 @@ class Object_Detection:
         self.img_pub = rospy.Publisher('/yolo/img', Image, queue_size=1,latch=True)
 
     def subscribe(self):
-        jason_subscriber = rospy.Subscriber('/jason/detect_object', String,self.jason_callback)
         info_subscriber = rospy.Subscriber('/hsrb/head_rgbd_sensor/rgb/camera_info', CameraInfo,self.info_callback)
+        depth_subscriber = rospy.Subscriber('/hsrb/head_rgbd_sensor/depth_registered/rectified_points',PointCloud2 ,self.pc_callback)
+        jason_subscriber = rospy.Subscriber('/jason/detect_object', String,self.jason_callback)
 
     def info_callback(self, msg):
         self.cam_info = msg
+
+    def pc_callback(self, msg):
+        self.pc = msg
 
     # Sets the target object and subscribes to the camera feed
     def jason_callback(self, msg):
@@ -44,6 +50,12 @@ class Object_Detection:
         startingTime=time.time()
         self.img_subscriber = rospy.Subscriber('/hsrb/head_rgbd_sensor/rgb/image_color', Image,self.img_callback,[startingTime],buff_size=1, queue_size=1)
     
+
+    def get_depth(self, x, y):
+        gen = pc2.read_points(self.pc, field_names='z', skip_nans=False, uvs=[(x, y)])
+        return next(gen)
+
+
     # Takes the current image from the camera feed and searches for the target object, returning coordinates 
     def img_callback(self, msg,args):
         cv_image = self.bridge.imgmsg_to_cv2(msg, desired_encoding='passthrough')    
@@ -60,23 +72,28 @@ class Object_Detection:
             #Pub image with bounding boxes debug
             self.img_pub.publish(self.bridge.cv2_to_imgmsg(img,encoding='passthrough'))
     
+            dist = self.get_depth(int(obj_coords[0]),int(obj_coords[1]))
+            depth = dist[0]
+
             model = PinholeCameraModel()
             model.fromCameraInfo(self.cam_info)
-            xyz = model.projectPixelTo3dRay((obj_coords[0],obj_coords[1])) 
-            
+            vect = model.projectPixelTo3dRay((obj_coords[0],obj_coords[1])) 
+            xyz = [el / vect[2] for el in vect]
+
             stampedPoint = PointStamped()
             stampedPoint.header=msg.header
-            stampedPoint.point.x=xyz[0]
-            stampedPoint.point.y=0
-            stampedPoint.point.z=xyz[1]
-            
+            stampedPoint.point.x=xyz[0]*depth
+            stampedPoint.point.y=xyz[1]*depth
+            stampedPoint.point.z=depth
+
             rospy.wait_for_service('get_3d_position')
             get_3d_points =rospy.ServiceProxy('get_3d_position',LocalizePoint)
             resp = get_3d_points(stampedPoint)
 
             self.coord_pub_map.publish(resp.localizedPointMap)
             self.coord_pub_odom.publish(resp.localizedPointOdom)
-
+            
+            print(resp.localizedPointOdom)
             dictMsg={}
             dictMsg["x"]=resp.localizedPointMap.point.x
             dictMsg["y"]=resp.localizedPointMap.point.y
