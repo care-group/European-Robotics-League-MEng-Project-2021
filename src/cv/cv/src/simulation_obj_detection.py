@@ -32,10 +32,13 @@ class Object_Detection:
         self.coord_pub_odom = rospy.Publisher('/cv/detected_obj/coords/odom', PointStamped, queue_size=10,latch=True)
         self.coord_pub_json = rospy.Publisher('/cv/detected_obj/coords/json', String, queue_size=10,latch=True)
         self.img_pub = rospy.Publisher('/yolo/img', Image, queue_size=1,latch=True)
+        
+        img_subscriber = rospy.Subscriber('/hsrb/head_rgbd_sensor/rgb/image_color', Image,self.img_callback)
+        info_subscriber = rospy.Subscriber('/hsrb/head_rgbd_sensor/rgb/camera_info', CameraInfo,self.info_callback)
+        depth_subscriber = rospy.Subscriber('/hsrb/head_rgbd_sensor/depth_registered/rectified_points',PointCloud2,self.pc_callback)
+
 
     def subscribe(self):
-        info_subscriber = rospy.Subscriber('/hsrb/head_rgbd_sensor/rgb/camera_info', CameraInfo,self.info_callback)
-        depth_subscriber = rospy.Subscriber('/hsrb/head_rgbd_sensor/depth_registered/rectified_points',PointCloud2 ,self.pc_callback)
         jason_subscriber = rospy.Subscriber('/jason/detect_object', String,self.jason_callback)
 
     def info_callback(self, msg):
@@ -44,70 +47,71 @@ class Object_Detection:
     def pc_callback(self, msg):
         self.pc = msg
 
-    # Sets the target object and subscribes to the camera feed
-    def jason_callback(self, msg):
-        self.target=msg.data
-        startingTime=time.time()
-        self.img_subscriber = rospy.Subscriber('/hsrb/head_rgbd_sensor/rgb/image_color', Image,self.img_callback,[startingTime],buff_size=1, queue_size=1)
-    
+    def img_callback(self, msg):
+        self.cv_image = self.bridge.imgmsg_to_cv2(msg, desired_encoding='passthrough')    
 
     def get_depth(self, x, y):
         gen = pc2.read_points(self.pc, field_names='z', skip_nans=False, uvs=[(x, y)])
         return next(gen)
 
-
     # Takes the current image from the camera feed and searches for the target object, returning coordinates 
-    def img_callback(self, msg,args):
-        cv_image = self.bridge.imgmsg_to_cv2(msg, desired_encoding='passthrough')    
-        objects,img = self.yolo.search_for_objects(cv_image)
+    def jason_callback(self, msg):
+        self.target=msg.data
+        startingTime=time.time()
+        running = True
+
+        while(running):
+
+            #Respond to attribute error if subscribers haven't ran yet
+            try:
+                objects,img = self.yolo.search_for_objects(self.cv_image)
+                model = PinholeCameraModel()
+                model.fromCameraInfo(self.cam_info)
+            except AttributeError:
+                continue
+            
+            target_obj = self.get_target_obj(objects)
+
+            duration = time.time()-startingTime
+            if(len(objects)!=0 and target_obj!=None):
+                
+                obj_coords = target_obj["Point"]
+                print(obj_coords)
+                
+                #Pub image with bounding boxes debug
+                self.img_pub.publish(self.bridge.cv2_to_imgmsg(img,encoding='passthrough'))
         
-        target_obj = self.get_target_obj(objects)
+                dist = self.get_depth(int(obj_coords[0]),int(obj_coords[1]))
+                depth = dist[0]
 
-        duration = time.time()-args[0]
-        if(len(objects)!=0 and target_obj!=None):
-            
-            obj_coords = target_obj["Point"]
-            print(obj_coords)
-            
-            #Pub image with bounding boxes debug
-            self.img_pub.publish(self.bridge.cv2_to_imgmsg(img,encoding='passthrough'))
-    
-            dist = self.get_depth(int(obj_coords[0]),int(obj_coords[1]))
-            depth = dist[0]
+                vect = model.projectPixelTo3dRay((obj_coords[0],obj_coords[1])) 
+                xyz = [el / vect[2] for el in vect]
 
-            model = PinholeCameraModel()
-            model.fromCameraInfo(self.cam_info)
-            vect = model.projectPixelTo3dRay((obj_coords[0],obj_coords[1])) 
-            xyz = [el / vect[2] for el in vect]
+                stampedPoint = PointStamped()
+                stampedPoint.header.frame_id="head_rgbd_sensor_rgb_frame"
+                stampedPoint.point.x=xyz[0]*depth
+                stampedPoint.point.y=xyz[1]*depth
+                stampedPoint.point.z=depth
 
-            stampedPoint = PointStamped()
-            stampedPoint.header=msg.header
-            stampedPoint.point.x=xyz[0]*depth
-            stampedPoint.point.y=xyz[1]*depth
-            stampedPoint.point.z=depth
+                rospy.wait_for_service('transform_point')
+                get_3d_points =rospy.ServiceProxy('transform_point',LocalizePoint)
+                resp = get_3d_points(stampedPoint)
 
-            rospy.wait_for_service('get_3d_position')
-            get_3d_points =rospy.ServiceProxy('get_3d_position',LocalizePoint)
-            resp = get_3d_points(stampedPoint)
-
-            self.coord_pub_map.publish(resp.localizedPointMap)
-            self.coord_pub_odom.publish(resp.localizedPointOdom)
-            
-            print(resp.localizedPointOdom)
-            dictMsg={}
-            dictMsg["x"]=resp.localizedPointMap.point.x
-            dictMsg["y"]=resp.localizedPointMap.point.y
-            dictMsg["z"]=resp.localizedPointMap.point.z
-            self.coord_pub_json.publish(json.dumps(dictMsg))
-
-            #Unregister to prevent continuously subscribing to camera feed.
-            self.img_subscriber.unregister()
-        elif(duration <self.TIMEOUT):
-            print("Object not found.")
-        else:
-            print("Timeout.")
-            #Unregister to prevent continuously subscribing to camera feed.
-            self.img_subscriber.unregister()
+                self.coord_pub_map.publish(resp.localizedPointMap)
+                self.coord_pub_odom.publish(resp.localizedPointOdom)
+                
+                print(resp.localizedPointOdom)
+                dictMsg={}
+                dictMsg["x"]=resp.localizedPointMap.point.x
+                dictMsg["y"]=resp.localizedPointMap.point.y
+                dictMsg["z"]=resp.localizedPointMap.point.z
+                self.coord_pub_json.publish(json.dumps(dictMsg))
+                running = False
+            elif(duration <self.TIMEOUT):
+                print("Object not found.")
+            else:
+                print("Timeout.")
+                running=False
 
     # Returns the dict (label, point) that's label corresponds to the target
     def get_target_obj(self,objects):
