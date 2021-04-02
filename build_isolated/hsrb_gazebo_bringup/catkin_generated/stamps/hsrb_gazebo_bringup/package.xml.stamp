@@ -1,0 +1,65 @@
+<?xml version="1.0"?>
+<package>
+  <name>hsrb_gazebo_bringup</name>
+  <version>1.0.0</version>
+  <description>
+     basic launch files and configurations for HSR-B simulation in Gazebo.
+  </description>
+
+  <maintainer email="xr-hsr-support@mail.toyota.co.jp">HSR Support</maintainer>
+
+  <license>BSD 3-clause Clear License</license>
+
+  <author>Akiyoshi Ochiai</author>
+  <author>Atsushi Tsutsumi</author>
+  <author>Hiromichi Nakashima</author>
+  <author>Kazuhito Tanaka</author>
+  <author>Kazuto Murase</author>
+  <author>Keisuke Takeshita</author>
+  <author>Koji Terada</author>
+  <author>Koki Kataoka</author>
+  <author>Minori Higuchi</author>
+  <author>Nobuyuki Matsuno</author>
+  <author>Satoru Onoda</author>
+  <author>Syuuhei Shiro</author>
+  <author>Tamaki Nishino</author>
+  <author>Takafumi Mizuno</author>
+  <author>Yoshimi Iyoda</author>
+  <author>Yosuke Matsusaka</author>
+  <author>Yutaka Takaoka</author>
+
+  <buildtool_depend>catkin</buildtool_depend>
+<!--
+  <run_depend>controller_manager</run_depend>
+  <run_depend>depth_image_proc</run_depend>
+  <run_depend>gazebo</run_depend>
+  <run_depend version_gte="2.4.13">gazebo_msgs</run_depend>
+  <run_depend version_gte="2.4.13">gazebo_plugins</run_depend>
+  <run_depend version_gte="2.4.13">gazebo_ros</run_depend>
+  <run_depend version_gte="2.4.13">gazebo_ros_control</run_depend>
+  <run_depend>hector_gazebo_plugins</run_depend>
+  <run_depend>hsrb_base_controllers</run_depend>
+  <run_depend>hsrb_common_config</run_depend>
+  <run_depend>hsrb_description</run_depend>
+  <run_depend>hsrb_gazebo_plugins</run_depend>
+  <run_depend>hsrb_omnibase_filter</run_depend>
+  <run_depend>hsrc_description</run_depend>
+  <run_depend>image_proc</run_depend>
+  <run_depend>joint_state_controller</run_depend>
+  <run_depend>joint_state_publisher</run_depend>
+  <run_depend>joint_trajectory_controller</run_depend>
+  <run_depend>laser_scan_matcher</run_depend>
+  <run_depend>nodelet</run_depend>
+  <run_depend>position_controllers</run_depend>
+  <run_depend>robot_state_publisher</run_depend>
+  <run_depend>tf</run_depend>
+  <run_depend>tmc_force_torque_sensor_compensation</run_depend>
+  <run_depend>tmc_gazebo_plugins</run_depend>
+  <run_depend>tmc_gazebo_worlds</run_depend>
+  <run_depend>tmc_odometry_switcher</run_depend>
+  <run_depend>tmc_talk_action_simulator</run_depend>
+  <run_depend>topic_tools</run_depend>
+  <run_depend>velocity_controllers</run_depend>
+-->
+  <test_depend>roslaunch</test_depend>
+</package>

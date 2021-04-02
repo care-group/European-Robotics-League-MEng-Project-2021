@@ -1,0 +1,8 @@
+prefix=/home/developer/workspace/install_isolated
+
+Name: navros_pkg
+Description: Description of navros_pkg
+Version: 0.0.0
+Cflags: 
+Libs: -L${prefix}/lib 
+Requires: 

@@ -1,0 +1,8 @@
+prefix=/home/developer/workspace/devel_isolated/cv
+
+Name: cv
+Description: Description of cv
+Version: 0.0.0
+Cflags: -I/home/developer/workspace/devel_isolated/cv/include
+Libs: -L${prefix}/lib 
+Requires: rospy message_runtime

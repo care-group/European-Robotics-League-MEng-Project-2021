@@ -1,0 +1,8 @@
+prefix=/home/developer/workspace/devel_isolated/hsrb_gazebo_bringup
+
+Name: hsrb_gazebo_bringup
+Description: Description of hsrb_gazebo_bringup
+Version: 1.0.0
+Cflags: 
+Libs: -L${prefix}/lib 
+Requires: 
