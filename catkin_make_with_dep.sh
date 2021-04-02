@@ -15,6 +15,9 @@ cp vgg_face_weights.h5 /home/developer/.deepface/weights/vgg_face_weights.h5
 
 catkin clean -y
 
+rm src/manip/hsrb_moveit_config/config/kinematics.yaml
+cp src/manip/kinematics.yaml src/manip/hsrb_moveit_config/config/kinematics.yaml
+
 # Create catkin workspace
 catkin init
 # Instruct catkin to set cmake variables
@@ -32,3 +35,4 @@ git checkout melodic
 cd ../../../
 # Build
 catkin build
+
