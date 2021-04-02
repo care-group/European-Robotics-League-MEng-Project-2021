@@ -1,0 +1,8 @@
+prefix=/home/developer/workspace/devel_isolated/hsrb_description
+
+Name: hsrb_description
+Description: Description of hsrb_description
+Version: 1.0.0
+Cflags: 
+Libs: -L${prefix}/lib 
+Requires: xacro
