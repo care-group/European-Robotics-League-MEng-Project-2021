@@ -1,8 +1,0 @@
-prefix=/home/developer/workspace/devel_isolated/hsrb_rosnav_config
-
-Name: hsrb_rosnav_config
-Description: Description of hsrb_rosnav_config
-Version: 1.0.0
-Cflags: 
-Libs: -L${prefix}/lib 
-Requires: 

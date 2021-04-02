@@ -1,8 +1,0 @@
-prefix=/home/developer/workspace/devel_isolated/hsrb_mapping
-
-Name: hsrb_mapping
-Description: Description of hsrb_mapping
-Version: 1.0.0
-Cflags: 
-Libs: -L${prefix}/lib 
-Requires: 
