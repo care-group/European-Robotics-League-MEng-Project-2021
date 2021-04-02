@@ -1,8 +1,0 @@
-prefix=/home/developer/workspace/install_isolated
-
-Name: hsrb_common_config
-Description: Description of hsrb_common_config
-Version: 1.0.0
-Cflags: 
-Libs: -L${prefix}/lib 
-Requires: 
