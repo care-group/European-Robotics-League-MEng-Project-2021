@@ -125,7 +125,7 @@ def pointcloudToPlanningScene(msg):
         data = pc2.read_points(cloud_out, field_names = ("x", "y", "z", "rgb"), skip_nans=True)
         counter = 0
         limitCounter = 0
-        limit = 5
+        limit = 3
         for value in data:
             if limitCounter == limit:
                 limitCounter = 0
@@ -150,7 +150,6 @@ def graspMotion(msg):
     graspPose = robotPoseToMapPose(pose)
     groupGripper.set_joint_value_target("hand_motor_joint", 1.0)
     groupGripper.go()
-    #initListenerToPointCloud()
     groupWholeBody.set_planning_time(20)
     groupWholeBody.set_workspace([-3.0, -3.0, 3.0, 3.0])
     #groupWholeBody.set_planner_id("TRAC_IKKConfigDefault")
@@ -181,6 +180,7 @@ def graspMotion(msg):
     pubFeedback.publish("True") 
 
 if __name__ == '__main__':
+    initListenerToPointCloud()
     initListenerToGraspingTarget()
     try:
         rospy.spin()
