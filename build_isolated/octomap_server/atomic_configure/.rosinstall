@@ -1,0 +1,2 @@
+- setup-file:
+    local-name: /home/developer/workspace/devel_isolated/octomap_server/setup.sh

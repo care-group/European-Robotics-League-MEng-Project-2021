@@ -1,0 +1,8 @@
+file(REMOVE_RECURSE
+  "CMakeFiles/_run_tests_hsrb_rosnav_config_roslaunch-check__home_developer_workspace_src_manip_hsrb_rosnav_hsrb_rosnav_config_launch_simple_gazebo_world.launch"
+)
+
+# Per-language clean rules from dependency scanning.
+foreach(lang )
+  include(CMakeFiles/_run_tests_hsrb_rosnav_config_roslaunch-check__home_developer_workspace_src_manip_hsrb_rosnav_hsrb_rosnav_config_launch_simple_gazebo_world.launch.dir/cmake_clean_${lang}.cmake OPTIONAL)
+endforeach()

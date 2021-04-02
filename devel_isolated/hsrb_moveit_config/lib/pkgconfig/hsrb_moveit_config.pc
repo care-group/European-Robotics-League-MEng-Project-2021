@@ -1,0 +1,8 @@
+prefix=/home/developer/workspace/devel_isolated/hsrb_moveit_config
+
+Name: hsrb_moveit_config
+Description: Description of hsrb_moveit_config
+Version: 1.0.0
+Cflags: 
+Libs: -L${prefix}/lib 
+Requires: 

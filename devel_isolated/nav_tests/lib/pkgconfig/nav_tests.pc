@@ -1,0 +1,8 @@
+prefix=/home/developer/workspace/devel_isolated/nav_tests
+
+Name: nav_tests
+Description: Description of nav_tests
+Version: 0.0.0
+Cflags: 
+Libs: -L${prefix}/lib 
+Requires: 

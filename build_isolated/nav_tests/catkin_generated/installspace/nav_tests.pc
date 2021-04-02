@@ -1,0 +1,8 @@
+prefix=/home/developer/workspace/install_isolated
+
+Name: nav_tests
+Description: Description of nav_tests
+Version: 0.0.0
+Cflags: 
+Libs: -L${prefix}/lib 
+Requires: 
