@@ -1,8 +1,0 @@
-prefix=/home/developer/workspace/install_isolated
-
-Name: manipulation
-Description: Description of manipulation
-Version: 0.0.0
-Cflags: 
-Libs: -L${prefix}/lib 
-Requires: 
