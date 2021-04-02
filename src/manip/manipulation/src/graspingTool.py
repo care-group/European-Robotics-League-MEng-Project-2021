@@ -19,6 +19,7 @@ import time
 import math
 import numpy as np
 from std_msgs.msg import String
+import json 
 moveit_commander.roscpp_initialize(sys.argv)
 #baseMover = nav.SimpleMoveBase()
 #rospy.init_node('move_group_python', anonymous=True)
@@ -155,15 +156,14 @@ def graspMotion(msg):
     #groupWholeBody.set_planner_id("TRAC_IKKConfigDefault")
     groupWholeBody.set_planner_id("RRTConnectkConfigDefault")
     completed = False
-    values = msg.split(",")
-    x = float(values[0])
-    y = float(values[1])
-    z = float(values[2])
+
+    my_dict=json.loads(msg.data)
+    print(my_dict)
     p = PoseStamped()
     p.header.frame_id = "map"
-    p.pose.position.x = x
-    p.pose.position.y = y
-    p.pose.position.z = z
+    p.pose.position.x = float(my_dict["x"])
+    p.pose.position.y = float(my_dict["y"])
+    p.pose.position.z = float(my_dict["z"])+0.02
     p.pose.orientation.x =graspPose.pose.orientation.x
     p.pose.orientation.y =graspPose.pose.orientation.y
     p.pose.orientation.z =graspPose.pose.orientation.z
