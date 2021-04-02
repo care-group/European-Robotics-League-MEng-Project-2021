@@ -103,7 +103,7 @@ def robotPoseToMapPose(pose):
     pose_transformed = tf2_geometry_msgs.do_transform_pose(pose, transform)
     return pose_transformed
 
-def pointcloudToPlanningScene(msg):
+def pointcloudToPlanningScene():
     global pointCloud
     global completed
     msg = pointCloud
