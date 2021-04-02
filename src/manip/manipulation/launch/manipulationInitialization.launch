@@ -103,7 +103,7 @@ POSSIBILITY OF SUCH DAMAGE.
     <remap from="joint_states" to="$(arg joint_states_topic)" />
   </node>
   <node pkg="manipulation" type="graspingTool.py" name="Init"  output="screen">
-    <rosparam command="load" file="$(find hsrb_moveit_config)/config/kinematics.yaml"/>
+    <rosparam command="load" file="kinematicsFixed.yaml"/>
   </node>
 </launch>
 
