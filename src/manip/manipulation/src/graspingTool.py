@@ -141,6 +141,7 @@ def pointcloudToPlanningScene(msg):
         print("completed scene") 
 
 def graspMotion(msg):
+    pointcloudToPlanningScene()
     groupGripper.set_joint_value_target("hand_motor_joint", 0.0)
     groupGripper.go()
     groupArm.set_named_target('neutral')
