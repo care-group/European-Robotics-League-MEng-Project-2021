@@ -7,6 +7,9 @@ git update-index --assume-unchanged src/cv/yolo/yolov3.weights
 # `python3-numpy` and `python3-yaml` is cv_bridge dependencies
 # `ros-kinetic-cv-bridge` is needed to install a lot of cv_bridge deps. Probaply you already have it installed.
 sudo apt-get install python-catkin-tools python3-dev python3-catkin-pkg-modules python3-numpy python3-yaml ros-melodic-cv-bridge
+python -m pip uninstall opencv-python -y
+python -m pip uninstall opencv-contrib-python -y
+python -m pip install opencv-contrib-python
 
 # Move the deepface weights to the appropriate directory
 mkdir /home/developer/.deepface
@@ -35,4 +38,3 @@ git checkout melodic
 cd ../../../
 # Build
 catkin build
-
