@@ -13,9 +13,7 @@ from sensor_msgs.msg import CameraInfo
 import json
 from cv.srv import LocalizePoint
 from yolo import Yolo
-from sensor_msgs.msg import PointCloud2, PointField
-import sensor_msgs.point_cloud2 as pc2
-
+from get_depth import Depth_Finder
 # Commanded by /nav/semantic_labelling to look for all objects from the robot's camera feed using YOLO.
 # Once objects are found, the labels and coordinates are published /semantic_labels, and a debugging image with bounding boxes is published to /semantic_labels/img
 class Semantic_Labelling:
@@ -23,25 +21,18 @@ class Semantic_Labelling:
         rospy.init_node('Semantic_Labelling')
         self.yolo = Yolo()
         self.bridge = CvBridge()
+        self.depth_finder = Depth_Finder()
         self.img_pub = rospy.Publisher('/semantic_labels/img', Image, queue_size=1)
         self.nav_pub = rospy.Publisher('/nav/somenavtopic', String, queue_size=1)
 
         info_subscriber = rospy.Subscriber('/hsrb/head_rgbd_sensor/rgb/camera_info', CameraInfo,self.info_callback,queue_size=None)
         img_subscriber = rospy.Subscriber('/hsrb/head_rgbd_sensor/rgb/image_color', Image,self.img_callback,queue_size=None)
-        depth_subscriber = rospy.Subscriber('/hsrb/head_rgbd_sensor/depth_registered/rectified_points',PointCloud2,self.pc_callback,queue_size=None)
 
     
     # Gets camera info
     def info_callback(self, msg):
         self.cam_info = msg
     
-    def pc_callback(self, msg):
-        self.pc = msg
-
-    def get_depth(self, x, y):
-        gen = pc2.read_points(self.pc, field_names='z', skip_nans=False, uvs=[(x, y)])
-        return next(gen)
-
     # Takes the current image from the camera feed and searches for the target object, returning coordinates 
     def img_callback(self, msg):
         cv_image = self.bridge.imgmsg_to_cv2(msg, desired_encoding='passthrough')
@@ -66,7 +57,7 @@ class Semantic_Labelling:
                 print(obj)
 
                 xy = obj["Point"]
-                dist = self.get_depth(int(xy[0]),int(xy[1]))
+                dist = self.depth_finder.get_depth(int(xy[0]),int(xy[1]))
                 depth = dist[0]
 
                 vect = model.projectPixelTo3dRay((xy[0],xy[1])) 
