@@ -151,10 +151,9 @@ public class bdiEnvironment extends Environment {
 		JsonObject jsonPoint = stringToJson(resp);
 
 		float[] coords= {Float.parseFloat(jsonPoint.getString("x")),
-		Float.parseFloat(jsonPoint.getString("y")),
-		Float.parseFloat(jsonPoint.getString("z"))};
+			Float.parseFloat(jsonPoint.getString("y")),
+			Float.parseFloat(jsonPoint.getString("z"))};
 		return coords;
-
 
 	}
 
@@ -166,8 +165,17 @@ public class bdiEnvironment extends Environment {
 		logger.info("Following to " + location);
 	}
 
-	public static void pickup() {
+	public static void pickup(float[] xyz) {
 		logger.info("Picking up item");
+		
+		String jsonString = String.format("{\"x\":\"%d\",\"y\":\"%d\",\"z\":\"%d\"}", xyz[0],xyz[1],xyz[2]);
+		
+		//{"x":"5.21","y":"0.41","z":"0.1412"}
+		
+		publish("/graspingTarget", "std_msgs/String", jsonString);
+		String resp = subscribeSync("/feedbackOnGrasping", "std_msgs/String");
+		logger.info(resp);
+
 	}
 
 	public static void place() {
