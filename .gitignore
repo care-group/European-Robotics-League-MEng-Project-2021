@@ -12,3 +12,5 @@ logs/
 *.pkl
 src/nav/nav_tests/src/speedtest.py
 src/hri/auth.json
+bin/
+lib/
