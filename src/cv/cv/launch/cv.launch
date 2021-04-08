@@ -4,6 +4,6 @@
     <!-- <node pkg="cv" name="faceDetection" type="simulation_face_detection.py" output="screen"/> -->
     <node pkg="cv" name="objectDetection" type="simulation_obj_detection.py" output="screen"/>
     <node pkg="cv" name="objectLabelling" type="labelling.py" output="screen"/>
-    <node pkg="cv" name="pointConversion" type="getting3DPosition.py" output="screen"/>
+    <node pkg="cv" name="transform_point" type="transform_point.py" output="screen"/>
 
 </launch>
