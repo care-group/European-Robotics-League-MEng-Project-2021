@@ -17,6 +17,9 @@ import java.util.*;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicReference;
+import javax.json.*;
+import java.io.StringReader;
+import java.util.StringTokenizer;
 
 public class bdiEnvironment extends Environment {
 
@@ -115,6 +118,9 @@ public class bdiEnvironment extends Environment {
 				case "follow":
 					follow("waypoint4");
 					break;
+				case "findObject":
+					findObject(action.getTerm(0).toString());
+					break;
 				default:
 					logger.info("executing: " + action + ", but not implemented!");
 			}
@@ -133,6 +139,22 @@ public class bdiEnvironment extends Environment {
 
 	public static void moveTo(String location) {
 		logger.info("Moving to " + location);
+		publish("/azm_nav/semantic_goal_listener", "std_msgs/String", location);
+		String resp = subscribeSync("/azm_nav/goal_result", "std_msgs/String");
+	}
+
+	public static float[] findObject(String target){
+		logger.info("Scanning for " +target);
+		publish("/jason/detect_object", "std_msgs/String", target);
+		String resp = subscribeSync("/cv/detected_obj/coords/json", "std_msgs/String");
+		logger.info(resp);
+		JsonObject jsonPoint = stringToJson(resp);
+
+		float[] coords= {Float.parseFloat(jsonPoint.getString("x")),
+			Float.parseFloat(jsonPoint.getString("y")),
+			Float.parseFloat(jsonPoint.getString("z"))};
+		return coords;
+
 	}
 
 	public static void escort(String location) {
@@ -143,8 +165,17 @@ public class bdiEnvironment extends Environment {
 		logger.info("Following to " + location);
 	}
 
-	public static void pickup() {
+	public static void pickup(float[] xyz) {
 		logger.info("Picking up item");
+		
+		String jsonString = String.format("{\"x\":\"%d\",\"y\":\"%d\",\"z\":\"%d\"}", xyz[0],xyz[1],xyz[2]);
+		
+		//{"x":"5.21","y":"0.41","z":"0.1412"}
+		
+		publish("/graspingTarget", "std_msgs/String", jsonString);
+		String resp = subscribeSync("/feedbackOnGrasping", "std_msgs/String");
+		logger.info(resp);
+
 	}
 
 	public static void place() {
@@ -155,6 +186,14 @@ public class bdiEnvironment extends Environment {
 	void closeDoor() {
 		logger.info("Closing door.");
 	}
+
+	public static JsonObject stringToJson(String str){
+        JsonReader jsonReader = Json.createReader(new StringReader(str));
+        JsonObject object = jsonReader.readObject();
+        jsonReader.close();
+        return object;
+    }
+
 
 	// Generic function to publish any type of data to a specified topic. Limited to
 	// single-member data types (eg. String)

@@ -7,7 +7,15 @@
 //!waitForBell.
 //!waitForEntranceOpened.
 //!getCommand.
+!testGoal.
+
 /* Plans */
+
++!testGoal
+    <-  findObject(apple).
+
+
+
 +!getCommand
     <- getCommand.
 +!waitForBell
@@ -128,7 +136,7 @@
 
 
 +grannyAlarm
-    <-  !visit(bedroom);
+    <-  !visit(dude);
         getCommand;
         executeCommand.
 
