@@ -27,7 +27,12 @@ class Spacy_Test:
 
         dictMsg={}
         dictMsg["action"]=self.check_action()
-        dictMsg["object"]=self.return_objects()
+        if(self.return_objects() is not None):
+            dictMsg["object"]=self.return_objects().text
+        if(self.return_rooms() is not None):
+            dictMsg["room"]=self.return_rooms().text
+        if(self.return_people() is not None):
+            dictMsg["person"]=self.return_people().text
 
 
         dictWrapper=dictMsg
@@ -105,8 +110,9 @@ class Spacy_Test:
         for match_id, start, end in roomMatcher(doc):
             # Create a Span with the label for "GPE"
             roomSpan = Span(doc, start, end, label="ROOM")
-        
-            print(roomSpan.text)
+            
+            return roomSpan
+            
 
 
     def return_objects(self):
@@ -115,8 +121,8 @@ class Spacy_Test:
 
         doc = nlp(self.text)
 
-
-        objects = ["can of coke", "coke can", "wallet", "purse", "bottle of water"]
+        objectJson = open("src/hri/src/objectFile.json", "r")
+        objects = json.loads(objectJson.read())
         object_patterns = list(nlp.pipe(objects))
         objectMatcher = PhraseMatcher(nlp.vocab)
         objectMatcher.add("OBJECTS", [*object_patterns])
@@ -126,8 +132,7 @@ class Spacy_Test:
 
             objectSpan = Span(doc, start, end, label="OBJECTS")
 
-            print(objectSpan.text)
-            return objectSpan.text
+            return objectSpan
 
 
     def return_people(self):
@@ -146,13 +151,16 @@ class Spacy_Test:
 
             peopleSpan = Span(doc, start, end, label="PEOPLE")
 
-            print(peopleSpan.text)
+            return peopleSpan
 
 
     def check_action(self):
-        if "get" in self.return_verbs():
-            print("fetch")
+        if "follow" in self.return_verbs():
+            return "follow"
+        if (("find" or "get" or "fetch" or "bring" in self.return_verbs()) and (self.return_objects() is not None)):
             return "fetch"
+        if (("get" or "guide" in self.return_verbs()) and (self.return_people() is not None)):
+            return "guide"
 
 spacy_test = Spacy_Test()
 spacy_test.subscribe_cloud()
