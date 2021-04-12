@@ -1,4 +1,4 @@
-#! /usr/bin/env python
+#! /usr/bin/python2.7
 
 import sys
 import copy
@@ -187,4 +187,3 @@ if __name__ == '__main__':
         rospy.spin()
     except rospy.ROSException as e:
         rospy.logerr(e)
-    
