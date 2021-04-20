@@ -1,4 +1,4 @@
-#! /usr/bin/env python
+#! /usr/bin/env python2.7
 
 import sys
 import copy
@@ -20,7 +20,6 @@ import math
 import numpy as np
 from std_msgs.msg import String
 import json 
-moveit_commander.roscpp_initialize(sys.argv)
 #baseMover = nav.SimpleMoveBase()
 #rospy.init_node('move_group_python', anonymous=True)
 robot = moveit_commander.RobotCommander()
@@ -103,7 +102,7 @@ def robotPoseToMapPose(pose):
     pose_transformed = tf2_geometry_msgs.do_transform_pose(pose, transform)
     return pose_transformed
 
-def pointcloudToPlanningScene():
+def pointcloudToPlanningScene(msg):
     global pointCloud
     global completed
     msg = pointCloud
@@ -129,7 +128,7 @@ def pointcloudToPlanningScene():
         for value in data:
             if limitCounter == limit:
                 limitCounter = 0
-                p = PointStamped()
+                p = PoseStamped()
                 p.header.frame_id = robot.get_planning_frame()
                 p.pose.position.x = value[0]
                 p.pose.position.y = value[1]
@@ -141,7 +140,7 @@ def pointcloudToPlanningScene():
         print("completed scene") 
 
 def graspMotion(msg):
-    pointcloudToPlanningScene()
+    #pointcloudToPlanningScene()
     groupGripper.set_joint_value_target("hand_motor_joint", 0.0)
     groupGripper.go()
     groupArm.set_named_target('neutral')
@@ -157,13 +156,16 @@ def graspMotion(msg):
     groupWholeBody.set_planner_id("RRTConnectkConfigDefault")
     completed = False
 
-    my_dict=json.loads(msg.data)
-    print(my_dict)
+    #my_dict=json.loads(msg.data)
+    #print(my_dict)
     p = PoseStamped()
     p.header.frame_id = "map"
-    p.pose.position.x = float(my_dict["x"])
-    p.pose.position.y = float(my_dict["y"])
-    p.pose.position.z = float(my_dict["z"])+0.02
+    #p.pose.position.x = float(my_dict["x"])
+    #p.pose.position.y = float(my_dict["y"])
+    #p.pose.position.z = float(my_dict["z"])+0.02
+    p.pose.position.x = 1.62
+    p.pose.position.y = 0.3
+    p.pose.position.z = 0.43
     p.pose.orientation.x =graspPose.pose.orientation.x
     p.pose.orientation.y =graspPose.pose.orientation.y
     p.pose.orientation.z =graspPose.pose.orientation.z
@@ -180,9 +182,94 @@ def graspMotion(msg):
     pubFeedback = rospy.Publisher('/feedbackOnGrasping', String, queue_size=10)
     pubFeedback.publish("True") 
 
+def graspMotion1():
+    #pointcloudToPlanningScene()
+    groupGripper.set_joint_value_target("hand_motor_joint", 0.0)
+    groupGripper.go()
+    groupArm.set_named_target('neutral')
+    groupArm.go()
+    pose = groupWholeBody.get_current_pose()
+    print(pose)
+    graspPose = robotPoseToMapPose(pose)
+    groupGripper.set_joint_value_target("hand_motor_joint", 1.0)
+    groupGripper.go()
+    groupWholeBody.set_planning_time(20)
+    groupWholeBody.set_workspace([-3.0, -3.0, 3.0, 3.0])
+    #groupWholeBody.set_planner_id("TRAC_IKKConfigDefault")
+    groupWholeBody.set_planner_id("RRTConnectkConfigDefault")
+    completed = False
+
+    #my_dict=json.loads(msg.data)
+    #print(my_dict)
+    p = PoseStamped()
+    p.header.frame_id = "map"
+    #p.pose.position.x = float(my_dict["x"])
+    #p.pose.position.y = float(my_dict["y"])
+    #p.pose.position.z = float(my_dict["z"])+0.02
+    p.pose.position.x = 1.64
+    p.pose.position.y = -0.04
+    p.pose.position.z = 0.44
+    p.pose.orientation.x =graspPose.pose.orientation.x
+    p.pose.orientation.y =graspPose.pose.orientation.y
+    p.pose.orientation.z =graspPose.pose.orientation.z
+    p.pose.orientation.w =graspPose.pose.orientation.w
+    groupWholeBody.clear_pose_targets()
+    groupWholeBody.set_pose_target(mapPoseToRobotPose(p))
+    groupWholeBody.set_goal_tolerance(0.01)
+    plan= groupWholeBody.plan()
+    groupWholeBody.execute(plan)
+    end_effector_value = groupWholeBody.get_current_pose()
+    print(robotPoseToMapPose(end_effector_value)) 
+    groupGripper.set_joint_value_target("hand_motor_joint", 0.3)
+    groupGripper.go()
+    groupArm.set_named_target('neutral')
+    pubFeedback = rospy.Publisher('/feedbackOnGrasping', String, queue_size=10)
+    pubFeedback.publish("True") 
+
+def placeMotion1():
+    #pointcloudToPlanningScene()
+    pose = groupWholeBody.get_current_pose()
+    print(pose)
+    graspPose = robotPoseToMapPose(pose)
+    groupGripper.set_joint_value_target("hand_motor_joint", 1.0)
+    groupGripper.go()
+    groupWholeBody.set_planning_time(20)
+    groupWholeBody.set_workspace([-3.0, -3.0, 3.0, 3.0])
+    #groupWholeBody.set_planner_id("TRAC_IKKConfigDefault")
+    groupWholeBody.set_planner_id("RRTConnectkConfigDefault")
+    completed = False
+
+    #my_dict=json.loads(msg.data)
+    #print(my_dict)
+    p = PoseStamped()
+    p.header.frame_id = "map"
+    #p.pose.position.x = float(my_dict["x"])
+    #p.pose.position.y = float(my_dict["y"])
+    #p.pose.position.z = float(my_dict["z"])+0.02
+    p.pose.position.x = 1.83
+    p.pose.position.y = 0.423
+    p.pose.position.z = 0.44
+    p.pose.orientation.x =graspPose.pose.orientation.x
+    p.pose.orientation.y =graspPose.pose.orientation.y
+    p.pose.orientation.z =graspPose.pose.orientation.z
+    p.pose.orientation.w =graspPose.pose.orientation.w
+    groupWholeBody.clear_pose_targets()
+    groupWholeBody.set_pose_target(mapPoseToRobotPose(p))
+    groupWholeBody.set_goal_tolerance(0.01)
+    plan= groupWholeBody.plan()
+    groupWholeBody.execute(plan)
+    end_effector_value = groupWholeBody.get_current_pose()
+    print(robotPoseToMapPose(end_effector_value)) 
+    groupGripper.set_joint_value_target("hand_motor_joint", 1.0)
+    groupGripper.go()
+    groupArm.set_named_target('neutral')
+    pubFeedback = rospy.Publisher('/feedbackOnPlacing', String, queue_size=10)
+    pubFeedback.publish("True") 
+
 if __name__ == '__main__':
-    initListenerToPointCloud()
-    initListenerToGraspingTarget()
+    #initListenerToPointCloud()
+    #initListenerToGraspingTarget()
+    graspMotion1()
     try:
         rospy.spin()
     except rospy.ROSException as e:
