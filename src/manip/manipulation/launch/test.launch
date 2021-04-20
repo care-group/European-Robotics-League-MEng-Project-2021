@@ -1,5 +1,5 @@
 <launch>
     <!-- My Package launch file -->
-    <node pkg="manipulation" type="tools.py" name="Init"  output="screen">
+    <node pkg="manipulation" type="sample_consensus.py" name="Init"  output="screen">
     </node>
 </launch>

@@ -1,0 +1,51 @@
+#!/bin/bash
+
+### navigate to source code directory ###
+cd ~/workspace/src
+
+### coin install ###
+git clone --recurse-submodules https://github.com/coin3d/coin coin
+cmake -Hcoin -Bcoin_build -G "Unix Makefiles" -DCMAKE_INSTALL_PREFIX=/usr/local  -DCMAKE_BUILD_TYPE=Release -DCOIN_BUILD_DOCUMENTATION=OFF
+cd coin_build
+make
+make install
+
+### Qt install ###
+cd ~/workspace/src
+sudo apt-get install qt5-default
+
+### SoQt Library install [Not Complete] ###
+tar -zxvf soqt-1.6.0-src.tar.gz
+cd soqt
+export COINDIR="/usr/local"
+export INCLUDE="/usr/local/include:/usr/local/Trolltech/Qt-4.7/qt/include"
+echo 'export PATH=/home/developer/workspace/src/coin/bin:$PATH' >> ~/.bashrc
+# ensure new path environment variable for coin config is permanently saved #
+cd ~/workspace
+chmod +x get-images.sh
+/get-images.sh
+# run config script #
+cd ~/workspace/src/soqt
+chmod +x configure 	# ensure configure file is executeable
+./configure --enable-debug=no --enable-symbols=no --with-coin=/usr/local --with-qt=/usr/local/Trolltech/Qt-4.7/qt
+# current error should be unable to find requried coin cmake file #
+# next step once correctly configured is to install [cmake install] #
+
+### graspit_interface install [Not Complete, Requires SoQt] ###
+cd ~/workspace/src
+git clone https://github.com/graspit-simulator/graspit_commander.git
+git clone https://github.com/graspit-simulator/graspit_interface.git
+# set PATHs #
+echo 'export LD_LIBRARY_PATH=/usr/local/lib:$LD_LIBRARY_PATH' >> ~/.bashrc
+echo 'export GRASPIT=~/.graspit' >> ~/.bashrc
+cd ~/workspace
+/get-images.sh
+# installing graspit_interface [commented out steps that require SoQt Library] #
+cd ~/workspace/src/graspit
+mkdir build
+cd build
+# cmake ..
+# make -j5
+# sudo make install
+# cd ~/workspace
+# catkin_make
