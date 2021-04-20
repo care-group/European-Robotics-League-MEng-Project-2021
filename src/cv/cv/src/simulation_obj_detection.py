@@ -95,9 +95,9 @@ class Object_Detection:
                 
                 print(resp.localizedPointOdom)
                 dictMsg={}
-                dictMsg["x"]=resp.localizedPointMap.point.x
-                dictMsg["y"]=resp.localizedPointMap.point.y
-                dictMsg["z"]=resp.localizedPointMap.point.z
+                dictMsg["x"]=str(resp.localizedPointMap.point.x)
+                dictMsg["y"]=str(resp.localizedPointMap.point.y)
+                dictMsg["z"]=str(resp.localizedPointMap.point.z)
                 self.coord_pub_json.publish(json.dumps(dictMsg))
                 running = False
             elif(duration <self.TIMEOUT):
