@@ -20,6 +20,10 @@ def quaternion_from_euler(roll, pitch, yaw):
     
     return Quaternion(q[0], q[1], q[2], q[3])
 
+def euler_from_quaternion(q):
+    q = tf.transformations.euler_from_quaternion([q.x, q.y, q.z, q.w], 'rxyz')
+    return (q[0]/pi * 180, q[1]/pi * 180, q[2]/pi * 180)
+
 def str_to_obj(string):
     """
     Converts JSON string to data structure

@@ -4,8 +4,10 @@ print("Starting semantic.py")
 
 import rospy
 import json
+import traceback
 from std_msgs.msg import Float64MultiArray, String
-from azmutils import dynamic_euclid_dist, str_to_obj, obj_to_str
+from tf2_msgs.msg import TFMessage
+from azmutils import dynamic_euclid_dist, str_to_obj, obj_to_str, euler_from_quaternion
 
 ''' TODO
 5. make my own maps
@@ -37,15 +39,18 @@ class SemanticToCoords():
             self.load_semantic_map()
         # Dynamic semantic map inits
         self.semantic_labels_sub = rospy.Subscriber('/azm_nav/semantic_label_additions', String, self.add_to_semantic_map_callback)
-        # Get pose inits TODO
-        # self.pose_sub = rospy.Subscriber('', Pose, self.pose_cb)
-        self.robot_pose = []
+        # Get pose inits
+        self.pose_sub = rospy.Subscriber('/tf', TFMessage, self.pose_cb)
+        self.robot_pose = [0, 0, 0]
+        # CLI emu inits
+        self.cli_sub = rospy.Subscriber('/azm_nav/cli_semantic', String, self.cli)
 
 
     def load_semantic_map(self):
         try:
             with open(self.semantic_map_path, "r") as f:
                 self.semantic_map = json.loads(f.read())
+                rospy.loginfo("Map loaded from {}".format(self.semantic_map_path))
         except Exception as e:
             rospy.logwarn("An error occured while loading the JSON semantic map: {}".format(e))
 
@@ -53,6 +58,7 @@ class SemanticToCoords():
         try:
             with open(self.semantic_map_path, "w") as f:
                 f.write(json.dumps(self.semantic_map, indent=4))
+                rospy.loginfo("Map written to {}".format(self.semantic_map_path))
         except Exception as e:
             rospy.logwarn("An error occured while saving the JSON semantic map, hope you made a backup. Error: {}".format(e))
 
@@ -61,7 +67,6 @@ class SemanticToCoords():
         self.ctrl_c = True
         if not len(self.semantic_map):
             self.save_semantic_map()
-            rospy.loginfo("Saved map before shutting down")
     
     def publish_once(self, topic, msg, content="message"):
         '''
@@ -113,8 +118,7 @@ class SemanticToCoords():
 
         Returns:
             int: returns 0 if the input did not pass validation checks, 
-                         1 if it gets added,
-                         2 if it didn't get added because an item under the threshold already exists
+                         1 if it gets added
 
         """ 
         # TODO, shouldnt be a problem but eventually this should handle both full string inputs and unicode
@@ -125,19 +129,32 @@ class SemanticToCoords():
                   "label received: {}".format(input))
             print([type(input[i]) for i in input])
             return 0
+        
+        # check if already there
+        _t = (0, 1000)
         for entry in self.semantic_map:
-            if entry["name"] == input["name"] and dynamic_euclid_dist(entry["coords"], input["coords"])<distance_threshold:
-                # Assume it's already here
-                return 2
+            _dist = dynamic_euclid_dist(entry["coords"], input["coords"])
+            if entry["name"] == input["name"] and _dist<distance_threshold:
+                if _dist<_t[1]:
+                    _t = (entry, _dist)
+        # and if so remove it
+        if _t[0]:
+            l = self.semantic_map.pop(_t[0])
+            rospy.loginfo("Removed label from map that was considered to be a duplicate due to being to close to the new addition: {}".format(l))
+            
+
+        # append pose
+        if "pose_when_seen" not in input["others"]:
+            input["others"]["pose_when_seen"] = self.robot_pose
         self.semantic_map.append(input)
         rospy.loginfo("New label ({}) added to semantic map.".format(input["name"]))
         return 1
 
     # TODO make it iterate thru the entire input and delete the one whose coords are the closest it
     # TODO refactor to use integer retursns like in the add method
-    def delete_from_semantic_map_by_coords(self, coords, distance_threshold=0.2):
+    def remove_from_semantic_map_by_coords(self, coords, distance_threshold=0.2):
         """
-        Deletes the first entry whose coords are under the distance threshold
+        Deletes the entry whose coords are under the distance threshold and closest to the input
 
         Args:
             coords (list, tuple): list or tuple with 3 ints/floats describing the position of the label to be deleted
@@ -151,12 +168,17 @@ class SemanticToCoords():
            len(coords) == 3):
             rospy.logwarn("Bad input when trying to delete from semantic map")
             return False
+        # find closest
+        _t = (0, 1000)
         for entry in self.semantic_map:
-            if dynamic_euclid_dist(entry["coords"], coords)<distance_threshold:
-                self.semantic_map.remove(entry)
-                return entry
+            _dist = dynamic_euclid_dist(entry["coords"], coords)
+            if _dist<distance_threshold and _dist<_t[1]:
+                _t = (entry, _dist)
+        if _t[0]:
+            return self.semantic_map.pop(_t[0])
         return False
 
+    # TODO
     def update_entry_descriptions(self):
         pass
 
@@ -187,10 +209,35 @@ class SemanticToCoords():
         self.add_new_to_semantic_map(input)
         return 1
 
-    # TODO
+    # FIXME this isn't giving the correct pose
+    # also should prolly keep track of when the pose was last updated
     def pose_cb(self, msg):
-        pass
+        for t in msg.transforms:
+            if t.child_frame_id == "odom" and t.header.frame_id == "map":
+                translation = t.transform.translation
+                rotation = t.transform.rotation
+                euler = euler_from_quaternion(rotation)
+                self.robot_pose = [translation.x, translation.y, euler[2]]
+                #print(self.robot_pose)
     
+    # this is for testing purposes pls no judge
+    def cli(self, msg):
+        try:
+            inputs = msg.data.split(' ', 1)
+            o = None
+            if inputs[0] == "save": self.save_semantic_map()
+            elif inputs[0] == "load": self.load_semantic_map()
+            elif inputs[0] == "get": o = self.get_entries_by_name(inputs[1])
+            # FIXME
+            elif inputs[0] == "remove": o = self.remove_from_semantic_map_by_coords(str_to_obj(inputs[1]))
+            if type(o) == str:
+                print("CLI output: {}".format(o))
+            elif not o == None:
+                print("CLI output:")
+                print(obj_to_str(o))
+        except Exception as e:
+            rospy.logwarn("Bad input on CLI emu: {}".format(traceback.format_exc()))
+
 
 
 if __name__ == '__main__':
