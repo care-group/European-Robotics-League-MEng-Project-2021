@@ -49,7 +49,7 @@ if __name__ == '__main__':
     topic = tempnode.pub
     msg = String()
 
-    t = {"name":"stuff1","type":"object","coords":[2.7,0,30],"others":{}}
+    t = {"name":"stuff1","type":"test","coords":[1,2,3],"others":{}}
     msg.data = obj_to_str(t)
     print(msg)
     tempnode.publish_once(topic, msg)
