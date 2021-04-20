@@ -16,8 +16,7 @@ from sensor_msgs.msg import CameraInfo
 from cv.srv import LocalizePoint
 import json
 from yolo import Yolo
-from sensor_msgs.msg import PointCloud2, PointField
-import sensor_msgs.point_cloud2 as pc2
+from get_depth import Depth_Finder
 
 # Commanded by the jason agent /jason/detect_object to look for a given object from the robot's camera feed using YOLO.
 # Once found, the coordinates are published /yolo/<target>, and a debugging image with bounding boxes is published to /yolo/<target>/img
@@ -27,6 +26,8 @@ class Object_Detection:
         self.target = ""
         self.yolo = Yolo()
         self.bridge = CvBridge()
+        self.depth_finder = Depth_Finder()
+
         self.TIMEOUT = 15
         self.coord_pub_map = rospy.Publisher('/cv/detected_obj/coords/map', PointStamped, queue_size=10,latch=True)
         self.coord_pub_odom = rospy.Publisher('/cv/detected_obj/coords/odom', PointStamped, queue_size=10,latch=True)
@@ -35,7 +36,6 @@ class Object_Detection:
         
         img_subscriber = rospy.Subscriber('/hsrb/head_rgbd_sensor/rgb/image_color', Image,self.img_callback)
         info_subscriber = rospy.Subscriber('/hsrb/head_rgbd_sensor/rgb/camera_info', CameraInfo,self.info_callback)
-        depth_subscriber = rospy.Subscriber('/hsrb/head_rgbd_sensor/depth_registered/rectified_points',PointCloud2,self.pc_callback)
 
 
     def subscribe(self):
@@ -44,15 +44,8 @@ class Object_Detection:
     def info_callback(self, msg):
         self.cam_info = msg
 
-    def pc_callback(self, msg):
-        self.pc = msg
-
     def img_callback(self, msg):
         self.cv_image = self.bridge.imgmsg_to_cv2(msg, desired_encoding='passthrough')    
-
-    def get_depth(self, x, y):
-        gen = pc2.read_points(self.pc, field_names='z', skip_nans=False, uvs=[(x, y)])
-        return next(gen)
 
     # Takes the current image from the camera feed and searches for the target object, returning coordinates 
     def jason_callback(self, msg):
@@ -81,7 +74,7 @@ class Object_Detection:
                 #Pub image with bounding boxes debug
                 self.img_pub.publish(self.bridge.cv2_to_imgmsg(img,encoding='passthrough'))
         
-                dist = self.get_depth(int(obj_coords[0]),int(obj_coords[1]))
+                dist = self.depth_finder.get_depth(int(obj_coords[0]),int(obj_coords[1]))
                 depth = dist[0]
 
                 vect = model.projectPixelTo3dRay((obj_coords[0],obj_coords[1])) 
@@ -102,9 +95,9 @@ class Object_Detection:
                 
                 print(resp.localizedPointOdom)
                 dictMsg={}
-                dictMsg["x"]=resp.localizedPointMap.point.x
-                dictMsg["y"]=resp.localizedPointMap.point.y
-                dictMsg["z"]=resp.localizedPointMap.point.z
+                dictMsg["x"]=str(resp.localizedPointMap.point.x)
+                dictMsg["y"]=str(resp.localizedPointMap.point.y)
+                dictMsg["z"]=str(resp.localizedPointMap.point.z)
                 self.coord_pub_json.publish(json.dumps(dictMsg))
                 running = False
             elif(duration <self.TIMEOUT):
