@@ -8,7 +8,8 @@ import traceback
 from std_msgs.msg import Float64MultiArray, String
 from tf2_msgs.msg import TFMessage
 from azmutils import dynamic_euclid_dist, str_to_obj, obj_to_str, euler_from_quaternion
-import tf 
+import tf
+import tf2_ros
 
 ''' TODO
 5. make my own maps
@@ -42,7 +43,9 @@ class SemanticToCoords():
         self.semantic_labels_sub = rospy.Subscriber('/azm_nav/semantic_label_additions', String, self.add_to_semantic_map_callback)
         # Get pose inits
         #self.pose_sub = rospy.Subscriber('/tf', TFMessage, self.pose_cb)
-        self.tfListener = tf.TransformListener()
+        self.tfBuffer = tf2_ros.Buffer()
+        self.tfListener = tf2_ros.TransformListener(self.tfBuffer)
+        #self.tfListener = tf.TransformListener()
         self.robot_pose = [0, 0, 0]
         # CLI emu inits
         self.cli_sub = rospy.Subscriber('/azm_nav/cli_semantic', String, self.cli)
@@ -104,6 +107,12 @@ class SemanticToCoords():
         for entry in self.semantic_map:
             if entry["name"] == msg.data:
                 rospy.loginfo("Semantic goal checks out, translating and sending")
+                if "seen_from" in entry["others"]:
+                    rospy.loginfo("Contains seen_from, using that location isntead")
+                    t = entry["others"]["seen_from"]
+                    self.goal.data = [t[0], t[1], t[2]]
+                    self.publish_once(self.coord_goal_pub, self.goal, "coordinate goal")
+                    return
                 t = entry["coords"]
                 self.goal.data = [t[0], t[1], t[2]]
                 self.publish_once(self.coord_goal_pub, self.goal, "coordinate goal")
@@ -133,6 +142,7 @@ class SemanticToCoords():
             return 0
         
         # check if already there
+        # this will fail if the coords are empty FIXME add validation
         _t = (0, 1000)
         for entry in self.semantic_map:
             _dist = dynamic_euclid_dist(entry["coords"], input["coords"])
@@ -141,7 +151,7 @@ class SemanticToCoords():
                     _t = (entry, _dist)
         # and if so remove it
         if _t[0]:
-            l = self.semantic_map.pop(_t[0])
+            l = self.semantic_map.remove(_t[0])
             rospy.loginfo("Removed label from map that was considered to be a duplicate due to being to close to the new addition: {}".format(l))
             
 
@@ -197,8 +207,8 @@ class SemanticToCoords():
         attaches the robot's current pose to the input
 
         Returns:
-            int: 0 for failure
-                 1 for success
+            int: 0 if failure
+            add_new_to_semantic_map() return for success
         """
         t = msg.data.encode('ascii','replace').replace("\\", "")
         input = str_to_obj(t)
@@ -206,12 +216,16 @@ class SemanticToCoords():
             rospy.logwarn("Semantic: label received did not have minimum requirements")
             rospy.loginfo(input)
             return 0
-        input["others"]["seen_from"] = self.robot_pose
-        self.add_new_to_semantic_map(input)
-        return 1
+        
+        _pose = self.get_pose("map", "base_link")
+        if _pose:
+            input["others"]["seen_from"] = _pose
+            rospy.loginfo("Attached current pose {} to the label".format(_pose))
+        else:
+            rospy.loginfo("Failed to obtain pose when adding label to semantic map, not attaching a 'seen_from' to it")
+        return self.add_new_to_semantic_map(input)
 
-    # FIXME this isn't giving the correct pose
-    # also should prolly keep track of when the pose was last updated
+    # deprecated and doesnt work, ignore
     def pose_cb(self, msg):
         for t in msg.transforms:
             if t.child_frame_id == "odom" and t.header.frame_id == "map":
@@ -223,12 +237,19 @@ class SemanticToCoords():
     
     def get_pose(self, one, two):
         try:
-            (trans,rot) = self.tfListener.lookupTransform(one, two, rospy.Time(0))
-            print(trans)
-            print(rot)
+            print("attempting to get transform from {} to {}".format(one, two))
+            #(trans,rot) = self.tfListener.lookup_transform(one, two, rospy.Time(0), rospy.Duration(4))
+            transform = self.tfBuffer.lookup_transform(one, two, rospy.Time(0), rospy.Duration(1))
+            print("{}, {}".format(transform.transform.translation.x, transform.transform.translation.y))
+            print("rotation:{}".format(euler_from_quaternion(transform.transform.rotation)))
+            _pose = [
+                transform.transform.translation.x,
+                transform.transform.translation.y,
+                euler_from_quaternion(transform.transform.rotation)[2]]
+            return _pose
         except (tf.LookupException, tf.ConnectivityException, tf.ExtrapolationException) as e:
-            rospy.logwarn("Error when getting pose: {}".format(e))
-
+            rospy.logwarn("Error when getting pose from {} to {}: {}".format(one, two, e))
+    
     # this is for testing purposes pls no judge
     def cli(self, msg):
         try:
