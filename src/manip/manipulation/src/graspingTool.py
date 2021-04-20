@@ -1,8 +1,4 @@
-<<<<<<< HEAD
 #! /usr/bin/env python2.7
-=======
-#! /usr/bin/python2.7
->>>>>>> d847ae63c92c6965cd4b99db9263d4bb7119f614
 
 import sys
 import copy
