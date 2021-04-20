@@ -35,14 +35,12 @@ class Semantic_Labelling:
     
     # Takes the current image from the camera feed and searches for the target object, returning coordinates 
     def img_callback(self, msg):
-        cv_image = self.bridge.imgmsg_to_cv2(msg, desired_encoding='passthrough')
-        objects,img = self.yolo.search_for_objects(cv_image)
-        
-        self.img_pub.publish(self.bridge.cv2_to_imgmsg(img,encoding='passthrough'))
+        cv_image = self.bridge.imgmsg_to_cv2(msg, desired_encoding='passthrough')        
 
         #Respond to attribute error if subscribers haven't ran yet
         try:
             objects,img = self.yolo.search_for_objects(cv_image)
+            self.img_pub.publish(self.bridge.cv2_to_imgmsg(img,encoding='passthrough'))
             model = PinholeCameraModel()
             model.fromCameraInfo(self.cam_info)
         except AttributeError:

@@ -19,6 +19,8 @@ RUN pip3 install supervisor_twiddler
 RUN pip3 install argcomplete
 RUN pip3 install rospkg==1.2.10 defusedxml netifaces
 
+#Manip
+RUN sudo apt install ros-melodic-tf2-sensor-msgs
 
 # spaCY
 RUN pip3 install -U pip setuptools wheel
