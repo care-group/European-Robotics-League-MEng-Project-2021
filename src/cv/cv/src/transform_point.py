@@ -32,7 +32,7 @@ class Get3DPosition(object):
 
 
 def main():
-    rospy.init_node('get_3d_position')
+    rospy.init_node('transform_point')
     node = Get3DPosition()
     try:
         rospy.spin()

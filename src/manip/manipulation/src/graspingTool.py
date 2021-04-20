@@ -1,4 +1,8 @@
+<<<<<<< HEAD
 #! /usr/bin/env python2.7
+=======
+#! /usr/bin/python2.7
+>>>>>>> d847ae63c92c6965cd4b99db9263d4bb7119f614
 
 import sys
 import copy
@@ -185,7 +189,7 @@ def graspMotion(msg):
     pubFeedback = rospy.Publisher('/feedbackOnGrasping', String, queue_size=10)
     pubFeedback.publish("True") 
 
-def graspMotion1():
+def graspMotionTest():
     #pointcloudToPlanningScene()
     groupGripper.set_joint_value_target("hand_motor_joint", 0.0)
     groupGripper.go()
@@ -270,7 +274,7 @@ def placeMotion(msg):
     pubFeedback = rospy.Publisher('/feedbackOnPlacing', String, queue_size=10)
     pubFeedback.publish("True") 
 
-def placeMotion1():
+def placeMotionTest():
     #pointcloudToPlanningScene()
     pose = groupWholeBody.get_current_pose()
     print(pose)
@@ -315,10 +319,9 @@ if __name__ == '__main__':
     #initListenerToPointCloud()
     initListenerToGraspingTarget()
     initListenerToPlacingTarget()
-    #graspMotion1()
-    #placeMotion1()
+    #graspMotionTest()
+    #placeMotionTest()
     try:
         rospy.spin()
     except rospy.ROSException as e:
         rospy.logerr(e)
-    

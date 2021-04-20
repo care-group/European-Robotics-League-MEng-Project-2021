@@ -146,7 +146,7 @@ public class catering extends Environment {
     private static void search(String obj){
         bdiEnvironment.moveTo("shelves");
         float[] xyz = bdiEnvironment.findObject(obj);
-        //bdiEnvironment.pickup(xyz);
+        bdiEnvironment.pickup(xyz);
     }
 
     private static boolean find(String object){
