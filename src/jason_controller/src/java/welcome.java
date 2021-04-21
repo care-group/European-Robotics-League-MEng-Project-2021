@@ -56,7 +56,27 @@ public class welcome extends Environment {
     }
 
     public static void scanFace() {
-        visitor = Visitor.PLUMBER;
+
+        bdiEnvironment.logger.info("Waiting door opened stub...");
+        String rawStatus = bdiEnvironment.subscribeSync("/jason/welcome/opened", "std_msgs/Bool");
+        
+        bdiEnvironment.logger.info("Scanning face");
+		bdiEnvironment.publish("/jason/detect_face", "std_msgs/String", "");
+		String resp = bdiEnvironment.subscribeSync("/cv/face/personIs", "std_msgs/String");
+        
+        switch (resp) {
+            case "simulated":
+                visitor=Visitor.DR_KIMBLE;
+                break;
+            case "postman":
+                visitor=Visitor.POSTMAN;
+                break;
+            default:
+                visitor=visitor.UNKNOWN;
+                break;
+        }
+        
+
         bdiEnvironment.logger.info("Face scan returned " + visitor.toString().toLowerCase());
     }
 
@@ -69,13 +89,13 @@ public class welcome extends Environment {
 
     public static void waitUntilVisitorDone() {
         bdiEnvironment.logger.info("Waiting until visitor is done...");
-        // bdiEnvironment.subscribeSync("/jason/welcome/visitorDone", "std_msgs/Bool");
+        bdiEnvironment.subscribeSync("/jason/welcome/visitorDone", "std_msgs/Bool");
         bdiEnvironment.logger.info("Visitor is done");
     }
 
     public static void waitUntilVisitorLeft() {
         bdiEnvironment.logger.info("Waiting until visitor has left..");
-        // bdiEnvironment.subscribeSync("/jason/welcome/visitorLeft", "std_msgs/Bool");
+        bdiEnvironment.subscribeSync("/jason/welcome/visitorLeft", "std_msgs/Bool");
         bdiEnvironment.logger.info("Visitor has left");
     }
 
