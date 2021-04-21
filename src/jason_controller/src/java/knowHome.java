@@ -162,24 +162,24 @@ public class knowHome extends Environment {
     }
 
     private static void initRooms() {
-        Room r1 = new Room("living_room", new LinkedList<String>(Arrays.asList("door1", "door1.2", "door1.3")),
+        Room r1 = new Room("living_room", new LinkedList<String>(Arrays.asList("frontdoor", "livingroomKitchen")),
                 new LinkedList<String>(Arrays.asList("table", "sofa")));
-        Room r2 = new Room("kitchen", new LinkedList<String>(Arrays.asList("door2.1", "door2.2")),
-                new LinkedList<String>(Arrays.asList("fridge", "oven")));
+        Room r2 = new Room("kitchen", new LinkedList<String>(Arrays.asList("livingroomKitchen")),
+                new LinkedList<String>(Arrays.asList("fridge", "chair")));
         Room r3 = new Room("bedroom", new LinkedList<String>(Arrays.asList("door3.1")),
-                new LinkedList<String>(Arrays.asList("bed", "bedsideTable", "bookshelf")));
+                new LinkedList<String>(Arrays.asList("bed")));
 
         rooms.add(r1);
         rooms.add(r2);
-        rooms.add(r3);
+        //rooms.add(r3);
     }
 
     private static void initObjects() {
         objects.put("table", "coke");
         objects.put("desk", "bag");
-        objects.put("countertop", "bottle");
-        objects.put("fridge", "beer");
-        objects.put("bookshelf", "book");
+        //objects.put("countertop", "bottle");
+        //objects.put("fridge", "beer");
+        //objects.put("bookshelf", "book");
     }
 
     public static void inspect(String item) {

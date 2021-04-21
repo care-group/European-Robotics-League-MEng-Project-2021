@@ -20,7 +20,7 @@ class SimpleMoveBase():
 
     def __init__(self):
         # Base node inits
-        rospy.loginfo("Initiating basic_nav_node")
+        rospy.loginfo("Initiating basic__nav_node")
         rospy.init_node('basic_nav_node')
         self.ctrl_c = False
         self.rate = rospy.Rate(10) # 10hz
