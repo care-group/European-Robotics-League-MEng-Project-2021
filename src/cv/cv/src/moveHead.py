@@ -10,4 +10,4 @@ def move_head_tilt(v):
     return head.go()
 
 head = moveit_commander.MoveGroupCommander("head")
-move_head_tilt(0)
+move_head_tilt(-0.5)

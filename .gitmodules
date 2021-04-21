@@ -1,0 +1,21 @@
+[submodule "hsrb_moveit_config"]
+	path = hsrb_moveit_config
+	url = https://github.com/hsr-project/hsrb_moveit_config.git
+[submodule "hsrb_description"]
+	path = hsrb_description
+	url = https://github.com/hsr-project/hsrb_description.git
+[submodule "hsrb_common_config"]
+	path = hsrb_common_config
+	url = https://github.com/hsr-project/hsrb_common_config.git
+[submodule "src/manip/hsrb_common_config"]
+	path = src/manip/hsrb_common_config
+	url = https://github.com/hsr-project/hsrb_common_config.git
+[submodule "src/manip/hsrb_description"]
+	path = src/manip/hsrb_description
+	url = https://github.com/hsr-project/hsrb_description.git
+[submodule "src/manip/hsrb_moveit_config"]
+	path = src/manip/hsrb_moveit_config
+	url = https://github.com/hsr-project/hsrb_moveit_config.git
+[submodule "src/manip/hsrb_gazebo_bringup"]
+	path = src/manip/hsrb_gazebo_bringup
+	url = https://github.com/hsr-project/hsrb_gazebo_bringup.git

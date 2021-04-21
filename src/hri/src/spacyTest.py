@@ -34,8 +34,7 @@ class Spacy_Test:
         if(self.return_people() is not None):
             dictMsg["person"]=self.return_people().text
 
-
-        dictWrapper=dictMsg
+        dictWrapper=[dictMsg] #eg. dictWrapper=[dictMsg,dictMsg] for multiple actions
         jsonStr = json.dumps(dictWrapper)
         print(jsonStr)
         output_pub = rospy.Publisher('/hri/cloud_output', String, queue_size=1,latch=True)
