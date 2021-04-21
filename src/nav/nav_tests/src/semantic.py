@@ -154,10 +154,6 @@ class SemanticToCoords():
             l = self.semantic_map.remove(_t[0])
             rospy.loginfo("Removed label from map that was considered to be a duplicate due to being to close to the new addition: {}".format(l))
             
-
-        # append pose
-        if "pose_when_seen" not in input["others"]:
-            input["others"]["pose_when_seen"] = self.robot_pose
         self.semantic_map.append(input)
         rospy.loginfo("New label ({}) added to semantic map.".format(input["name"]))
         return 1
