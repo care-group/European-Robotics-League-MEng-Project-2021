@@ -1,11 +1,14 @@
+#!/usr/bin/python
+
 import json
 import numpy as np
 import rospy
 from std_msgs.msg import String
 from google.cloud import texttospeech
 from playsound import playsound
-
-
+import sounddevice as sd
+import soundfile as sf
+import os 
 class TTS_Final:
 
     def __init__(self):
@@ -48,12 +51,16 @@ class TTS_Final:
 
         print(type(response.audio_content))
 
+        out_path = '/home/developer/workspace/src/hri/src/output.mp3'
         # The response's audio_content is binary.
-        with open('/home/developer/workspace/src/hri/src/output.mp3', 'wb') as out:
+        with open(out_path, 'wb') as out:
             # Write the response to the output file.
             out.write(response.audio_content)
             print('Audio content written to file "output.mp3"')
-            playsound('/home/developer/workspace/src/hri/src/output.mp3')
+            mystring = "mpg123 " + out_path
+            print(mystring)
+            os.system(mystring)
+
 
 tts_final = TTS_Final()
 tts_final.subscribe_tts()

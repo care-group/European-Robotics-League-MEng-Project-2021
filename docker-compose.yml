@@ -56,7 +56,7 @@ services:
     security_opt:
       - seccomp:unconfined
     devices:
-      - /dev/snd #/dev/snd/by-id/usb-BLUE_MICROPHONE_Blue_Snowball_201306-00
+      - /dev/snd:/dev/snd
     ports:
       - "3001:3000"
       - "3002:8888"
