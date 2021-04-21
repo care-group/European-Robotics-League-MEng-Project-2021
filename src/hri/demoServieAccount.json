@@ -1,0 +1,13 @@
+{
+    "type": "service_account",
+    "project_id": "meng-erl-project",
+    "private_key_id": "8d9008dc916abf870c8325e4a30ab9e47422f88a",
+    "private_key": "-----BEGIN PRIVATE KEY-----\nMIIEvgIBADANBgkqhkiG9w0BAQEFAASCBKgwggSkAgEAAoIBAQCWpjXUSvHylwx5\nUFpwTJqA8v5UTZzmlrVSohTRy8kNDOU4XHJ48Bfbt4AoE1uYO3ZoCK6pL1KvPid1\noWjX2I0AoMS9u95I1ey7OvRitI7pUOo5p7XFzSHzMg66VOVf3Kh4xILEl76j+vnm\naxkUTeLOHD8EBNUlSszG+zpvcWtJePMvJvkiVuATG0IBNRBl6lfob4APXe+6LO+j\nErwFAX/27V7pR3L02wS0W7/WUWdISTje9OMsyXMrzkEhMuoHKd75AcM6gYXnwDL5\n4lD6KlziJ77eleahLjV+4SqgGV//AMiSCAq/LUieuJD8E67QVD9MPrtOp+YTSIeO\nzjSLlUUdAgMBAAECggEAQr0whLOM+z0qhAXyguSU4AKGZH+bvlXOz2RJl+XRVEw9\nshnWhrhKwYZKKrbksYzKOG18PyxdU5BT99tBcLoZQUl3z1xOrfLDtPB5us6lrzwu\n/8rKDu6BF1W6S5b3pN/C7PmVuxVEmi3CDu+sRR/6FfhSfGvNp387N/2tVhingHz8\nH6n7U3XUCSF7KLzeuxdKftBu1yPyCVdk1zNY9P+XOpe3vsFE3I7QIJFFCUhLEP5o\nIcqiL1zses+7Cu5gVlDz6YKO93WwEUddP/Y9jn7y1wpVdcZVQ+ah9OmrsN9yrAoA\nA4hnnLFExf3MqxYSQjWQS5o4PUK7gNFIX6pTus6b6wKBgQDKNCZB4DTpLw+qQHQy\n5fQJ+blMjVLrmUPSpwpwtRS9xfbOD7HeOq0FVCE7oqc7l+mGaINkG4wKKGLzTLr4\ndjD/uBxGnbo3IwgTs8/rfzCL+CnHu0pHQbNbOFI94jA7Ro6O+yafd13jhc3eZtMW\nFcOLvHcBJC0yxB9nSCUPfcHaBwKBgQC+ur/dLHVI06z2PiCzq6Jv3GPJurkhvB+4\n4TVNHMCsiLtl6ND00QCByCojHgvEc8opZho0TNuXYusnOLbaeMmybRkrkA29qAcr\nfwTllPcP5HUlUWvJv1Euz+I/kDRZ3zS6P4k9R35nKafuSoJv/6xVyYDPbMOs4YJk\nShxoH1RuuwKBgFpWskD8SqdjvzvxT/jtg/pw97ib61AXSZXzy1ZPkNS4fWvS10TS\nMjsPO0nJga2+UTcbupgfNpHTOWI6Bc67/2hAeWGTVn8Lx7AFxf8Q9D+UwBXcN3Ne\nhyNaJmQ/igzxmP+IddkJG4lrXm7ewbA8SQFFUmXQI+Fqfh1GvkgNh25BAoGBAJ0F\nHeO2MDBuo9xttXp1eNtis3xmjvdo6yzHq5v6ad0hDDaP/0ctsZ8m7RnQKJvpP6vp\ndPVNuRLeyv2VQWSHQHX2P1yP0eArrwtuHNftVaDt0kuQxo5nRSym1HrD+3Vpvvz+\nRbv/Wd8QekJBcTVHZdeSdstNnaJ8XV63bL+D23z1AoGBAK3T+A0rs4vwVm0HeA46\nIf9uajTmiLAQJWX2L9huzHmnNMX8mbUHGn6tYpzxvdVlFkJnU6RtWmDg1gtr0j3C\nVnZYKd7EP6W9c/feBCPzT2P81aXBKrxCxmty/EfcII5/pMzWzx1evdMTeZKMeHLd\nigc3wrwJ1TUZkodMtuAZraVu\n-----END PRIVATE KEY-----\n",
+    "client_email": "mengtexttospeech@meng-erl-project.iam.gserviceaccount.com",
+    "client_id": "104481198949342322408",
+    "auth_uri": "https://accounts.google.com/o/oauth2/auth",
+    "token_uri": "https://oauth2.googleapis.com/token",
+    "auth_provider_x509_cert_url": "https://www.googleapis.com/oauth2/v1/certs",
+    "client_x509_cert_url": "https://www.googleapis.com/robot/v1/metadata/x509/mengtexttospeech%40meng-erl-project.iam.gserviceaccount.com"
+  }
+  
