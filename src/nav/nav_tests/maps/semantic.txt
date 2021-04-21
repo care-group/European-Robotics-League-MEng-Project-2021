@@ -32,22 +32,6 @@
             3
         ], 
         "type": "test", 
-        "name": "granny annie", 
-        "others": {
-            "seen_from": [
-                -0.07041010112312829, 
-                0.3648645793189146, 
-                -158.31807448552033
-            ]
-        }
-    }, 
-    {
-        "coords": [
-            1, 
-            2, 
-            3
-        ], 
-        "type": "test", 
         "name": "full desk", 
         "others": {
             "seen_from": [
