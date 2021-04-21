@@ -107,7 +107,7 @@ class SemanticToCoords():
         for entry in self.semantic_map:
             if entry["name"] == msg.data:
                 rospy.loginfo("Semantic goal checks out, translating and sending")
-                if "seen_from" in entry["others"]:
+                if "others" in entry and "seen_from" in entry["others"]:
                     rospy.loginfo("Contains seen_from, using that location isntead")
                     t = entry["others"]["seen_from"]
                     self.goal.data = [t[0], t[1], t[2]]
@@ -154,10 +154,6 @@ class SemanticToCoords():
             l = self.semantic_map.remove(_t[0])
             rospy.loginfo("Removed label from map that was considered to be a duplicate due to being to close to the new addition: {}".format(l))
             
-
-        # append pose
-        if "pose_when_seen" not in input["others"]:
-            input["others"]["pose_when_seen"] = self.robot_pose
         self.semantic_map.append(input)
         rospy.loginfo("New label ({}) added to semantic map.".format(input["name"]))
         return 1
