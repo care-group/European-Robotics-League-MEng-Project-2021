@@ -46,12 +46,14 @@ class TTS_Final:
             input=synthesis_input, voice=voice, audio_config=audio_config
         )
 
+        print(type(response.audio_content))
+
         # The response's audio_content is binary.
-        with open('output.mp3', 'wb') as out:
+        with open('/home/developer/workspace/src/hri/src/output.mp3', 'wb') as out:
             # Write the response to the output file.
             out.write(response.audio_content)
             print('Audio content written to file "output.mp3"')
-            playsound('output.mp3')
+            playsound('/home/developer/workspace/src/hri/src/output.mp3')
 
 tts_final = TTS_Final()
 tts_final.subscribe_tts()

@@ -19,25 +19,30 @@ class Greet_Visitors:
       #  return text
 
     def subscribe_greet(self):
-        cloud_subscriber = rospy.Subscriber('/hri/greet_input', String,self.greet_callback)
+        print("subscriber is called")
+        greet_subscriber = rospy.Subscriber('/hri/greet_input', String,self.greet_callback)
     
     def greet_callback(self, msg):
         #parse text and execute main code
+
+        print("first has been reached")
         self.text = msg.data
 
-        self.string_to_tts("Welcome to Grannie Annie's Home, what is your name and how may I be of assistance")
+        print(self.text)
 
-        dictMsg={}
-        if(self.recognised_visitor() is not None):
-            dictMsg["person"]=self.recognised_visitor().text
-        if(self.recognised_visitor().text is "plumber"):
-            dictMsg["room"]=self.ask_plumber().text
+        self.string_to_tts("Hi, welcome to the home of Grannie Annie, could you please state your name and how can I help you today")
+
+        #dictMsg={}
+        #if(self.recognised_visitor() is not None):
+        #    dictMsg["person"]=self.recognised_visitor().text
+        #if(self.recognised_visitor().text is "plumber"):
+        #    dictMsg["room"]=self.ask_plumber().text
         
-        dictWrapper=dictMsg
-        jsonStr = json.dumps(dictWrapper)
-        print(jsonStr)
-        output_pub = rospy.Publisher('/hri/greet_output', String, queue_size=1,latch=True)
-        output_pub.publish(jsonStr) #Publish what the component sees for debugging (as there is a delay due to system performance)
+        #dictWrapper=dictMsg
+        #jsonStr = json.dumps(dictWrapper)
+        #print(jsonStr)
+        #output_pub = rospy.Publisher('/hri/greet_output', String, queue_size=1,latch=True)
+        #output_pub.publish(jsonStr) #Publish what the component sees for debugging (as there is a delay due to system performance)
 
     def string_to_tts(self, string):
         tts_pub = rospy.Publisher('/hri/tts_input', String, queue_size=1,latch=True)
