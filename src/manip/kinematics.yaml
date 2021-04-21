@@ -1,5 +1,5 @@
-#!/bin/sh
-# Copyright (c) 2020 TOYOTA MOTOR CORPORATION
+# Copyright (c) 2015 TOYOTA MOTOR CORPORATION
+# Copyright (c) 2020 MID Academic Promotions, Inc.
 # All rights reserved.
 
 # Redistribution and use in source and binary forms, with or without
@@ -25,13 +25,31 @@
 # CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
 # ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 # POSSIBILITY OF SUCH DAMAGE.
-
-docker pull devrt/xserver
-if [ $1 = "testbed" ]; then
-    docker build -t ghcr.io/hsr-project/tmc_wrs_docker:testbed -f Dockerfile.binaries . 
-    docker build -t devrt/ros-devcontainer-vscode:testbed .
-else
-    docker build -t devrt/ros-devcontainer-vscode:erl .
-    docker pull ghcr.io/hsr-project/tmc_wrs_docker
-fi
-$SHELL
+arm:
+  kinematics_solver: trac_ik_kinematics_plugin/TRAC_IKKinematicsPlugin
+  #kinematics_solver: bio_ik/BioIKKinematicsPlugin
+  kinematics_solver_search_resolution: 0.005
+  kinematics_solver_timeout: 0.005
+  kinematics_solver_attempts: 3
+  minimal_displacement_weight: 1.0
+whole_body:
+  kinematics_solver: trac_ik_kinematics_plugin/TRAC_IKKinematicsPlugin
+  #kinematics_solver: bio_ik/BioIKKinematicsPlugin
+  kinematics_solver_search_resolution: 0.005
+  kinematics_solver_timeout: 0.005
+  kinematics_solver_attempts: 3
+  minimal_displacement_weight: 1.0
+whole_body_weighted:
+  kinematics_solver: trac_ik_kinematics_plugin/TRAC_IKKinematicsPlugin
+  #kinematics_solver: bio_ik/BioIKKinematicsPlugin
+  kinematics_solver_search_resolution: 0.005
+  kinematics_solver_timeout: 0.005
+  kinematics_solver_attempts: 3
+  minimal_displacement_weight: 1.0
+whole_body_light:
+  kinematics_solver: trac_ik_kinematics_plugin/TRAC_IKKinematicsPlugin
+  #kinematics_solver: bio_ik/BioIKKinematicsPlugin
+  kinematics_solver_search_resolution: 0.005
+  kinematics_solver_timeout: 0.005
+  kinematics_solver_attempts: 3
+  minimal_displacement_weight: 1.0

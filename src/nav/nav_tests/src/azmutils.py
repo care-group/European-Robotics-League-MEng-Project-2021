@@ -2,6 +2,7 @@ from math import sqrt
 from math import pi
 import json
 import tf
+from geometry_msgs.msg import Quaternion
 
 def dynamic_euclid_dist(a, b):
     o = 0
@@ -18,6 +19,10 @@ def quaternion_from_euler(roll, pitch, yaw):
                                                  yaw / 180.0 * pi, 'rxyz')
     
     return Quaternion(q[0], q[1], q[2], q[3])
+
+def euler_from_quaternion(q):
+    q = tf.transformations.euler_from_quaternion([q.x, q.y, q.z, q.w], 'rxyz')
+    return (q[0]/pi * 180, q[1]/pi * 180, q[2]/pi * 180)
 
 def str_to_obj(string):
     """

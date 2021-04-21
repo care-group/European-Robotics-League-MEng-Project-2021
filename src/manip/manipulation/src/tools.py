@@ -6,10 +6,18 @@ import rospy
 import moveit_commander
 import moveit_msgs.msg
 import geometry_msgs.msg
-from geometry_msgs.msg import Twist
+from geometry_msgs.msg import Twist, PointStamped, PoseStamped
+from sensor_msgs.msg import PointCloud2
+import sensor_msgs.point_cloud2 as pc2
+import tf
+import tf2_ros
+import tf2_py as tf2
+from tf2_sensor_msgs.tf2_sensor_msgs import do_transform_cloud
+import tf2_geometry_msgs 
 #import utils
 import time
 import math
+import numpy as np
 #sys.path.insert(1, '/home/developer/workspace/src/nav/nav_tests/src')
 #import navtest as nav
 moveit_commander.roscpp_initialize(sys.argv)
@@ -18,8 +26,15 @@ moveit_commander.roscpp_initialize(sys.argv)
 robot = moveit_commander.RobotCommander()
 scene = moveit_commander.PlanningSceneInterface()
 base_vel_pub = rospy.Publisher ('/hsrb/command_velocity', Twist, queue_size=1)
+completed = False
 completed1 = False
 completed2 = False
+completed3 = False
+pointCloud = None
+graspPose = None
+rospy.init_node('Test')
+tf_buffer = tf2_ros.Buffer()
+tf_listener = tf2_ros.TransformListener(tf_buffer)
 
 while(not completed2):
     try:
@@ -32,8 +47,16 @@ while(not completed2):
         time.sleep(1)
 while(not completed1):
     try:
-        groupArm = moveit_commander.MoveGroupCommander("whole_body")
+        groupWholeBody = moveit_commander.MoveGroupCommander("whole_body")
         completed1 = True
+        print("Connected to commander whole_body")
+    except: 
+        print("Error Connecting to whole body commander")
+        time.sleep(1)
+while(not completed3):
+    try:
+        groupArm = moveit_commander.MoveGroupCommander("arm")
+        completed3 = True
         print("Connected to commander arm")
     except: 
         print("Error Connecting to arm commander")
@@ -125,30 +148,150 @@ def move_base_vel (vx, vy, vw):
     twist.angular.z = 0 / 180.0 * math.pi # Convert from "degree" to "radian"
     base_vel_pub.publish (twist) # Publish velocity command
 
+def initListenerToPointCloud():
+    subscriber = rospy.Subscriber(
+            '/hsrb/head_rgbd_sensor/depth_registered/rectified_points',PointCloud2 ,definePointCloud)    
+
+def definePointCloud(msg):
+        global pointCloud 
+        pointCloud = msg
+
+def _transform_pose(self,value, from_frame, to_frame):
+        listener = tf.TransformListener()
+        listener.waitForTransform(from_frame, to_frame, rospy.Time(0),rospy.Duration(4.0))
+        point=PointStamped()
+        point.header.frame_id = from_frame
+        point.header.stamp =rospy.Time(0)
+        point.point.x=value[0]
+        point.point.y=value[1]
+        point.point.z=value[2]
+        point=listener.transformPoint(to_frame,point)
+        return point
+
+def mapPoseToRobotPose(pose):
+    transform = tf_buffer.lookup_transform("odom",
+                                       pose.header.frame_id, #source frame
+                                       rospy.Time(0), #get the tf at first available time
+                                       rospy.Duration(1.0)) #wait for 1 second
+
+    pose_transformed = tf2_geometry_msgs.do_transform_pose(pose, transform)
+    return pose_transformed
+
+def robotPoseToMapPose(pose):
+    transform = tf_buffer.lookup_transform("map",
+                                       pose.header.frame_id, #source frame
+                                       rospy.Time(0), #get the tf at first available time
+                                       rospy.Duration(1.0)) #wait for 1 second
+
+    pose_transformed = tf2_geometry_msgs.do_transform_pose(pose, transform)
+    return pose_transformed
+
+def pointcloudToPlanningScene(msg):
+    global pointCloud
+    global completed
+    msg = pointCloud
+    if not completed:
+        try:
+            trans = tf_buffer.lookup_transform("map", msg.header.frame_id,
+                                            rospy.Time(0),
+                                            rospy.Duration(4))
+        except tf2.LookupException as ex:
+            rospy.logwarn(ex)
+            return
+        except tf2.ExtrapolationException as ex:
+            rospy.logwarn(ex)
+            return
+        cloud_out = do_transform_cloud(msg, trans)
+        rospy.sleep(2)
+        scene.remove_world_object()
+        rospy.sleep(2)
+        data = pc2.read_points(cloud_out, field_names = ("x", "y", "z", "rgb"), skip_nans=True)
+        counter = 0
+        limitCounter = 0
+        limit = 5
+        for value in data:
+            if limitCounter == limit:
+                limitCounter = 0
+                p = PointStamped()
+                p.header.frame_id = robot.get_planning_frame()
+                p.pose.position.x = value[0]
+                p.pose.position.y = value[1]
+                p.pose.position.z = value[2]
+                scene.add_box("point"+str(counter), p, (0.01, 0.01, 0.01))
+                counter = counter + 1
+                completed = True
+            limitCounter = limitCounter + 1
+        print("completed scene") 
 
 if __name__ == '__main__':
+    groupGripper.set_joint_value_target("hand_motor_joint", 0.0)
+    groupGripper.go()
+    groupArm.set_named_target('neutral')
+    groupArm.go()
+    pose = groupWholeBody.get_current_pose()
+    print(pose)
+    graspPose = robotPoseToMapPose(pose)
+    groupGripper.set_joint_value_target("hand_motor_joint", 1.0)
+    groupGripper.go()
+    #initListenerToPointCloud()
+    groupWholeBody.set_planning_time(20)
+    groupWholeBody.set_workspace([-3.0, -3.0, 3.0, 3.0])
+    #groupWholeBody.set_planner_id("TRAC_IKKConfigDefault")
+    groupWholeBody.set_planner_id("RRTConnectkConfigDefault")
+    completed = False
+    p = PoseStamped()
+    p.header.frame_id = "map"
+    p.pose.position.x = 2.14
+    p.pose.position.y = 4.72
+    #p.pose.position.x = 2.44
+    #p.pose.position.y = 0.8
+    p.pose.position.z = 0.538
+    p.pose.orientation.x =graspPose.pose.orientation.x
+    p.pose.orientation.y =graspPose.pose.orientation.y
+    p.pose.orientation.z =graspPose.pose.orientation.z
+    p.pose.orientation.w =graspPose.pose.orientation.w
+    groupWholeBody.clear_pose_targets()
+    groupWholeBody.set_pose_target(mapPoseToRobotPose(p))
+    groupWholeBody.set_goal_tolerance(0.01)
+    plan= groupWholeBody.plan()
+    groupWholeBody.execute(plan)
+    end_effector_value = groupWholeBody.get_current_pose()
+    print(robotPoseToMapPose(end_effector_value)) 
+    groupGripper.set_joint_value_target("hand_motor_joint", 0.3)
+    groupGripper.go()
     
-    rospy.init_node('Test')
-    groupArm.set_planning_time(20)
-    groupArm.set_workspace([-3.0, -3.0, 3.0, 3.0])
-    groupArm.set_planner_id("TRAC_IKKConfigDefault")
-    
+    '''
     end_effector_value = groupArm.get_current_pose().pose
-    print(end_effector_value)
-    end_effector_value.position.x = 0.5
-    end_effector_value.position.y = 2
-    end_effector_value.position.z = 3
-    end_effector_value.orientation.x = 1
-    end_effector_value.orientation.y = 0
-    end_effector_value.orientation.z = 4 
-    end_effector_value.orientation.w = 4 
+    end_effector_value.position.z = end_effector_value.position.z + 0.1
     groupArm.clear_pose_targets()
     groupArm.set_pose_target(end_effector_value)
-    groupArm.set_goal_tolerance(0.1)
-    plan= groupArm.plan(end_effector_value)
-    groupArm.execute(plan)
-    end_effector_value = groupArm.get_current_pose().pose
+    groupArm.go()
+    '''
+    try:
+        rospy.spin()
+    except rospy.ROSException as e:
+        rospy.logerr(e)
+    
+    '''
+    groupWholeBody.set_planning_time(20)
+    groupWholeBody.set_workspace([-3.0, -3.0, 3.0, 3.0])
+    #groupWholeBody.set_planner_id("TRAC_IKKConfigDefault")
+    groupWholeBody.set_planner_id("RRTConnectkConfigDefault")
+    completed = False
+    end_effector_value = groupWholeBody.get_current_pose().pose
     print(end_effector_value)
+    end_effector_value.position.x = 0.4
+    end_effector_value.position.y = 1.50
+    end_effector_value.position.z = 0.6
+    end_effector_value.orientation.w = 0.5
+    groupWholeBody.clear_pose_targets()
+    groupWholeBody.set_pose_target(end_effector_value)
+    groupWholeBody.set_goal_tolerance(0.1)
+    plan= groupWholeBody.plan(end_effector_value)
+    groupWholeBody.execute(plan)
+    end_effector_value = groupWholeBody.get_current_pose().pose
+    print(end_effector_value)    
+    '''
     '''
     waypoints = []
 

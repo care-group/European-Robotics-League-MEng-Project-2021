@@ -13,11 +13,10 @@ import time
 class Face_Detection:
     def __init__(self):
         rospy.init_node('Face_Detection')
-
         self.bridge = CvBridge()
-        self.results_publisher = rospy.Publisher('/cv/face/personIs', String, queue_size=0)
+        self.img_subscriber = rospy.Subscriber('/hsrb/head_rgbd_sensor/rgb/image_color', Image,self.img_callback)
+        self.results_publisher = rospy.Publisher('/cv/face/personIs', String)
         self.db_base_path = rospkg.RosPack().get_path('cv')
-
         self.TIMEOUT = 60
 
     def subscribe_jason(self):
@@ -26,22 +25,29 @@ class Face_Detection:
     # Sets the target object and subscribes to the camera feed
     def jason_callback(self, msg):        
         startingTime=time.time()
-        self.img_subscriber = rospy.Subscriber('/hsrb/head_rgbd_sensor/rgb/image_color', Image,self.img_callback,[startingTime], buff_size=1, queue_size=1)
-
-    # Takes the current image from the camera feed and searches for the target object, returning coordinates 
-    def img_callback(self, msg,args):
-        cv_image = self.bridge.imgmsg_to_cv2(msg, desired_encoding='passthrough')
         
-        img_pub = rospy.Publisher('/cv/face/image', Image, queue_size=1)
-        img_pub.publish(msg) #Publish what the component sees for debugging (as there is a delay due to system performance)
+        image_connected = False
+        while not image_connected:
+            try:
+                self.cv_image.shape #If subscriber hasn't received image, accessing cv_image returns AttributeError
+                image_connected = True
+            except AttributeError:
+                print("Waiting for camera feed.")
 
-        person = self.get_person_from_face(cv_image)
+        
+        person = self.get_person_from_face(self.cv_image)
 
-        duration = time.time()-args[0]
+        duration = time.time()-startingTime
 
         if(duration >self.TIMEOUT or person!=None):
             self.publish_results(person)
             self.img_subscriber.unregister()
+
+
+    # Takes the current image from the camera feed and searches for the target object, returning coordinates 
+    def img_callback(self, msg):
+        self.cv_image = self.bridge.imgmsg_to_cv2(msg, desired_encoding='passthrough')
+        
 
     def get_person_from_face(self,img):
         faces = "samuel","bezos","simulated"
