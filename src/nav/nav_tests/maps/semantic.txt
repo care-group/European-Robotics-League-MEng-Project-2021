@@ -1,94 +1,125 @@
 [
     {
-        "type": "object", 
-        "other": {
-            "color": "brown", 
-            "material": "wood"
-        }, 
         "coords": [
             -0.416, 
             0, 
             30
         ], 
+        "other": {
+            "color": "brown", 
+            "material": "wood"
+        }, 
+        "type": "object", 
         "name": "door"
     }, 
     {
-        "type": "person", 
+        "coords": [
+            0.4, 
+            2.8, 
+            30
+        ], 
         "other": {
             "race": "white", 
             "weight": 63, 
             "height": 183
         }, 
-        "coords": [
-            0.4, 
-            2.8, 
-            30
-        ], 
+        "type": "person", 
         "name": "dude"
     }, 
     {
-        "type": "object", 
         "coords": [
             1.5, 
             0, 
             30
         ], 
+        "type": "object", 
         "name": "full desk"
     }, 
     {
+        "type": "object", 
         "coords": [
             2.7, 
             0, 
             30
         ], 
-        "type": "object", 
         "name": "trash"
     }, 
     {
-        "type": "object", 
         "coords": [
             0, 
             1.25, 
             30
         ], 
+        "type": "object", 
         "name": "empty desk"
     }, 
     {
-        "type": "object", 
         "coords": [
             2.65, 
             2.2, 
             30
         ], 
+        "type": "object", 
         "name": "passage"
     }, 
     {
-        "type": "object", 
         "coords": [
             0.4, 
             2.8, 
             30
         ], 
+        "type": "object", 
         "name": "dude"
     }, 
     {
-        "type": "object", 
         "coords": [
             2.25, 
             4.4, 
             30
         ], 
+        "type": "object", 
         "name": "shelves"
-    },
+    }, 
     {
-        "name": "test123",
+        "type": "object", 
         "coords": [
-            1,
-            2,
+            1, 
+            2, 
             3
-        ],
-        "type": "object",
+        ], 
+        "name": "test123", 
         "others": {}
+    }, 
+    {
+        "type": "test", 
+        "coords": [
+            1, 
+            2, 
+            3
+        ], 
+        "name": "exit", 
+        "others": {
+            "seen_from": [
+                -0.11329969784414438, 
+                0.27188760298315046, 
+                -157.19016053371467
+            ]
+        }
+    }, 
+    {
+        "type": "test", 
+        "coords": [
+            1, 
+            2, 
+            3
+        ], 
+        "name": "granny annie", 
+        "others": {
+            "seen_from": [
+                0.8227585127821092, 
+                2.902677131750086, 
+                -174.59134286740388
+            ]
+        }
     }
-
 ]
