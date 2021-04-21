@@ -56,9 +56,6 @@ public class welcome extends Environment {
     }
 
     public static void scanFace() {
-
-        bdiEnvironment.logger.info("Waiting door opened stub...");
-        String rawStatus = bdiEnvironment.subscribeSync("/jason/welcome/opened", "std_msgs/Bool");
         
         bdiEnvironment.logger.info("Scanning face");
 		bdiEnvironment.publish("/jason/detect_face", "std_msgs/String", "");
