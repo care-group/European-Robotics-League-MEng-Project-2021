@@ -120,6 +120,7 @@ public class bdiEnvironment extends Environment {
 					break;
 				case "findObject":
 					findObject(action.getTerm(0).toString());
+					//catering.search(action.getTerm(0).toString());
 					break;
 				default:
 					logger.info("executing: " + action + ", but not implemented!");
@@ -149,16 +150,21 @@ public class bdiEnvironment extends Environment {
 		String resp = subscribeSync("/cv/detected_obj/coords/json", "std_msgs/String");
 		logger.info(resp);
 		JsonObject jsonPoint = stringToJson(resp);
+		
 
 		float[] coords= {Float.parseFloat(jsonPoint.getString("x")),
 			Float.parseFloat(jsonPoint.getString("y")),
 			Float.parseFloat(jsonPoint.getString("z"))};
+		
+
+		pickup(coords);
 		return coords;
 
 	}
 
 	public static void escort(String location) {
-		logger.info("Escorting to " + location);
+		logger.info("Escorting stub to " + location);
+		moveTo(location);
 	}
 
 	public static void follow(String location) {
@@ -167,11 +173,10 @@ public class bdiEnvironment extends Environment {
 
 	public static void pickup(float[] xyz) {
 		logger.info("Picking up item");
-		
-		String jsonString = String.format("{\"x\":\"%d\",\"y\":\"%d\",\"z\":\"%d\"}", xyz[0],xyz[1],xyz[2]);
+
+		String jsonString = String.format("{\"x\":\"%f\",\"y\":\"%f\",\"z\":\"%f\"}", xyz[0],xyz[1],xyz[2]);
 		
 		//{"x":"5.21","y":"0.41","z":"0.1412"}
-		
 		publish("/graspingTarget", "std_msgs/String", jsonString);
 		String resp = subscribeSync("/feedbackOnGrasping", "std_msgs/String");
 		logger.info(resp);
