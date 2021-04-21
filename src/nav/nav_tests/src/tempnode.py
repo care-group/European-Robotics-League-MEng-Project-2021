@@ -25,7 +25,8 @@ class tempnode():
         rospy.on_shutdown(self.shutdownhook)
         # Goal publishing inits
         self.pub = rospy.Publisher('/azm_nav/semantic_label_additions', String, queue_size=1, latch=True)
-
+        self.sub = rospy.Subscriber('/azm_nav/semantic_manual_add', String, self.cb)
+    
     def publish_once(self, topic, msg, content="message"):
         rospy.loginfo("Attempting to publish {} to {}".format(content, topic.name))
         while not self.ctrl_c:
@@ -37,6 +38,12 @@ class tempnode():
             else:
                 rospy.loginfo("No subscribers on {}, sleeping.".format(topic.name))
 
+    def cb(self, msg):
+        _t = {"name":msg.data,"type":"test","coords":[1,2,3],"others":{}}
+        _msg = String()
+        _msg.data = obj_to_str(_t)
+        self.publish_once(self.pub, _msg)
+
     def shutdownhook(self):
         # works better than the rospy.is_shutdown()
         self.ctrl_c = True
@@ -46,10 +53,5 @@ if __name__ == '__main__':
     print("executing tempnode.py as main")
     print("Creating tempnode obj")
     tempnode = tempnode()
-    topic = tempnode.pub
-    msg = String()
-
-    t = {"name":"stuff1","type":"test","coords":[1,2,3],"others":{}}
-    msg.data = obj_to_str(t)
-    print(msg)
-    tempnode.publish_once(topic, msg)
+    print("tempnode.py is spinning")
+    rospy.spin()
