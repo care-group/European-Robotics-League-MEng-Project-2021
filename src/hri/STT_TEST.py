@@ -23,6 +23,7 @@ Example usage:
 
 import argparse
 import io
+#import google.cloud
 
 
 # [START speech_transcribe_async]
