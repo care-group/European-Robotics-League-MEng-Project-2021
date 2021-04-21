@@ -14,9 +14,9 @@ class Spacy_Test:
     def __init__(self):
         rospy.init_node('Spacy_Test')
 
-    def get_text(self):
-        text = "go to the kitchen and get a can of coke for Doctor Kimble"
-        return text
+    #def get_text(self):
+     #   text = "go to the kitchen and get a can of coke for Doctor Kimble"
+      #  return text
 
     def subscribe_cloud(self):
         cloud_subscriber = rospy.Subscriber('/hri/cloud_input', String,self.cloud_callback)
@@ -24,7 +24,7 @@ class Spacy_Test:
     def cloud_callback(self, msg):
         #parse text and execute main code
         self.text = msg.data
-
+    
         dictMsg={}
         dictMsg["action"]=self.check_action()
         if(self.return_objects() is not None):
