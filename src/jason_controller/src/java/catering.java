@@ -83,7 +83,6 @@ public class catering extends Environment {
         bdiEnvironment.logger.info("Getting commands");
 
         String jsonStringCmd = bdiEnvironment.subscribeSync("/hri/cloud_output", "std_msgs/String");
-        
 
         String[] output = jsonStringCmd.split("},");
         for (int i=0;i<output.length;i++){
@@ -91,22 +90,17 @@ public class catering extends Environment {
             output[i] += "}";
             
         }
+        
         output[output.length-1]=output[output.length-1].substring(0, output[output.length-1].length() - 2);
         
         for (int i=0;i<output.length;i++){
             bdiEnvironment.logger.info(output[i]);
-            JsonObject jsonCmd = stringToJson(output[i]);
+            JsonObject jsonCmd = bdiEnvironment.stringToJson(output[i]);
             Command cmd = new Command(jsonCmd);
             commands.push(cmd);
         }
     }
 
-    private static JsonObject stringToJson(String str){
-        JsonReader jsonReader = Json.createReader(new StringReader(str));
-        JsonObject object = jsonReader.readObject();
-        jsonReader.close();
-        return object;
-    }
 
 
     public static void executeCommand(){
@@ -147,21 +141,12 @@ public class catering extends Environment {
         bdiEnvironment.pickup();
         bdiEnvironment.moveTo(location);
         bdiEnvironment.place();
-
     }
 
     private static void search(String obj){
-        String foundLocation = "";
-        for(String loc : likelyLocations){
-            bdiEnvironment.moveTo(loc);
-            boolean found = find(obj);
-            if(found){
-                foundLocation=loc;    
-                break;
-            }
-        }
-        bdiEnvironment.logger.info("Found at "+ foundLocation);
-
+        bdiEnvironment.moveTo("shelves");
+        float[] xyz = bdiEnvironment.findObject(obj);
+        bdiEnvironment.pickup(xyz);
     }
 
     private static boolean find(String object){
