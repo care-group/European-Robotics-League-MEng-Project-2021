@@ -41,7 +41,7 @@ class tempnode():
     def cb(self, msg):
         _t = {"name":msg.data,"type":"test","coords":[1,2,3],"others":{}}
         _msg = String()
-        msg.data = obj_to_str(_t)
+        _msg.data = obj_to_str(_t)
         self.publish_once(self.pub, _msg)
 
     def shutdownhook(self):
@@ -53,5 +53,5 @@ if __name__ == '__main__':
     print("executing tempnode.py as main")
     print("Creating tempnode obj")
     tempnode = tempnode()
-    rospy.loginfo("tempnode.py is spinning")
+    print("tempnode.py is spinning")
     rospy.spin()
