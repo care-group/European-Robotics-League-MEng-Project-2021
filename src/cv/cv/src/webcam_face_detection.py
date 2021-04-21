@@ -44,6 +44,7 @@ class Face_Detection:
         if(duration >self.TIMEOUT or person!=None):
             self.publish_results(person)
             self.img_subscriber.unregister()
+            print(duration)
 
 
     # Takes the current image from the camera feed and searches for the target object, returning coordinates 
@@ -52,7 +53,7 @@ class Face_Detection:
         
 
     def get_person_from_face(self,img):
-        faces = "chris","jack","lyle","jo"
+        faces = "jack","lyle","jo","chris"
         for face in faces:
             try:
                 same = self.search_for_face_db(img,self.db_base_path+"/images/faces/"+face)
