@@ -1,85 +1,4 @@
-[
-    {
-        "coords": [
-            -0.416, 
-            0, 
-            30
-        ], 
-        "other": {
-            "color": "brown", 
-            "material": "wood"
-        }, 
-        "type": "object", 
-        "name": "door"
-    }, 
-    {
-        "coords": [
-            0.4, 
-            2.8, 
-            30
-        ], 
-        "other": {
-            "race": "white", 
-            "weight": 63, 
-            "height": 183
-        }, 
-        "type": "person", 
-        "name": "dude"
-    }, 
-    {
-        "coords": [
-            1.5, 
-            0, 
-            30
-        ], 
-        "type": "object", 
-        "name": "full desk"
-    }, 
-    {
-        "type": "object", 
-        "coords": [
-            2.7, 
-            0, 
-            30
-        ], 
-        "name": "trash"
-    }, 
-    {
-        "coords": [
-            0, 
-            1.25, 
-            30
-        ], 
-        "type": "object", 
-        "name": "empty desk"
-    }, 
-    {
-        "coords": [
-            2.65, 
-            2.2, 
-            30
-        ], 
-        "type": "object", 
-        "name": "passage"
-    }, 
-    {
-        "coords": [
-            0.4, 
-            2.8, 
-            30
-        ], 
-        "type": "object", 
-        "name": "dude"
-    }, 
-    {
-        "coords": [
-            2.25, 
-            4.4, 
-            30
-        ], 
-        "type": "object", 
-        "name": "shelves"
-    }, 
+[ 
     {
         "type": "object", 
         "coords": [
@@ -107,18 +26,98 @@
         }
     }, 
     {
+        "coords": [
+            1, 
+            2, 
+            3
+        ], 
+        "type": "test", 
+        "name": "granny annie", 
+        "others": {
+            "seen_from": [
+                -0.07041010112312829, 
+                0.3648645793189146, 
+                -158.31807448552033
+            ]
+        }
+    }, 
+    {
+        "coords": [
+            1, 
+            2, 
+            3
+        ], 
+        "type": "test", 
+        "name": "full desk", 
+        "others": {
+            "seen_from": [
+                1.3622830901680267, 
+                -0.0695871053400304, 
+                -91.87749548622342
+            ]
+        }
+    }, 
+    {
+        "coords": [
+            1, 
+            2, 
+            3
+        ], 
+        "type": "test", 
+        "name": "trash", 
+        "others": {
+            "seen_from": [
+                2.5590900288686185, 
+                0.015844957530238478, 
+                -69.7150475873336
+            ]
+        }
+    }, 
+    {
+        "coords": [
+            1, 
+            2, 
+            3
+        ], 
+        "type": "test", 
+        "name": "empty desk", 
+        "others": {
+            "seen_from": [
+                0.7685474431327451, 
+                1.2514039996242883, 
+                87.83040369780488
+            ]
+        }
+    }, 
+    {
         "type": "test", 
         "coords": [
             1, 
             2, 
             3
         ], 
-        "name": "granny annie", 
+        "name": "passage", 
         "others": {
             "seen_from": [
-                0.8227585127821092, 
-                2.902677131750086, 
-                -174.59134286740388
+                2.575870110675409, 
+                2.0463612728751666, 
+                86.30075028682363
+            ]
+        }
+    }, 
+    {
+        "type": "test", 
+        "coords": [
+            1, 
+            2, 
+            3
+        ], 
+        "name": "shelves", 
+        "others": {
+            "seen_from": [
+                2.266818555473141, 
+                4.032764689078516, 
+                92.23447529822421
             ]
         }
     }
