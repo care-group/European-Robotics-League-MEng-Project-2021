@@ -5,7 +5,6 @@ import numpy as np
 import rospy
 from std_msgs.msg import String
 from google.cloud import texttospeech
-from playsound import playsound
 import sounddevice as sd
 import soundfile as sf
 import os 
