@@ -1,0 +1,6 @@
+<launch>
+    <!-- My Package launch file -->
+    <node pkg="hri" name="speechIn" type="speechInput.py" output="screen"/>
+    <node pkg="hri" name="srvCaller" type="srvCallerExample.py" output="screen"/>
+
+</launch>
