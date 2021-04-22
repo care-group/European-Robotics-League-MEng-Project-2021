@@ -15,27 +15,16 @@ class Greet_Visitors:
         rospy.init_node('Greet_Visitors')
         self.tts_pub = rospy.Publisher('/hri/tts_input', String, queue_size=1,latch=True)
 
-    #def get_text(self):
-     #   text = "go to the kitchen and get a can of coke for Doctor Kimble"
-      #  return text
 
     def subscribe_greet(self):
         #print("subscriber is called")
         greet_subscriber = rospy.Subscriber('/hri/greet_input', String,self.greet_callback)
+        location_subscriber = rospy.Subscriber('/hri/location_input', String,self.loaction_callback)
     
     def greet_callback(self, msg):
         #parse text and execute main code
 
         self.text = msg.data
-
-
-        #self.string_to_tts("Hi, welcome to the home of Grannie Annie, could you please state your name and how I balance some bananas")
-
-        #print("going to sleep")
-
-        #rospy.sleep(5)
-        
-        #print("awake")
 
         dictMsg={}
         
@@ -44,12 +33,28 @@ class Greet_Visitors:
             dictMsg["room"]=self.ask_plumber()
 
 
-        
-        
+         
         dictWrapper=dictMsg
         jsonStr = json.dumps(dictWrapper)
         print(jsonStr)
         output_pub = rospy.Publisher('/hri/greet_output', String, queue_size=1,latch=True)
+        output_pub.publish(jsonStr) #Publish what the component sees for debugging (as there is a delay due to system performance)
+
+    def location_callback(self, msg):
+        #parse text and execute main code
+
+        self.text = msg.data
+
+        dictMsg={}
+        
+        dictMsg["person"]=self.recognised_room()
+
+
+         
+        dictWrapper=dictMsg
+        jsonStr = json.dumps(dictWrapper)
+        print(jsonStr)
+        output_pub = rospy.Publisher('/hri/location_output', String, queue_size=1,latch=True)
         output_pub.publish(jsonStr) #Publish what the component sees for debugging (as there is a delay due to system performance)
 
     def string_to_tts(self, string):
@@ -67,6 +72,11 @@ class Greet_Visitors:
         else: 
             return "unrecognised"
             
+    def recognised_room(self): 
+        if(self.return_rooms() is not None):
+            return self.return_rooms().text
+        else: 
+            return "unrecognised"
 
     def ask_plumber(self):
         if(self.return_rooms() is not None):
