@@ -25,7 +25,7 @@ RUN sudo apt install ros-melodic-tf2-sensor-msgs
 
 RUN sudo apt-get install -y alsa-base alsa-utils
 RUN sudo apt-get install -y portaudio19-dev
-RUN pip3 install SoundDevice SpeechRecognition pydub soundfile google-cloud-texttospeech
+RUN pip3 install SoundDevice SpeechRecognition pydub pyaudio soundfile google-cloud-texttospeech
 RUN sudo apt-get install -y mpg123
 #RUN chmod -R 755 /dev/snd
 # spaCY
