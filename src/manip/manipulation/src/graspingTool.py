@@ -1,4 +1,4 @@
-#! /usr/bin/env python2.7
+#! /usr/bin/python2.7
 
 import sys
 import copy
@@ -68,7 +68,7 @@ def initListenerToPointCloud():
 def initListenerToGraspingTarget():
     subscriber = rospy.Subscriber('/graspingTarget',String,graspMotion)
     
-def initListenerToGraspingTarget():
+def initListenerToPlacingTarget():
     subscriber = rospy.Subscriber('/placingTarget',String,placeMotion)
 
 def definePointCloud(msg):
@@ -163,12 +163,12 @@ def graspMotion(msg):
     #print(my_dict)
     p = PoseStamped()
     p.header.frame_id = "map"
-    #p.pose.position.x = float(my_dict["x"])
-    #p.pose.position.y = float(my_dict["y"])
-    #p.pose.position.z = float(my_dict["z"])+0.02
-    p.pose.position.x = 1.62
-    p.pose.position.y = 0.3
-    p.pose.position.z = 0.43
+    p.pose.position.x = float(my_dict["x"])
+    p.pose.position.y = float(my_dict["y"])
+    p.pose.position.z = float(my_dict["z"])+0.02
+    # p.pose.position.x = 1.62
+    # p.pose.position.y = 0.3
+    # p.pose.position.z = 0.43
     p.pose.orientation.x =graspPose.pose.orientation.x
     p.pose.orientation.y =graspPose.pose.orientation.y
     p.pose.orientation.z =graspPose.pose.orientation.z
@@ -206,12 +206,12 @@ def graspMotionTest():
     #print(my_dict)
     p = PoseStamped()
     p.header.frame_id = "map"
-    #p.pose.position.x = float(my_dict["x"])
-    #p.pose.position.y = float(my_dict["y"])
-    #p.pose.position.z = float(my_dict["z"])+0.02
-    p.pose.position.x = 1.64
-    p.pose.position.y = -0.04
-    p.pose.position.z = 0.44
+    p.pose.position.x = float(my_dict["x"])
+    p.pose.position.y = float(my_dict["y"])
+    p.pose.position.z = float(my_dict["z"])+0.02
+    # p.pose.position.x = 1.64
+    # p.pose.position.y = -0.04
+    # p.pose.position.z = 0.44
     p.pose.orientation.x =graspPose.pose.orientation.x
     p.pose.orientation.y =graspPose.pose.orientation.y
     p.pose.orientation.z =graspPose.pose.orientation.z
