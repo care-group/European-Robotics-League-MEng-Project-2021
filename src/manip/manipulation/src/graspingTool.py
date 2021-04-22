@@ -159,8 +159,8 @@ def graspMotion(msg):
     groupWholeBody.set_planner_id("RRTConnectkConfigDefault")
     completed = False
 
-    #my_dict=json.loads(msg.data)
-    #print(my_dict)
+    my_dict=json.loads(msg.data)
+    print(my_dict)
     p = PoseStamped()
     p.header.frame_id = "map"
     p.pose.position.x = float(my_dict["x"])
@@ -180,7 +180,7 @@ def graspMotion(msg):
     groupWholeBody.execute(plan)
     end_effector_value = groupWholeBody.get_current_pose()
     print(robotPoseToMapPose(end_effector_value)) 
-    groupGripper.set_joint_value_target("hand_motor_joint", 0.3)
+    groupGripper.set_joint_value_target("hand_motor_joint", 0.2)
     groupGripper.go()
     pubFeedback = rospy.Publisher('/feedbackOnGrasping', String, queue_size=10)
     pubFeedback.publish("True") 
@@ -206,12 +206,12 @@ def graspMotionTest():
     #print(my_dict)
     p = PoseStamped()
     p.header.frame_id = "map"
-    p.pose.position.x = float(my_dict["x"])
-    p.pose.position.y = float(my_dict["y"])
-    p.pose.position.z = float(my_dict["z"])+0.02
-    # p.pose.position.x = 1.64
-    # p.pose.position.y = -0.04
-    # p.pose.position.z = 0.44
+    #p.pose.position.x = float(my_dict["x"])
+    #p.pose.position.y = float(my_dict["y"])
+    #p.pose.position.z = float(my_dict["z"])+0.02
+    p.pose.position.x = 1.64
+    p.pose.position.y = -0.04
+    p.pose.position.z = 0.44
     p.pose.orientation.x =graspPose.pose.orientation.x
     p.pose.orientation.y =graspPose.pose.orientation.y
     p.pose.orientation.z =graspPose.pose.orientation.z
@@ -223,7 +223,7 @@ def graspMotionTest():
     groupWholeBody.execute(plan)
     end_effector_value = groupWholeBody.get_current_pose()
     print(robotPoseToMapPose(end_effector_value)) 
-    groupGripper.set_joint_value_target("hand_motor_joint", 0.3)
+    groupGripper.set_joint_value_target("hand_motor_joint", 0.2)
     groupGripper.go()
     groupArm.set_named_target('neutral')
     pubFeedback = rospy.Publisher('/feedbackOnGrasping', String, queue_size=10)
