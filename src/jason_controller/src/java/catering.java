@@ -81,7 +81,8 @@ public class catering extends Environment {
    
     public static void getCommand(){
         bdiEnvironment.logger.info("Getting commands");
-
+        
+        bdiEnvironment.publish("/hri/getGrannyAnnieRequest","std_msgs/String","");
         String jsonStringCmd = bdiEnvironment.subscribeSync("/hri/cloud_output", "std_msgs/String");
 
         String[] output = jsonStringCmd.split("},");
