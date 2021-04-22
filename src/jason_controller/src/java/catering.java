@@ -99,6 +99,8 @@ public class catering extends Environment {
             Command cmd = new Command(jsonCmd);
             commands.push(cmd);
         }
+
+        
     }
 
 
@@ -138,12 +140,12 @@ public class catering extends Environment {
     }
     private static void manipulate(String obj, String location){
         bdiEnvironment.moveTo(obj);
-        bdiEnvironment.pickup();
+        //bdiEnvironment.pickup();
         bdiEnvironment.moveTo(location);
-        bdiEnvironment.place();
+        //bdiEnvironment.place();
     }
 
-    private static void search(String obj){
+    public static void search(String obj){
         bdiEnvironment.moveTo("shelves");
         float[] xyz = bdiEnvironment.findObject(obj);
         bdiEnvironment.pickup(xyz);
