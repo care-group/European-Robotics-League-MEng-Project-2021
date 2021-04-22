@@ -23,7 +23,7 @@ class Semantic_Labelling:
         self.bridge = CvBridge()
         self.depth_finder = Depth_Finder()
         self.img_pub = rospy.Publisher('/semantic_labels/img', Image, queue_size=10)
-        self.nav_pub = rospy.Publisher('/nav/somenavtopic', String, queue_size=10)
+        self.nav_pub = rospy.Publisher('/azm_nav/semantic_label_additions', String, queue_size=10)
 
         info_subscriber = rospy.Subscriber('/hsrb/head_rgbd_sensor/rgb/camera_info', CameraInfo,self.info_callback,queue_size=None)
         img_subscriber = rospy.Subscriber('/hsrb/head_rgbd_sensor/rgb/image_color', Image,self.img_callback,queue_size=1, buff_size=52428800)
