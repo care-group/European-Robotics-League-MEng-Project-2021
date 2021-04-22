@@ -51,6 +51,8 @@ public class bdiEnvironment extends Environment {
 				case "open":
 					knowHome.openDoor();
 					break;
+				case "say":
+					say(action.getTerm(0).toString());
 				case "closeDoor":
 					closeDoor();
 					break;
@@ -144,6 +146,12 @@ public class bdiEnvironment extends Environment {
 		String resp = subscribeSync("/azm_nav/goal_result", "std_msgs/String");
 	}
 
+	public static void say(String text) {
+		logger.info("Saying: " + text);
+		publish("/hri/tts_input","std_msgs/String",text);
+		subscribeSync("/hri/tts_output","std_msgs/String");
+	}
+	
 	public static float[] findObject(String target){
 		logger.info("Scanning for " +target);
 		publish("/jason/detect_object", "std_msgs/String", target);

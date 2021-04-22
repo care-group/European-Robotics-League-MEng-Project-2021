@@ -7,12 +7,12 @@
 //!waitForBell.
 //!waitForEntranceOpened.
 //!getCommand.
-!testGoal.
+//!testGoal.
 
 /* Plans */
 
 +!testGoal
-    <-  findObject(apple).
+    <-  say("hello how can i help").
 
 
 
@@ -132,11 +132,12 @@
         closeDoor.
 
 +visitorOutOfBounds
-    <- complain.
+    <- say("You are out of bounds!").
 
 
 +grannyAlarm
     <-  !visit(dude);
+        say("Hello, how can I be of service?");
         getCommand;
         executeCommand.
 

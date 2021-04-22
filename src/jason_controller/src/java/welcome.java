@@ -79,8 +79,20 @@ public class welcome extends Environment {
 
     public static void interrogate() {
         bdiEnvironment.logger.info("Interrogating to determine if Deliman or Plumber...");
+        bdiEnvironment.publish("/hri/greet_input","std_msgs/String","");
+        String resp = bdiEnvironment.subscribeSync("/hri/greet_output","std_msgs/String");
 
-        // Publish to HRI stack
+        switch (resp) {
+            case "deli man":
+                visitor=Visitor.DELIMAN;
+                break;
+            case "plumber":
+                visitor=Visitor.PLUMBER;
+                break;
+            default:
+                visitor=visitor.UNKNOWN;
+                break;
+        }        // Publish to HRI stack
         // Sync Subscriber to await response.
     }
 
@@ -114,11 +126,8 @@ public class welcome extends Environment {
 
     public static void askPlumberDesiredRoom() {
         bdiEnvironment.logger.info("Asking plumber where he wants to visit");
-        // bdiEnvironment.publish("/hri/ask", "std_msgs/String", "desired room");
-        // String desiredRoom =
-        // bdiEnvironment.subscribeSync("/jason/welcome/desiredRoom",
-        // "std_msgs/String");
-        String desiredRoom = "KITCHEN";
+        bdiEnvironment.publish("/hri/location_input", "std_msgs/String", "");
+        String desiredRoom = bdiEnvironment.subscribeSync("/hri/location_output", "std_msgs/String");
         try {
             plumberDesiredRoom = Rooms.valueOf(desiredRoom);
         } catch (IllegalArgumentException e) {

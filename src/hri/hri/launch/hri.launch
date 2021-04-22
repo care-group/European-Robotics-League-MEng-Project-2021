@@ -4,5 +4,6 @@
     <!-- <node pkg="hri" name="srvCaller" type="srvCallerExample.py" output="screen"/> -->
     <node pkg="hri" name="grannyAnnie" type="spacyTest.py" output="screen"/>
     <node pkg="hri" name="visitors" type="greetVisitors.py" output="screen"/>
+    <node pkg="hri" name="textToSpeech" type="textToSpeech.py" output="screen"/>
 
 </launch>
