@@ -15,7 +15,7 @@ def listenToSpeech(msg):
     # initialize the recognizer
     r = sr.Recognizer()
     #print(sr.Microphone.list_working_microphones())
-    print("Make sure you select the right device (0,1,2...)")
+    #print("Make sure you select the right device (0,1,2...)")
    
 
     with sr.Microphone(device_index=2, sample_rate = 48000) as source:
