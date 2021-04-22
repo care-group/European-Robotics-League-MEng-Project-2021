@@ -55,8 +55,6 @@ services:
     ipc: host
     security_opt:
       - seccomp:unconfined
-    devices:
-      - /dev/snd:/dev/snd
     ports:
       - "3001:3000"
       - "3002:8888"
