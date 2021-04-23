@@ -39,17 +39,17 @@ public class catering extends Environment {
             switch(json.getString("action")){
                 case "fetch":
                     action = Action.SEARCH;
-                    object = json.getString("object");
+                    object = json.getString("object").toLowerCase();
                     accompanyType=AccompanyType.NULL;
                 break;
                 case "ACCOMPANY":
                     action = Action.ACCOMPANY;
-                    object = json.getString("object");
+                    object = json.getString("object").toLowerCase();
                     accompanyType = (json.getString("accompanyType").equals(AccompanyType.LEAD.toString())) ? AccompanyType.LEAD : AccompanyType.FOLLOW;
                 break;
                 case "MANIPULATE":
                     action = Action.MANIPULATE;
-                    object = json.getString("object");
+                    object = json.getString("object").toLowerCase();
                     location = json.getString("location");
                 break;
             }
@@ -147,9 +147,11 @@ public class catering extends Environment {
     }
 
     public static void search(String obj){
-        bdiEnvironment.moveTo("shelves");
+        bdiEnvironment.moveTo(obj);
         float[] xyz = bdiEnvironment.findObject(obj);
         bdiEnvironment.pickup(xyz);
+        bdiEnvironment.place();
+
     }
 
     private static boolean find(String object){

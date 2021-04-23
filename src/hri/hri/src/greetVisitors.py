@@ -15,6 +15,8 @@ class Greet_Visitors:
     def __init__(self):
         rospy.init_node('Greet_Visitors')
         self.tts_pub = rospy.Publisher('/hri/tts_input', String, queue_size=1,latch=True)
+        self.greet_pub = rospy.Publisher('/hri/greet_output', String, queue_size=10)
+        self.room_pub = rospy.Publisher('/hri/location_output', String, queue_size=10)
 
     #def get_text(self):
      #   text = "go to the kitchen and get a can of coke for Doctor Kimble"
@@ -23,7 +25,8 @@ class Greet_Visitors:
     def subscribe_jason(self):
         #print("subscriber is called")
         jason_subscriber = rospy.Subscriber('/hri/greet_input', String,self.greet_callback)
-    
+        location_subscriber = rospy.Subscriber('/hri/location_input', String,self.location_callback)
+
     def greet_callback(self, msg):
         #parse text and execute main code
 
@@ -35,29 +38,32 @@ class Greet_Visitors:
         print(resp.rawText.data)
         self.text = resp.rawText.data
 
-
-        #self.string_to_tts("Hi, welcome to the home of Grannie Annie, could you please state your name and how I balance some bananas")
-
-        #print("going to sleep")
-
-        #rospy.sleep(5)
         
-        #print("awake")
+        visitor=self.recognised_visitor()
+        # if(self.recognised_visitor() == "plumber"):
+        #     dictMsg["room"]=self.ask_plumber()
 
-        dictMsg={}
+        self.greet_pub.publish(visitor)
+        print("published in theory")
+
+    def location_callback(self, msg):
+        #parse text and execute main code
+
+        rospy.wait_for_service('speechInput')
+        getSpeechInput =rospy.ServiceProxy('speechInput',SpeechToText)
+
+        resp = getSpeechInput()
+        print("Received input from service:")
+        print(resp.rawText.data)
+        self.text = resp.rawText.data
+
         
-        dictMsg["person"]=self.recognised_visitor()
-        if(self.recognised_visitor() == "plumber"):
-            dictMsg["room"]=self.ask_plumber()
+        room=self.recognised_room()
 
 
-        
-        
-        dictWrapper=dictMsg
-        jsonStr = json.dumps(dictWrapper)
-        print(jsonStr)
-        output_pub = rospy.Publisher('/hri/greet_output', String, queue_size=1,latch=True)
-        output_pub.publish(jsonStr) #Publish what the component sees for debugging (as there is a delay due to system performance)
+         
+        print(room)
+        self.room_pub.publish(room) #Publish what the component sees for debugging (as there is a delay due to system performance)
 
     def string_to_tts(self, string):
         self.tts_pub.publish(string) #Publish what the component sees for debugging (as there is a delay due to system performance)
@@ -74,6 +80,11 @@ class Greet_Visitors:
         else: 
             return "unrecognised"
             
+    def recognised_room(self): 
+        if(self.return_rooms() is not None):
+            return self.return_rooms().text
+        else: 
+            return "unrecognised"
 
     def ask_plumber(self):
         if(self.return_rooms() is not None):
