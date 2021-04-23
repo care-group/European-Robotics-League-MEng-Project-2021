@@ -1,0 +1,70 @@
+Starting semantic.py
+executing semantic.py as main
+Creating SemanticToCoords obj
+[INFO] [1619199273.037742, 0.000000]: Map loaded from /workspace/src/nav/nav_tests/maps/semantic.txt
+[INFO] [1619199273.174670, 1087.695000]: semantic.py is spinning
+[INFO] [1619199304.793302, 1095.693000]: Semantic goal checks out, translating and sending
+[INFO] [1619199304.799040, 1095.693000]: Contains seen_from, using that location isntead
+[INFO] [1619199304.802304, 1095.693000]: Attempting to publish coordinate goal to /azm_nav/coord_goal_listener
+[INFO] [1619199304.806279, 1095.699000]: Message published to /azm_nav/coord_goal_listener
+[INFO] [1619199442.900197, 1138.371000]: Semantic goal checks out, translating and sending
+[INFO] [1619199442.902818, 1138.374000]: Contains seen_from, using that location isntead
+[INFO] [1619199442.905253, 1138.374000]: Attempting to publish coordinate goal to /azm_nav/coord_goal_listener
+[INFO] [1619199442.907216, 1138.374000]: Message published to /azm_nav/coord_goal_listener
+[INFO] [1619199480.495809, 1149.411000]: Semantic goal checks out, translating and sending
+[INFO] [1619199480.501170, 1149.414000]: Contains seen_from, using that location isntead
+[INFO] [1619199480.506227, 1149.414000]: Attempting to publish coordinate goal to /azm_nav/coord_goal_listener
+[INFO] [1619199480.508443, 1149.414000]: Message published to /azm_nav/coord_goal_listener
+Starting navtest.py
+executing navtest.py as main
+Creating SimpleMoveBase obj
+[INFO] [1619199270.269949, 0.000000]: navtest.py is spinning
+[INFO] [1619199304.806629, 1095.693000]: Goal position received, moving?
+[INFO] [1619199304.808789, 1095.699000]: Started listening for goal result
+[INFO] [1619199304.815009, 1095.699000]: Attempting to publish goal to /move_base_simple/goal
+[INFO] [1619199304.818881, 1095.699000]: Message published to /move_base_simple/goal
+[INFO] [1619199442.475194, 1138.203000]: Attempting to publish result_feedback to /azm_nav/goal_result
+[INFO] [1619199442.477270, 1138.206000]: Message published to /azm_nav/goal_result
+[INFO] [1619199442.480565, 1138.206000]: Stopped listening to goal result
+[INFO] [1619199442.907700, 1138.374000]: Goal position received, moving?
+[INFO] [1619199442.909713, 1138.374000]: Started listening for goal result
+[INFO] [1619199442.916589, 1138.374000]: Attempting to publish goal to /move_base_simple/goal
+[INFO] [1619199442.918585, 1138.374000]: Message published to /move_base_simple/goal
+[INFO] [1619199480.398082, 1149.381000]: Attempting to publish result_feedback to /azm_nav/goal_result
+[INFO] [1619199480.401110, 1149.381000]: Message published to /azm_nav/goal_result
+[INFO] [1619199480.404482, 1149.381000]: Stopped listening to goal result
+[INFO] [1619199480.511217, 1149.414000]: Goal position received, moving?
+[INFO] [1619199480.514354, 1149.414000]: Started listening for goal result
+[INFO] [1619199480.522016, 1149.417000]: Attempting to publish goal to /move_base_simple/goal
+[INFO] [1619199480.524525, 1149.417000]: Message published to /move_base_simple/goal
+[INFO] [1619199562.862576, 1175.817000]: Attempting to publish result_feedback to /azm_nav/goal_result
+[INFO] [1619199562.864523, 1175.817000]: Message published to /azm_nav/goal_result
+[INFO] [1619199562.866566, 1175.820000]: Stopped listening to goal result
+... logging to /home/developer/.ros/log/5e4f2906-a450-11eb-83dd-0242ac130003/roslaunch-bc05eae50dc8-30200.log
+Checking log directory for disk usage. This may take a while.
+Press Ctrl-C to interrupt
+Done checking log file disk usage. Usage is <1GB.
+]2;/home/developer/workspace/src/nav/nav_tests/launch/azm_nav_semantic_node.launch
+[1mstarted roslaunch server http://bc05eae50dc8:32817/[0m
+
+SUMMARY
+========
+
+PARAMETERS
+ * /rosdistro: melodic
+ * /rosversion: 1.14.10
+
+NODES
+  /
+    azm_nav_goal_node (nav_tests/navtest.py)
+    azm_nav_semantic_node (nav_tests/semantic.py)
+
+[1mROS_MASTER_URI=http://simulator:11311/[0m
+]2;/home/developer/workspace/src/nav/nav_tests/launch/azm_nav_semantic_node.launch http://simulator:11311/
+[1mprocess[azm_nav_goal_node-1]: started with pid [30320][0m
+[1mprocess[azm_nav_semantic_node-2]: started with pid [30335][0m
+[azm_nav_semantic_node-2] killing on exit
+[azm_nav_goal_node-1] killing on exit
+shutting down processing monitor...
+... shutting down processing monitor complete
+[1mdone[0m

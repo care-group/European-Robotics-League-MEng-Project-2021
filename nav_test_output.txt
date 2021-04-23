@@ -1,0 +1,42 @@
+Starting tempnode.py
+executing tempnode.py as main
+Creating tempnode obj
+directing robot to shelves
+[INFO] [1619199304.715052, 0.000000]: Attempting to publish goal to /azm_nav/semantic_goal_listener
+[INFO] [1619199304.793538, 1095.693000]: Message published to /azm_nav/semantic_goal_listener
+reached goal
+directing robot to grannyAnnie
+[INFO] [1619199442.896173, 1138.371000]: Attempting to publish goal to /azm_nav/semantic_goal_listener
+[INFO] [1619199442.900599, 1138.371000]: Message published to /azm_nav/semantic_goal_listener
+reached goal
+directing robot to exit
+[INFO] [1619199480.490565, 1149.411000]: Attempting to publish goal to /azm_nav/semantic_goal_listener
+[INFO] [1619199480.495266, 1149.411000]: Message published to /azm_nav/semantic_goal_listener
+all goals sent
+tempnode.py is spinning
+reached goal
+... logging to /home/developer/.ros/log/5e4f2906-a450-11eb-83dd-0242ac130003/roslaunch-bc05eae50dc8-30307.log
+Checking log directory for disk usage. This may take a while.
+Press Ctrl-C to interrupt
+Done checking log file disk usage. Usage is <1GB.
+]2;/home/developer/workspace/src/nav/nav_tests/launch/test.launch
+[1mstarted roslaunch server http://bc05eae50dc8:40997/[0m
+
+SUMMARY
+========
+
+PARAMETERS
+ * /rosdistro: melodic
+ * /rosversion: 1.14.10
+
+NODES
+  /
+    tempnode (nav_tests/tempnode.py)
+
+[1mROS_MASTER_URI=http://simulator:11311/[0m
+]2;/home/developer/workspace/src/nav/nav_tests/launch/test.launch http://simulator:11311/
+[1mprocess[tempnode-1]: started with pid [30510][0m
+[tempnode-1] killing on exit
+shutting down processing monitor...
+... shutting down processing monitor complete
+[1mdone[0m
