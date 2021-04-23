@@ -4,7 +4,7 @@
 /* Initial goals */
 
 //!check(rooms).
-//!waitForBell.
+!waitForBell.
 //!waitForEntranceOpened.
 //!getCommand.
 //!testGoal.
@@ -87,7 +87,7 @@
 
 +doorbellSounded
     <-  .print("Doorbell sounded!");
-        !visit(entrance);
+        !visit(exit);
         open;
         !identifyVisitor.
 
@@ -101,9 +101,9 @@
     <-  !welcome(Person).
 
 +!welcome(dr_kimble)
-    <-  escort(bedroom);
+    <-  escort(grannyAnnie);
         waitUntilVisitorDone;
-        escort(entrance);
+        escort(exit);
         waitUntilVisitorLeft;
         closeDoor.
     
@@ -111,13 +111,13 @@
     <-  acceptMail;
         waitUntilVisitorLeft;
         closeDoor;
-        !visit(bedroom);
+        !visit(grannyAnnie);
         deliverMail.
 
 +!welcome(deliman)
     <-  escort(kitchen);
         askToLeaveBreakfast;
-        escort(entrance);
+        escort(exit);
         waitUntilVisitorLeft;
         closeDoor.
 
@@ -127,7 +127,7 @@
 +plumberDesiredRoomIs(Room)
     <-  escort(Room);
         waitUntilVisitorDone;
-        escort(entrance);
+        escort(exit);
         waitUntilVisitorLeft;
         closeDoor.
 
@@ -136,7 +136,7 @@
 
 
 +grannyAlarm
-    <-  !visit(dude);
+    <-  !visit(grannyAnnie);
         say("Hello, how can I be of service?");
         getCommand;
         executeCommand.
