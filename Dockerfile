@@ -22,6 +22,12 @@ RUN pip3 install rospkg==1.2.10 defusedxml netifaces
 #Manip
 RUN sudo apt install ros-melodic-tf2-sensor-msgs
 
+
+RUN sudo apt-get install -y alsa-base alsa-utils
+RUN sudo apt-get install -y portaudio19-dev
+RUN pip3 install SoundDevice SpeechRecognition pydub pyaudio soundfile google-cloud-texttospeech
+RUN sudo apt-get install -y mpg123
+#RUN chmod -R 755 /dev/snd
 # spaCY
 RUN pip3 install -U pip setuptools wheel
 RUN pip3 install -U spacy
@@ -62,7 +68,7 @@ RUN source /home/developer/google-cloud-sdk/path.bash.inc
 RUN source /home/developer/google-cloud-sdk/completion.bash.inc
 
 
-
+RUN sudo usermod -a -G video developer
 
 RUN source /opt/ros/melodic/setup.bash
 RUN echo 'source /home/developer/workspace/devel/setup.bash' >> ~/.bashrc

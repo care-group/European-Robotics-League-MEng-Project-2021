@@ -56,26 +56,55 @@ public class welcome extends Environment {
     }
 
     public static void scanFace() {
-        visitor = Visitor.PLUMBER;
+        
+        bdiEnvironment.logger.info("Scanning face");
+		bdiEnvironment.publish("/jason/detect_face", "std_msgs/String", "");
+		String resp = bdiEnvironment.subscribeSync("/cv/face/personIs", "std_msgs/String");
+        
+        switch (resp) {
+            case "simulated":
+                visitor=Visitor.DR_KIMBLE;
+                break;
+            case "postman":
+                visitor=Visitor.POSTMAN;
+                break;
+            default:
+                visitor=visitor.UNKNOWN;
+                break;
+        }
+        
+
         bdiEnvironment.logger.info("Face scan returned " + visitor.toString().toLowerCase());
     }
 
     public static void interrogate() {
         bdiEnvironment.logger.info("Interrogating to determine if Deliman or Plumber...");
+        bdiEnvironment.publish("/hri/greet_input","std_msgs/String","");
+        String resp = bdiEnvironment.subscribeSync("/hri/greet_output","std_msgs/String");
 
-        // Publish to HRI stack
+        switch (resp) {
+            case "deli man":
+                visitor=Visitor.DELIMAN;
+                break;
+            case "plumber":
+                visitor=Visitor.PLUMBER;
+                break;
+            default:
+                visitor=visitor.UNKNOWN;
+                break;
+        }        // Publish to HRI stack
         // Sync Subscriber to await response.
     }
 
     public static void waitUntilVisitorDone() {
         bdiEnvironment.logger.info("Waiting until visitor is done...");
-        // bdiEnvironment.subscribeSync("/jason/welcome/visitorDone", "std_msgs/Bool");
+        bdiEnvironment.subscribeSync("/jason/welcome/visitorDone", "std_msgs/Bool");
         bdiEnvironment.logger.info("Visitor is done");
     }
 
     public static void waitUntilVisitorLeft() {
         bdiEnvironment.logger.info("Waiting until visitor has left..");
-        // bdiEnvironment.subscribeSync("/jason/welcome/visitorLeft", "std_msgs/Bool");
+        bdiEnvironment.subscribeSync("/jason/welcome/visitorLeft", "std_msgs/Bool");
         bdiEnvironment.logger.info("Visitor has left");
     }
 
@@ -97,11 +126,8 @@ public class welcome extends Environment {
 
     public static void askPlumberDesiredRoom() {
         bdiEnvironment.logger.info("Asking plumber where he wants to visit");
-        // bdiEnvironment.publish("/hri/ask", "std_msgs/String", "desired room");
-        // String desiredRoom =
-        // bdiEnvironment.subscribeSync("/jason/welcome/desiredRoom",
-        // "std_msgs/String");
-        String desiredRoom = "KITCHEN";
+        bdiEnvironment.publish("/hri/location_input", "std_msgs/String", "");
+        String desiredRoom = bdiEnvironment.subscribeSync("/hri/location_output", "std_msgs/String");
         try {
             plumberDesiredRoom = Rooms.valueOf(desiredRoom);
         } catch (IllegalArgumentException e) {
