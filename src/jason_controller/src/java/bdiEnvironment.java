@@ -171,6 +171,7 @@ public class bdiEnvironment extends Environment {
 	}
 
 	public static void escort(String location) {
+		say("Please follow me");
 		logger.info("Escorting stub to " + location);
 		moveTo(location);
 	}
@@ -192,7 +193,15 @@ public class bdiEnvironment extends Environment {
 	}
 
 	public static void place() {
-		logger.info("Placing item down");
+		float[] xyz = {0.8227585127821092f, 2.902677131750086f, -174.59134286740388f};
+
+		String jsonString = String.format("{\"x\":\"%f\",\"y\":\"%f\",\"z\":\"%f\"}", xyz[0],xyz[1],xyz[2]);
+
+		logger.info("Placing item down at hardcoded point: " + jsonString);
+
+		publish("/placingTarget", "std_msgs/String", jsonString);
+		String resp = subscribeSync("/feedbackOnPlacing", "std_msgs/String");
+
 	}
 
 
