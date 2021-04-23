@@ -25,6 +25,8 @@ import json
 robot = moveit_commander.RobotCommander()
 scene = moveit_commander.PlanningSceneInterface()
 base_vel_pub = rospy.Publisher ('/hsrb/command_velocity', Twist, queue_size=1)
+pubPlacingFeedback = rospy.Publisher('/feedbackOnPlacing', String, queue_size=10,latch=True)
+pubGraspingFeedback = rospy.Publisher('/feedbackOnGrasping', String, queue_size=10,latch=True)
 completed = False
 completed1 = False
 completed2 = False
@@ -182,8 +184,10 @@ def graspMotion(msg):
     print(robotPoseToMapPose(end_effector_value)) 
     groupGripper.set_joint_value_target("hand_motor_joint", 0.2)
     groupGripper.go()
-    pubFeedback = rospy.Publisher('/feedbackOnGrasping', String, queue_size=10)
-    pubFeedback.publish("True") 
+    groupArm.set_named_target('neutral')
+    groupArm.go()
+    pubGraspingFeedback.publish("True") 
+    print("Publishing true to /feedbackOnGrasping")
 
 def graspMotionTest():
     #pointcloudToPlanningScene()
@@ -226,8 +230,9 @@ def graspMotionTest():
     groupGripper.set_joint_value_target("hand_motor_joint", 0.2)
     groupGripper.go()
     groupArm.set_named_target('neutral')
-    pubFeedback = rospy.Publisher('/feedbackOnGrasping', String, queue_size=10)
-    pubFeedback.publish("True") 
+    groupArm.go()
+    pubGraspingFeedback.publish("True") 
+    print("Publishing true to /feedbackOnGrasping")
 
 def placeMotion(msg):
     #pointcloudToPlanningScene()
@@ -266,9 +271,11 @@ def placeMotion(msg):
     groupGripper.set_joint_value_target("hand_motor_joint", 1.0)
     groupGripper.go()
     groupArm.set_named_target('neutral')
+    groupArm.go()
     groupGripper.set_joint_value_target("hand_motor_joint", 0.1)
-    pubFeedback = rospy.Publisher('/feedbackOnPlacing', String, queue_size=10)
-    pubFeedback.publish("True") 
+    groupGripper.go()
+    print("Publishing true to /feedbackOnPlacing")
+    pubPlacingFeedback.publish("True") 
 
 def placeMotionTest():
     #pointcloudToPlanningScene()
@@ -307,9 +314,11 @@ def placeMotionTest():
     groupGripper.set_joint_value_target("hand_motor_joint", 1.0)
     groupGripper.go()
     groupArm.set_named_target('neutral')
+    groupArm.go()
     groupGripper.set_joint_value_target("hand_motor_joint", 0.1)
-    pubFeedback = rospy.Publisher('/feedbackOnPlacing', String, queue_size=10)
-    pubFeedback.publish("True") 
+    groupGripper.go()
+    pubPlacingFeedback.publish("True") 
+    print("Publishing true to /feedbackOnPlacing")
 
 if __name__ == '__main__':
     #initListenerToPointCloud()

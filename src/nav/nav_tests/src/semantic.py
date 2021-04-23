@@ -156,6 +156,7 @@ class SemanticToCoords():
             
         self.semantic_map.append(input)
         rospy.loginfo("New label ({}) added to semantic map.".format(input["name"]))
+        self.save_semantic_map()
         return 1
 
     def remove_from_semantic_map_by_coords(self, coords, distance_threshold=0.2):
@@ -189,7 +190,6 @@ class SemanticToCoords():
     def update_entry_descriptions(self):
         pass
 
-    # TODO Needs docstring
     def get_entries_by_name(self, name):
         o = []
         for entry in self.semantic_map:
