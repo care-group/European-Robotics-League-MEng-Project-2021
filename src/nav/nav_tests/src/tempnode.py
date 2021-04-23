@@ -26,7 +26,10 @@ class tempnode():
         # Goal publishing inits
         self.pub = rospy.Publisher('/azm_nav/semantic_label_additions', String, queue_size=1, latch=True)
         self.sub = rospy.Subscriber('/azm_nav/semantic_manual_add', String, self.cb)
-    
+        self.semantic_goal = rospy.Publisher('/azm_nav/semantic_goal_listener', String, queue_size=1)
+        self.goal_sub = rospy.Subscriber('/azm_nav/goal_result', String, self.goal_cb)
+        self.reached = True
+
     def publish_once(self, topic, msg, content="message"):
         rospy.loginfo("Attempting to publish {} to {}".format(content, topic.name))
         while not self.ctrl_c:
@@ -36,7 +39,8 @@ class tempnode():
                 rospy.loginfo("Message published to {}".format(topic.name))
                 break
             else:
-                rospy.loginfo("No subscribers on {}, sleeping.".format(topic.name))
+                #rospy.loginfo("No subscribers on {}, sleeping.".format(topic.name))
+                pass
 
     def cb(self, msg):
         _t = {"name":msg.data,"type":"test","coords":[1,2,3],"others":{}}
@@ -48,10 +52,36 @@ class tempnode():
         # works better than the rospy.is_shutdown()
         self.ctrl_c = True
 
+    def do_nav_example(self):
+        goals = ["shelves", "grannyAnnie", "exit"]
+        stage = 0
+        stage_done = 0
+        while not stage_done == len(goals):
+            if self.reached:
+                self.reached = False
+                stage += 1
+            if stage_done < stage:
+                msg = String()
+                msg.data = goals[stage_done]
+                print("directing robot to {}".format(goals[stage_done]))
+                self.publish_once(self.semantic_goal, msg, "goal")
+                stage_done += 1
+            rospy.sleep(0.5)
+        print("all goals sent")
+    
+    def goal_cb(self, msg):
+        if msg.data == 'success':
+            print("reached goal")
+            self.reached = True
+        else:
+            print("something went wrong with navigation")
+            print(msg.data)
+
 
 if __name__ == '__main__':
     print("executing tempnode.py as main")
     print("Creating tempnode obj")
     tempnode = tempnode()
+    tempnode.do_nav_example()
     print("tempnode.py is spinning")
     rospy.spin()
