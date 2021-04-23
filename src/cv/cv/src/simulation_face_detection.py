@@ -17,7 +17,7 @@ class Face_Detection:
         self.img_subscriber = rospy.Subscriber('/hsrb/head_rgbd_sensor/rgb/image_color', Image,self.img_callback)
         self.results_publisher = rospy.Publisher('/cv/face/personIs', String)
         self.db_base_path = rospkg.RosPack().get_path('cv')
-        self.TIMEOUT = 60
+        self.TIMEOUT = 5
 
     def subscribe_jason(self):
         jason_subscriber = rospy.Subscriber('/jason/detect_face', String,self.jason_callback)
@@ -26,23 +26,28 @@ class Face_Detection:
     def jason_callback(self, msg):        
         startingTime=time.time()
         
-        image_connected = False
-        while not image_connected:
-            try:
-                self.cv_image.shape #If subscriber hasn't received image, accessing cv_image returns AttributeError
-                image_connected = True
-            except AttributeError:
-                print("Waiting for camera feed.")
+        running = True
+        while(running):
 
-        
-        person = self.get_person_from_face(self.cv_image)
+            image_connected = False
+            while not image_connected:
+                try:
+                    self.cv_image.shape #If subscriber hasn't received image, accessing cv_image returns AttributeError
+                    image_connected = True
+                except AttributeError:
+                    print("Waiting for camera feed.")
 
-        duration = time.time()-startingTime
+            
+            person = self.get_person_from_face(self.cv_image)
 
-        if(duration >self.TIMEOUT or person!=None):
-            self.publish_results(person)
-            self.img_subscriber.unregister()
+            duration = time.time()-startingTime
 
+            if(duration >self.TIMEOUT or person!=None):
+                self.publish_results(person)
+                self.img_subscriber.unregister()
+                running=False
+            else:
+                print("no person found, retrying")
 
     # Takes the current image from the camera feed and searches for the target object, returning coordinates 
     def img_callback(self, msg):
@@ -50,7 +55,7 @@ class Face_Detection:
         
 
     def get_person_from_face(self,img):
-        faces = "samuel","bezos","simulated"
+        faces = "samuel","bezos"
         for face in faces:
             try:
                 same = self.search_for_face_db(img,self.db_base_path+"/images/faces/"+face)
