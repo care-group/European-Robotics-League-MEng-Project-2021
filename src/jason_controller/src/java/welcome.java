@@ -14,6 +14,9 @@ import java.util.*;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicReference;
+import javax.json.*;
+import java.io.StringReader;
+import java.util.StringTokenizer;
 
 public class welcome extends Environment {
 
@@ -64,9 +67,11 @@ public class welcome extends Environment {
         switch (resp) {
             case "simulated":
                 visitor=Visitor.DR_KIMBLE;
+                bdiEnvironment.say("Hello Doctor Kimble");
                 break;
             case "postman":
                 visitor=Visitor.POSTMAN;
+                bdiEnvironment.say("Hello Postman");
                 break;
             default:
                 visitor=visitor.UNKNOWN;
@@ -79,21 +84,29 @@ public class welcome extends Environment {
 
     public static void interrogate() {
         bdiEnvironment.logger.info("Interrogating to determine if Deliman or Plumber...");
+        bdiEnvironment.say("Sorry, I don't know you. Who are you?");
         bdiEnvironment.publish("/hri/greet_input","std_msgs/String","");
         String resp = bdiEnvironment.subscribeSync("/hri/greet_output","std_msgs/String");
-
-        switch (resp) {
+        System.out.println(resp);
+        switch (resp.toLowerCase()) {
             case "deli man":
                 visitor=Visitor.DELIMAN;
                 break;
             case "plumber":
                 visitor=Visitor.PLUMBER;
                 break;
+            case "doctor kimble":
+                visitor=Visitor.DR_KIMBLE;
+                break;
+            case "postman":
+                visitor=Visitor.POSTMAN;
+                break;
             default:
                 visitor=visitor.UNKNOWN;
                 break;
         }        // Publish to HRI stack
         // Sync Subscriber to await response.
+        System.out.println(visitor);
     }
 
     public static void waitUntilVisitorDone() {
@@ -104,7 +117,7 @@ public class welcome extends Environment {
 
     public static void waitUntilVisitorLeft() {
         bdiEnvironment.logger.info("Waiting until visitor has left..");
-        bdiEnvironment.subscribeSync("/jason/welcome/visitorLeft", "std_msgs/Bool");
+        //bdiEnvironment.subscribeSync("/jason/welcome/visitorLeft", "std_msgs/Bool");
         bdiEnvironment.logger.info("Visitor has left");
     }
 
@@ -125,14 +138,26 @@ public class welcome extends Environment {
     }
 
     public static void askPlumberDesiredRoom() {
+
         bdiEnvironment.logger.info("Asking plumber where he wants to visit");
+        bdiEnvironment.say("Hello Plumber, can you please tell me where you would like to visit? I am only permitted to let you access the the kitchen or bathroom.");
+
         bdiEnvironment.publish("/hri/location_input", "std_msgs/String", "");
         String desiredRoom = bdiEnvironment.subscribeSync("/hri/location_output", "std_msgs/String");
-        try {
-            plumberDesiredRoom = Rooms.valueOf(desiredRoom);
-        } catch (IllegalArgumentException e) {
-            bdiEnvironment.logger.warning("Unknown room string given.");
-        }
+
+
+
+        switch (desiredRoom.toLowerCase()) {
+            case "kitchen":
+                plumberDesiredRoom = Rooms.KITCHEN;
+                break;
+            case "bathroom":
+                plumberDesiredRoom = Rooms.BATHROOM;
+                break;
+            default:
+                break;
+        }        // Publish to HRI stack
+
         bdiEnvironment.logger.info(plumberDesiredRoom.toString());
 
     }
