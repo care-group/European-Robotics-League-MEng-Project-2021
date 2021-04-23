@@ -164,8 +164,6 @@ public class bdiEnvironment extends Environment {
 			Float.parseFloat(jsonPoint.getString("y")),
 			Float.parseFloat(jsonPoint.getString("z"))};
 		
-
-		pickup(coords);
 		return coords;
 
 	}
@@ -193,7 +191,7 @@ public class bdiEnvironment extends Environment {
 	}
 
 	public static void place() {
-		float[] xyz = {0.8227585127821092f, 2.902677131750086f, -174.59134286740388f};
+		float[] xyz = {1.45f, 1.81f, 0.41f};
 
 		String jsonString = String.format("{\"x\":\"%f\",\"y\":\"%f\",\"z\":\"%f\"}", xyz[0],xyz[1],xyz[2]);
 

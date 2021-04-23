@@ -150,6 +150,7 @@ public class catering extends Environment {
         bdiEnvironment.moveTo(obj);
         float[] xyz = bdiEnvironment.findObject(obj);
         bdiEnvironment.pickup(xyz);
+        bdiEnvironment.moveTo("empty desk");
         bdiEnvironment.place();
 
     }
