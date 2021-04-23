@@ -10,10 +10,10 @@ from std_msgs.msg import Empty
 
 from hri.srv import SpeechToText
 
+r = sr.Recognizer()
 
 def listenToSpeech(msg):
     # initialize the recognizer
-    r = sr.Recognizer()
     #print(sr.Microphone.list_working_microphones())
     #print("Make sure you select the right device (0,1,2...)")
    
@@ -22,7 +22,7 @@ def listenToSpeech(msg):
         # read the audio data from the default microphone
         print("Listening to audio..")
         #r.adjust_for_ambient_noise(source)
-        audio = r.listen(source,timeout=2)
+        audio = r.listen(source,timeout=5)
         text =r.recognize_google(audio,language='en-GB')
         
         #print(text)
