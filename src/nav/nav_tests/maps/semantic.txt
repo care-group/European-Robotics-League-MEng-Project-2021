@@ -64,6 +64,22 @@
             2, 
             3
         ], 
+        "name": "kitchen", 
+        "others": {
+            "seen_from": [
+                2.5590900288686185, 
+                0.015844957530238478, 
+                -69.7150475873336
+            ]
+        }
+    }, 
+    {
+        "type": "test", 
+        "coords": [
+            1, 
+            2, 
+            3
+        ], 
         "name": "empty desk", 
         "others": {
             "seen_from": [
@@ -89,6 +105,7 @@
             ]
         }
     }, 
+    
     {
         "coords": [
             1, 
@@ -113,6 +130,22 @@
         ], 
         "type": "test", 
         "name": "shelves", 
+        "others": {
+            "seen_from": [
+                2.266818555473141, 
+                4.032764689078516, 
+                92.23447529822421
+            ]
+        }
+    }, 
+    {
+        "coords": [
+            1, 
+            2, 
+            3
+        ], 
+        "type": "test", 
+        "name": "bathroom", 
         "others": {
             "seen_from": [
                 2.266818555473141, 
