@@ -42,7 +42,7 @@ RUN pip3 install deepface
 RUN sudo apt-get install python-catkin-tools python3-dev python3-catkin-pkg-modules python3-numpy python3-yaml ros-melodic-cv-bridge -y
 
 # Jason
-RUN sudo git clone https://github.com/jason-lang/jason.git /additional_software/jason
+RUN sudo git clone https://github.com/jason-lang/jason.git --branch v2.6 /additional_software/jason
 RUN cd /additional_software/jason && sudo ./gradlew config
 
 RUN echo 'export JASON_HOME=/additional_software/jason/build' >> ~/.bashrc
